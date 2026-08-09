@@ -4,6 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>NourishPlan — Healthy Recipes & Meal Planner</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
 <style>
 :root{
   --bg:#f4f7f4;
@@ -41,6 +42,7 @@ body{margin:0;background:var(--bg);color:var(--ink);
   font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;}
 .topbar{display:flex;align-items:center;gap:10px;padding:14px 16px 8px;
   font-weight:800;font-size:19px;}
+.topbar-logo{width:34px;height:34px;border-radius:9px;display:block;}
 .topbar .spacer{flex:1}
 .tabs{display:flex;gap:6px;padding:6px 16px 10px;overflow-x:auto;
   position:sticky;top:0;background:var(--bg);z-index:20;}
@@ -426,7 +428,7 @@ function render(){
     app.innerHTML = renderRecipeDetail(workspace.id);
   }else{
     app.innerHTML = `
-      <header class="topbar">🌿 NourishPlan
+      <header class="topbar"><img class="topbar-logo" src="favicon.svg" alt="" aria-hidden="true"> NourishPlan
         <span class="spacer"></span>
         <button class="icon" id="menuBtn" aria-label="Menu" title="Backup & settings">⋯</button>
       </header>
