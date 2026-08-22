@@ -1,13 +1,6 @@
 {
-  "cleanUrls": true,
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
-    { "source": "/planner", "destination": "/index.html" },
-    { "source": "/recipes", "destination": "/index.html" },
-    { "source": "/recipes/:path*", "destination": "/index.html" },
-    { "source": "/inventory", "destination": "/index.html" },
-    { "source": "/grocery", "destination": "/index.html" },
-    { "source": "/grocery/:path*", "destination": "/index.html" },
-    { "source": "/stores", "destination": "/index.html" },
-    { "source": "/stores/:path*", "destination": "/index.html" }
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
