@@ -168,7 +168,7 @@ const MEAL_ICON = {
   dinner: "ph-moon-stars",
   snack: "ph-leaf"
 };
-const CONTENT_VERSION = 5;
+const CONTENT_VERSION = 6;
 
 const PHOTOS = {
   oats: "https://images.unsplash.com/photo-1494390248081-4e521a5940db?auto=format&fit=crop&w=720&q=82",
@@ -187,7 +187,8 @@ const PHOTOS = {
   pancakes: "https://images.unsplash.com/photo-1528207776546-365bb710ee93?auto=format&fit=crop&w=720&q=82",
   coconut: "https://images.unsplash.com/photo-1580984969071-a8da5656c2fb?auto=format&fit=crop&w=720&q=82",
   pancit: "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=720&q=82",
-  riceCake: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=720&q=82"
+  riceCake: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=720&q=82",
+  adobo: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=720&q=82"
 };
 const IMAGE_BY_RECIPE = {
   "Overnight Oats with Berries": PHOTOS.oats,
@@ -206,7 +207,8 @@ const IMAGE_BY_RECIPE = {
   "Healthy Hot Pancakes": PHOTOS.pancakes,
   "Healthy Buko Coconut Bowl": PHOTOS.coconut,
   "Healthy Pancit Bihon": PHOTOS.pancit,
-  "Healthy Rice Cake": PHOTOS.riceCake
+  "Healthy Rice Cake": PHOTOS.riceCake,
+  "Healthy Chicken Adobo": PHOTOS.adobo
 };
 
 function recipe(name, cat, cal, time, tags, image, ingredients, steps) {
@@ -239,7 +241,10 @@ function newHealthyRecipes() {
       ["Soak the bihon noodles according to package directions, then drain.", "Slice the chicken and vegetables thinly so they cook quickly and evenly.", "Heat olive oil in a wide pan. Sauté garlic and chicken until the chicken is fully cooked.", "Add cabbage, carrot, bell pepper and snap peas. Stir-fry for three to four minutes so the vegetables stay crisp.", "Pour in the unsalted broth and low-sodium soy sauce, then add the noodles.", "Toss until the noodles absorb the liquid. Finish with calamansi juice and serve hot."]),
     recipe("Healthy Rice Cake", "snack", 290, 40, ["Filipino", "gluten-free", "no-refined-sugar", "baked"], PHOTOS.riceCake,
       [[1, "cup", "brown rice flour"], [1, "tsp", "baking powder"], [1, "", "egg"], [0.75, "cup", "unsweetened light coconut milk"], [1, "tbsp", "honey"], [1, "tsp", "coconut oil"], [0.25, "cup", "fresh buko meat"], [0.25, "tsp", "cinnamon"]],
-      ["Heat the oven to 180°C and lightly grease a small baking dish or four muffin cups with coconut oil.", "Whisk the brown rice flour, baking powder and cinnamon together in a bowl.", "In a separate bowl, whisk the egg, light coconut milk and honey until smooth.", "Fold the wet mixture into the dry ingredients just until combined, then stir in the sliced fresh buko meat.", "Pour into the prepared dish and bake for 24 to 28 minutes, until the center is set and the top is lightly golden.", "Cool for 10 minutes before slicing. Serve warm without additional syrup."])
+      ["Heat the oven to 180°C and lightly grease a small baking dish or four muffin cups with coconut oil.", "Whisk the brown rice flour, baking powder and cinnamon together in a bowl.", "In a separate bowl, whisk the egg, light coconut milk and honey until smooth.", "Fold the wet mixture into the dry ingredients just until combined, then stir in the sliced fresh buko meat.", "Pour into the prepared dish and bake for 24 to 28 minutes, until the center is set and the top is lightly golden.", "Cool for 10 minutes before slicing. Serve warm without additional syrup."]),
+    recipe("Healthy Chicken Adobo", "dinner", 440, 40, ["Filipino", "high-protein", "lower-sodium", "no-added-sugar"], PHOTOS.adobo,
+      [[150, "g", "skinless chicken breast"], [2, "tbsp", "low-sodium soy sauce"], [2, "tbsp", "cane vinegar"], [0.5, "cup", "water"], [2, "clove", "garlic"], [1, "pc", "bay leaf"], [0.25, "tsp", "black pepper"], [1, "tsp", "olive oil"], [1, "cup", "green beans"], [0.5, "cup", "brown rice"]],
+      ["Marinate the chicken in low-sodium soy sauce, cane vinegar, garlic and black pepper for 10 minutes.", "Heat the olive oil in a pan over medium heat and brown the chicken on both sides.", "Pour in the marinade and water, then add the bay leaf.", "Cover and simmer for 12 to 15 minutes, until the chicken reaches 74°C in the thickest part.", "Add the green beans for the final four to five minutes, then uncover and reduce the sauce until lightly thickened.", "Discard the bay leaf and serve the adobo with cooked brown rice."])
   ];
 }
 
