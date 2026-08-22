@@ -168,7 +168,7 @@ const MEAL_ICON = {
   dinner: "ph-moon-stars",
   snack: "ph-leaf"
 };
-const CONTENT_VERSION = 4;
+const CONTENT_VERSION = 5;
 
 const PHOTOS = {
   oats: "https://images.unsplash.com/photo-1494390248081-4e521a5940db?auto=format&fit=crop&w=720&q=82",
@@ -186,7 +186,8 @@ const PHOTOS = {
   carbonara: "https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=720&q=82",
   pancakes: "https://images.unsplash.com/photo-1528207776546-365bb710ee93?auto=format&fit=crop&w=720&q=82",
   coconut: "https://images.unsplash.com/photo-1580984969071-a8da5656c2fb?auto=format&fit=crop&w=720&q=82",
-  pancit: "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=720&q=82"
+  pancit: "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=720&q=82",
+  riceCake: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=720&q=82"
 };
 const IMAGE_BY_RECIPE = {
   "Overnight Oats with Berries": PHOTOS.oats,
@@ -204,7 +205,8 @@ const IMAGE_BY_RECIPE = {
   "Healthy Carbonara": PHOTOS.carbonara,
   "Healthy Hot Pancakes": PHOTOS.pancakes,
   "Healthy Buko Coconut Bowl": PHOTOS.coconut,
-  "Healthy Pancit Bihon": PHOTOS.pancit
+  "Healthy Pancit Bihon": PHOTOS.pancit,
+  "Healthy Rice Cake": PHOTOS.riceCake
 };
 
 function recipe(name, cat, cal, time, tags, image, ingredients, steps) {
@@ -234,7 +236,10 @@ function newHealthyRecipes() {
       ["Chill the buko meat, coconut water and Greek yogurt before assembling.", "Slice the fresh buko meat into thin strips.", "Stir the Greek yogurt, coconut water and chia seeds together until creamy.", "Fold in the buko strips and diced pineapple.", "Serve immediately over ice, or chill for 10 minutes to let the chia seeds thicken the bowl."]),
     recipe("Healthy Pancit Bihon", "lunch", 410, 30, ["high-protein", "veggie-packed", "lower-sodium", "Filipino"], PHOTOS.pancit,
       [[60, "g", "bihon noodles"], [80, "g", "skinless chicken breast"], [1, "cup", "cabbage"], [0.5, "cup", "carrot"], [0.5, "cup", "bell pepper"], [0.5, "cup", "snap peas"], [1, "tsp", "olive oil"], [1, "clove", "garlic"], [1, "tbsp", "low-sodium soy sauce"], [1, "cup", "unsalted chicken broth"], [1, "tbsp", "calamansi juice"]],
-      ["Soak the bihon noodles according to package directions, then drain.", "Slice the chicken and vegetables thinly so they cook quickly and evenly.", "Heat olive oil in a wide pan. Sauté garlic and chicken until the chicken is fully cooked.", "Add cabbage, carrot, bell pepper and snap peas. Stir-fry for three to four minutes so the vegetables stay crisp.", "Pour in the unsalted broth and low-sodium soy sauce, then add the noodles.", "Toss until the noodles absorb the liquid. Finish with calamansi juice and serve hot."])
+      ["Soak the bihon noodles according to package directions, then drain.", "Slice the chicken and vegetables thinly so they cook quickly and evenly.", "Heat olive oil in a wide pan. Sauté garlic and chicken until the chicken is fully cooked.", "Add cabbage, carrot, bell pepper and snap peas. Stir-fry for three to four minutes so the vegetables stay crisp.", "Pour in the unsalted broth and low-sodium soy sauce, then add the noodles.", "Toss until the noodles absorb the liquid. Finish with calamansi juice and serve hot."]),
+    recipe("Healthy Rice Cake", "snack", 290, 40, ["Filipino", "gluten-free", "no-refined-sugar", "baked"], PHOTOS.riceCake,
+      [[1, "cup", "brown rice flour"], [1, "tsp", "baking powder"], [1, "", "egg"], [0.75, "cup", "unsweetened light coconut milk"], [1, "tbsp", "honey"], [1, "tsp", "coconut oil"], [0.25, "cup", "fresh buko meat"], [0.25, "tsp", "cinnamon"]],
+      ["Heat the oven to 180°C and lightly grease a small baking dish or four muffin cups with coconut oil.", "Whisk the brown rice flour, baking powder and cinnamon together in a bowl.", "In a separate bowl, whisk the egg, light coconut milk and honey until smooth.", "Fold the wet mixture into the dry ingredients just until combined, then stir in the sliced fresh buko meat.", "Pour into the prepared dish and bake for 24 to 28 minutes, until the center is set and the top is lightly golden.", "Cool for 10 minutes before slicing. Serve warm without additional syrup."])
   ];
 }
 
