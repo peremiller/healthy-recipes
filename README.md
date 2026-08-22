@@ -1,13 +1,13 @@
 # 🌿 NourishPlan — Healthy Recipes & Meal Planner
 
-A single-file, offline-first web app for planning healthy meals and turning them into a smart grocery list. No build step, no dependencies — one `index.html` with vanilla JS and `localStorage`.
+A dependency-free, offline-first web app for planning healthy meals and turning them into a smart grocery list. It uses vanilla JavaScript modules and `localStorage`, with clean Vercel routes for every main page.
 
 **Live:** https://healthy-recipes-murex.vercel.app
 
 ## Features
 
 - **🗓️ Menu Planner** — plan breakfast / lunch / dinner / snack across a **week view** (7 day-cards with per-day and weekly calorie totals) or a focused **day view**. Tap any slot to add, change, or remove a recipe.
-- **🥗 Recipe Library** — 16 seeded healthy recipes with search, meal-type filters, ingredients, and steps. Add / edit / delete your own.
+- **🥗 Recipe Library** — 16 seeded healthy recipes with search, meal-type filters, ingredients, and steps. Add / edit / delete your own. Includes Healthy Carbonara, Healthy Hot Pancakes, Healthy Buko Coconut Bowl, and Healthy Pancit Bihon.
 - **🧺 Grocery Inventory** — track what you already have at home, with quantity steppers and units.
 - **🛒 Grocery "Need" List** — automatically sums every ingredient across the planned week, **subtracts your inventory**, and shows exactly what to buy (`buy 2.25 cup · need 2.25 · have 0`). Items fully covered by inventory move to a separate "Covered" section. Check items off and one-tap **restock them into inventory**. Add non-recipe extras too.
 
@@ -21,7 +21,7 @@ Ingredient names and units are normalized (cups↔cup, tbsp, tsp, pc…) so the 
 
 ## Run locally
 
-Just open `index.html` in a browser, or serve the folder:
+Serve the folder with any static web server:
 
 ```bash
 python3 -m http.server 4630
