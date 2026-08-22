@@ -100,6 +100,40 @@ const normUnit = (unit) => {
 const normName = (name) => String(name || "").trim().toLowerCase().replace(/s$/, "");
 const keyOf = (name, unit) => `${normName(name)}|${normUnit(unit)}`;
 
+function allRecipeIngredients(recipes) {
+  const catalog = new Map();
+  (Array.isArray(recipes) ? recipes : []).forEach((recipeItem) => {
+    const seenInRecipe = new Set();
+    (Array.isArray(recipeItem.ingredients) ? recipeItem.ingredients : []).forEach((ingredient) => {
+      const name = String(ingredient.name || "").trim();
+      if (!name) return;
+      const unit = normUnit(ingredient.unit);
+      const key = keyOf(name, unit);
+      if (!catalog.has(key)) {
+        catalog.set(key, { key, name, unit, totalQty: 0, recipeCount: 0 });
+      }
+      const entry = catalog.get(key);
+      entry.totalQty = round1(entry.totalQty + (Number(ingredient.qty) || 0));
+      if (!seenInRecipe.has(key)) {
+        entry.recipeCount += 1;
+        seenInRecipe.add(key);
+      }
+    });
+  });
+  return [...catalog.values()].sort((a, b) => a.name.localeCompare(b.name) || a.unit.localeCompare(b.unit));
+}
+
+function mergeRecipeIngredientsIntoInventory(recipes, inventory) {
+  const merged = Array.isArray(inventory) ? inventory : [];
+  const existingKeys = new Set(merged.map((item) => keyOf(item.name, item.unit)));
+  allRecipeIngredients(recipes).forEach((ingredient) => {
+    if (existingKeys.has(ingredient.key)) return;
+    merged.push({ id: uid(), name: ingredient.name, qty: 0, unit: ingredient.unit });
+    existingKeys.add(ingredient.key);
+  });
+  return merged;
+}
+
 function parseIngLine(line) {
   const text = line.trim();
   if (!text) return null;
@@ -134,7 +168,7 @@ const MEAL_ICON = {
   dinner: "ph-moon-stars",
   snack: "ph-leaf"
 };
-const CONTENT_VERSION = 3;
+const CONTENT_VERSION = 4;
 
 const PHOTOS = {
   oats: "https://images.unsplash.com/photo-1494390248081-4e521a5940db?auto=format&fit=crop&w=720&q=82",
@@ -271,7 +305,7 @@ function seed() {
     contentVersion: CONTENT_VERSION,
     recipes,
     plan: completedPlan,
-    inventory: [
+    inventory: mergeRecipeIngredientsIntoInventory(recipes, [
       { id: uid(), name: "rolled oats", qty: 3, unit: "cup" },
       { id: uid(), name: "greek yogurt", qty: 2, unit: "cup" },
       { id: uid(), name: "olive oil", qty: 16, unit: "tbsp" },
@@ -280,7 +314,7 @@ function seed() {
       { id: uid(), name: "quinoa", qty: 1, unit: "cup" },
       { id: uid(), name: "honey", qty: 10, unit: "tsp" },
       { id: uid(), name: "soy sauce", qty: 8, unit: "tbsp" }
-    ],
+    ]),
     extras: [],
     checked: {}
   };
@@ -313,6 +347,7 @@ function normalize(data) {
       || PHOTOS[item.cat === "breakfast" ? "oats" : item.cat === "lunch" ? "salad" : item.cat === "dinner" ? "tofu" : "apple"];
     item.image = !item.image || item.image.includes("photo-1467003909585-2f8a7270028?") ? fallbackImage : item.image;
   });
+  normalized.inventory = mergeRecipeIngredientsIntoInventory(normalized.recipes, normalized.inventory);
   normalized.plan = fillRollingMealPlan({
     plan: normalized.plan,
     recipes: normalized.recipes,
@@ -827,7 +862,7 @@ function renderInventory() {
   const items = [...state.inventory].sort((a, b) => a.name.localeCompare(b.name));
   const actions = `<button class="button" type="button" data-new-inventory>${icon("ph-plus")} Add Item</button>`;
   return `
-    ${heading("Inventory", "Track what is already at home so your grocery list stays accurate.", actions)}
+    ${heading("Inventory", "Every recipe ingredient is listed automatically. Update quantities to keep your grocery list accurate.", actions)}
     <section class="list-surface">
       <div class="table-head"><span>Item</span><span>Quantity</span><span></span></div>
       ${items.length ? items.map((item) => `<div class="inventory-row">
@@ -840,6 +875,8 @@ function renderInventory() {
 
 function renderGrocery() {
   const { dates, toBuy, covered } = groceryData();
+  const recipeIngredients = allRecipeIngredients(state.recipes);
+  const inventory = inventoryByKey();
   const extras = state.extras;
   const checkedCount = toBuy.filter((item) => state.checked[item.key]).length
     + extras.filter((item) => state.checked[`x:${item.id}`]).length;
@@ -852,7 +889,11 @@ function renderGrocery() {
       <div class="list-section-title"><span>To buy</span>${checkedCount ? `<button class="button small" type="button" data-purchased>Move ${checkedCount} to inventory</button>` : ""}</div>
       ${total ? `${toBuy.map((item) => groceryRow(item, item.key)).join("")}${extras.map((item) => groceryRow(item, `x:${item.id}`, true)).join("")}` : `<div class="empty-state">${icon("ph-check-circle")}Everything you need is already covered.</div>`}
     </section>
-    ${covered.length ? `<section class="list-surface" style="margin-top:16px"><div class="list-section-title"><span>Covered by inventory</span></div>${covered.map((item) => `<div class="covered-row"><span>${esc(item.name)}</span><span class="grocery-quantity">Need ${item.need} ${esc(item.unit)} · available at home</span></div>`).join("")}</section>` : ""}`;
+    ${covered.length ? `<section class="list-surface" style="margin-top:16px"><div class="list-section-title"><span>Covered by inventory</span></div>${covered.map((item) => `<div class="covered-row"><span>${esc(item.name)}</span><span class="grocery-quantity">Need ${item.need} ${esc(item.unit)} · available at home</span></div>`).join("")}</section>` : ""}
+    <section class="list-surface" style="margin-top:16px">
+      <div class="list-section-title"><span>All recipe ingredients</span><span class="status-pill">${recipeIngredients.length} items</span></div>
+      ${recipeIngredients.map((item) => `<div class="covered-row"><span>${esc(item.name)}</span><span class="grocery-quantity">Used in ${item.recipeCount} recipe${item.recipeCount === 1 ? "" : "s"} · ${item.totalQty} ${esc(item.unit)} total · ${round1(inventory[item.key] || 0)} ${esc(item.unit)} on hand</span></div>`).join("")}
+    </section>`;
 }
 
 function groceryRow(item, checkedKey, extra = false) {
@@ -975,6 +1016,7 @@ function recipeModal(existing = null) {
     };
     if (existing) Object.assign(existing, data);
     else state.recipes.push({ id: uid(), ...data });
+    state.inventory = mergeRecipeIngredientsIntoInventory(state.recipes, state.inventory);
     save();
     closeModal();
     render();
