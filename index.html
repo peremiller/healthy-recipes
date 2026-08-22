@@ -238,38 +238,6 @@ const ingToLine = i => `${i.qty} ${i.unit?i.unit+" ":""}${i.name}`.trim();
 const MEALS = ["breakfast","lunch","dinner","snack"];
 const MEAL_LABEL = {breakfast:"Breakfast",lunch:"Lunch",dinner:"Dinner",snack:"Snack"};
 const CATS = ["breakfast","lunch","dinner","snack"];
-const CONTENT_VERSION = 2;
-
-function healthyCarbonaraRecipe(){
-  return {
-    id:"recipe-healthy-carbonara",
-    name:"Healthy Carbonara",
-    cat:"dinner",
-    cal:450,
-    time:25,
-    tags:["whole-grain","vegetarian","no-cream","high-fiber"],
-    ingredients:[
-      {qty:60,unit:"g",name:"whole-wheat spaghetti"},
-      {qty:1,unit:"",name:"egg"},
-      {qty:0.25,unit:"cup",name:"plain Greek yogurt"},
-      {qty:1,unit:"cup",name:"button mushrooms"},
-      {qty:1,unit:"cup",name:"baby spinach"},
-      {qty:0.25,unit:"cup",name:"green peas"},
-      {qty:2,unit:"tbsp",name:"grated parmesan"},
-      {qty:1,unit:"tsp",name:"olive oil"},
-      {qty:1,unit:"clove",name:"garlic"},
-      {qty:0.25,unit:"tsp",name:"black pepper"},
-    ],
-    steps:[
-      "Cook the whole-wheat spaghetti until al dente; reserve 1/2 cup pasta water, then drain.",
-      "Whisk the egg, Greek yogurt, parmesan and black pepper until smooth. Use a pasteurized egg when available.",
-      "Heat olive oil in a pan. Sauté garlic and mushrooms for 4–5 minutes, then add peas and spinach until the spinach wilts.",
-      "Add the drained spaghetti, toss, then remove the pan from the heat.",
-      "Whisk 2 tablespoons of hot pasta water into the egg mixture. Pour it over the pasta while tossing continuously.",
-      "Return to very low heat and toss for 1–2 minutes until the sauce is steaming and coats the pasta. Do not boil; add pasta water as needed.",
-    ],
-  };
-}
 
 function R(name,cat,cal,time,tags,ings,steps){
   return { id:uid(), name, cat, cal, time, tags,
@@ -310,7 +278,6 @@ function seed(){
        [1,"tbsp","olive oil"],[1,"tsp","cumin"]],
       ["Sauté onion, carrot, celery and garlic in oil.",
        "Add lentils, cumin and broth; simmer 25 min.","Season and serve."]),
-    healthyCarbonaraRecipe(),
     R("Baked Salmon & Roasted Veggies","dinner",520,30,["omega-3","high-protein"],
       [[180,"g","salmon fillet"],[1,"cup","broccoli"],[1,"pc","zucchini"],
        [1,"cup","sweet potato"],[2,"tbsp","olive oil"],[1,"pc","lemon"]],
@@ -368,7 +335,7 @@ function seed(){
     {id:uid(), name:"honey",         qty:10, unit:"tsp"},
     {id:uid(), name:"soy sauce",     qty:8,  unit:"tbsp"},
   ];
-  return { seeded:true, contentVersion:CONTENT_VERSION, recipes, plan, inventory, extras:[], checked:{} };
+  return { seeded:true, recipes, plan, inventory, extras:[], checked:{} };
 }
 
 /* ---------------- storage ---------------- */
@@ -380,12 +347,6 @@ function normalize(s){
   s.extras    = Array.isArray(s.extras)    ? s.extras    : [];
   s.plan      = (s.plan && typeof s.plan==="object") ? s.plan : {};
   s.checked   = (s.checked && typeof s.checked==="object") ? s.checked : {};
-  if((Number(s.contentVersion)||1) < CONTENT_VERSION){
-    const hasHealthyCarbonara = s.recipes.some(r=>
-      String(r.name||"").trim().toLowerCase() === "healthy carbonara");
-    if(!hasHealthyCarbonara) s.recipes.push(healthyCarbonaraRecipe());
-  }
-  s.contentVersion = Math.max(Number(s.contentVersion)||0, CONTENT_VERSION);
   s.recipes.forEach(r=>{
     r.ingredients = Array.isArray(r.ingredients) ? r.ingredients : [];
     r.steps = Array.isArray(r.steps) ? r.steps : [];
