@@ -7,7 +7,7 @@ A single-file, offline-first web app for planning healthy meals and turning them
 ## Features
 
 - **🗓️ Menu Planner** — plan breakfast / lunch / dinner / snack across a **week view** (7 day-cards with per-day and weekly calorie totals) or a focused **day view**. Tap any slot to add, change, or remove a recipe.
-- **🥗 Recipe Library** — 12 seeded healthy recipes with search, meal-type filters, ingredients, and steps. Add / edit / delete your own.
+- **🥗 Recipe Library** — 16 seeded healthy recipes with search, meal-type filters, ingredients, and steps. Add / edit / delete your own.
 - **🧺 Grocery Inventory** — track what you already have at home, with quantity steppers and units.
 - **🛒 Grocery "Need" List** — automatically sums every ingredient across the planned week, **subtracts your inventory**, and shows exactly what to buy (`buy 2.25 cup · need 2.25 · have 0`). Items fully covered by inventory move to a separate "Covered" section. Check items off and one-tap **restock them into inventory**. Add non-recipe extras too.
 
