@@ -2,6 +2,12 @@
 
 import { haversineKm } from "./lib/geo.mjs";
 import { fillRollingMealPlan, MEAL_TYPES } from "./lib/meal-plan.mjs";
+import {
+  CALENDAR_MEAL_DEFINITIONS,
+  GOOGLE_CALENDAR_SOURCE,
+  calendarMealCountForDates,
+  calendarMealNamesForDate
+} from "./lib/calendar-meals.mjs";
 
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
@@ -86,12 +92,13 @@ const UNIT_ALIAS = {
   slices: "slice",
   heads: "head",
   bunches: "bunch",
+  scoops: "scoop",
   liters: "l",
   liter: "l"
 };
 const KNOWN_UNITS = [
   "g", "kg", "ml", "l", "cup", "tbsp", "tsp", "oz", "lb", "pc", "can",
-  "clove", "slice", "bunch", "head", ...Object.keys(UNIT_ALIAS)
+  "clove", "slice", "bunch", "head", "scoop", ...Object.keys(UNIT_ALIAS)
 ];
 const normUnit = (unit) => {
   const normalized = String(unit || "").trim().toLowerCase();
@@ -168,7 +175,7 @@ const MEAL_ICON = {
   dinner: "ph-moon-stars",
   snack: "ph-leaf"
 };
-const CONTENT_VERSION = 6;
+const CONTENT_VERSION = 7;
 
 const PHOTOS = {
   oats: "https://images.unsplash.com/photo-1494390248081-4e521a5940db?auto=format&fit=crop&w=720&q=82",
@@ -223,6 +230,24 @@ function recipe(name, cat, cal, time, tags, image, ingredients, steps) {
     ingredients: ingredients.map(([qty, unit, ingredientName]) => ({ qty, unit, name: ingredientName })),
     steps
   };
+}
+
+function calendarMealRecipes() {
+  return CALENDAR_MEAL_DEFINITIONS.map((definition) => ({
+    ...recipe(
+      definition.name,
+      definition.cat,
+      definition.cal,
+      definition.time,
+      [...definition.tags, "estimated-calories"],
+      PHOTOS[definition.imageKey] || PHOTOS.salad,
+      definition.ingredients,
+      definition.steps
+    ),
+    source: "Google Calendar",
+    sourceCalendar: GOOGLE_CALENDAR_SOURCE,
+    sourceNote: definition.calendarNote
+  }));
 }
 
 function newHealthyRecipes() {
@@ -286,7 +311,8 @@ function seed() {
     recipe("Apple with Peanut Butter", "snack", 210, 2, ["quick"], PHOTOS.apple,
       [[1, "pc", "apple"], [2, "tbsp", "peanut butter"]],
       ["Slice the apple.", "Serve with peanut butter for dipping."]),
-    ...newHealthyRecipes()
+    ...newHealthyRecipes(),
+    ...calendarMealRecipes()
   ];
 
   const byName = (name) => recipes.find((item) => item.name === name).id;
@@ -341,10 +367,21 @@ function normalize(data) {
   normalized.extras = Array.isArray(normalized.extras) ? normalized.extras : [];
   normalized.plan = normalized.plan && typeof normalized.plan === "object" ? normalized.plan : {};
   normalized.checked = normalized.checked && typeof normalized.checked === "object" ? normalized.checked : {};
-  if ((Number(normalized.contentVersion) || 0) < CONTENT_VERSION) {
+  const previousContentVersion = Number(normalized.contentVersion) || 0;
+  if (previousContentVersion < 6) {
     const existingNames = new Set(normalized.recipes.map((item) => String(item.name || "").trim().toLowerCase()));
     newHealthyRecipes().forEach((item) => {
-      if (!existingNames.has(item.name.toLowerCase())) normalized.recipes.push(item);
+      if (existingNames.has(item.name.toLowerCase())) return;
+      normalized.recipes.push(item);
+      existingNames.add(item.name.toLowerCase());
+    });
+  }
+  if (previousContentVersion < 7) {
+    const existingNames = new Set(normalized.recipes.map((item) => String(item.name || "").trim().toLowerCase()));
+    calendarMealRecipes().forEach((item) => {
+      if (existingNames.has(item.name.toLowerCase())) return;
+      normalized.recipes.push(item);
+      existingNames.add(item.name.toLowerCase());
     });
   }
   normalized.contentVersion = CONTENT_VERSION;
@@ -493,6 +530,24 @@ function recipePath(item) {
 
 function planFor(date) {
   return state.plan[date] || {};
+}
+
+function calendarRecipesFor(date, meal) {
+  const names = calendarMealNamesForDate(date)[meal] || [];
+  return names
+    .map((name) => state.recipes.find((item) => item.name === name))
+    .filter(Boolean);
+}
+
+function renderCalendarMealOptions(date, meal, primaryRecipeId = null) {
+  const items = calendarRecipesFor(date, meal).filter((item) => item.id !== primaryRecipeId);
+  if (!items.length) return "";
+  return `<div class="calendar-meal-options">
+    <span class="calendar-meal-label">${icon("ph-calendar-check")} Google Calendar</span>
+    ${items.map((item) => `<button class="calendar-meal-option" type="button" data-calendar-recipe="${item.id}" title="Open ${esc(item.name)}">
+      <span>${esc(item.name)}</span><small>${item.cal} kcal</small>
+    </button>`).join("")}
+  </div>`;
 }
 
 function dayCalories(date) {
@@ -712,6 +767,9 @@ function heading(title, subtitle, actions = "") {
 
 function plannerToolbar() {
   const dates = weekDates(weekOffset);
+  const calendarCount = plannerMode === "week"
+    ? calendarMealCountForDates(dates)
+    : calendarMealCountForDates([dayDate]);
   return `
     <div class="planner-toolbar">
       <div class="segmented" aria-label="Planner view">
@@ -723,12 +781,13 @@ function plannerToolbar() {
         <span>${icon("ph-calendar-blank")} ${plannerMode === "week" ? `${fmtDate(dates[0])} — ${fmtDate(dates[6])}, ${dateFromISO(dates[6]).getFullYear()}` : fmtLong(dayDate)}</span>
         <button type="button" aria-label="Next ${plannerMode}" data-period-nav="1">${icon("ph-caret-right")}</button>
       </div>
+      <span class="calendar-import-chip">${icon("ph-google-logo")} ${calendarCount} calendar meal${calendarCount === 1 ? "" : "s"}</span>
       <button class="button" type="button" data-quick-add>${icon("ph-plus")} Add Meal</button>
     </div>`;
 }
 
 function renderPlanner() {
-  return `${heading("Planner", "Plan your week. Nourish your life.")}${plannerToolbar()}${plannerMode === "week" ? renderWeekPlanner() : renderDayPlanner()}`;
+  return `${heading("Planner", `Plan your week. Meals imported from ${esc(GOOGLE_CALENDAR_SOURCE)} appear as calendar options.`)}${plannerToolbar()}${plannerMode === "week" ? renderWeekPlanner() : renderDayPlanner()}`;
 }
 
 function weekMetrics(dates) {
@@ -765,10 +824,11 @@ function renderWeekPlanner() {
     ${dates.map((date) => {
       const item = recipeById(planFor(date)[meal]);
       return `<div class="week-cell meal-slot ${date === today ? "today" : ""}">
-        ${item ? `<button class="meal-card-button" type="button" data-pick="${date}|${meal}" aria-label="Change ${MEAL_LABEL[meal]} on ${fmtLong(date)}">
+        <div class="primary-meal-slot">${item ? `<button class="meal-card-button" type="button" data-pick="${date}|${meal}" aria-label="Change ${MEAL_LABEL[meal]} on ${fmtLong(date)}">
           <img class="meal-thumb" src="${esc(item.image)}" alt="${esc(item.name)}" loading="lazy" />
           <span class="meal-name">${esc(item.name)}</span><span class="meal-calories">${item.cal} kcal</span>
-        </button>` : `<button class="empty-meal-button" type="button" data-pick="${date}|${meal}">${icon("ph-plus")}<span>Add meal</span></button>`}
+        </button>` : `<button class="empty-meal-button" type="button" data-pick="${date}|${meal}">${icon("ph-plus")}<span>Add meal</span></button>`}</div>
+        ${renderCalendarMealOptions(date, meal, item?.id)}
       </div>`;
     }).join("")}`).join("");
   return `
@@ -824,9 +884,10 @@ function renderDayPlanner() {
         ${MEALS.map((meal, index) => {
           const item = recipeById(planFor(dayDate)[meal]);
           const times = ["8:00 AM", "12:30 PM", "6:00 PM", "8:30 PM"];
-          return item ? `<div class="timeline-row">
+          const primary = item ? `<div class="timeline-row">
             <span class="meal-type-icon">${icon(MEAL_ICON[meal])}</span><span class="meal-time">${times[index]}</span><img src="${esc(item.image)}" alt="${esc(item.name)}" /><div class="timeline-copy"><strong>${esc(item.name)}</strong><span>${MEAL_LABEL[meal]} · ${item.cal} kcal</span></div><button class="icon-button" type="button" data-pick="${dayDate}|${meal}" aria-label="Change meal">${icon("ph-dots-three-vertical")}</button>
           </div>` : `<button class="timeline-row empty-day-row" type="button" data-pick="${dayDate}|${meal}"><span class="meal-type-icon">${icon(MEAL_ICON[meal])}</span><span class="meal-time">${times[index]}</span><span></span><span>Add ${MEAL_LABEL[meal].toLowerCase()}</span>${icon("ph-plus")}</button>`;
+          return `<div class="timeline-meal-group">${primary}${renderCalendarMealOptions(dayDate, meal, item?.id)}</div>`;
         }).join("")}
       </section>
       <aside class="surface day-summary"><div class="panel-title"><span>Daily overview</span>${icon("ph-info")}</div><div class="nutrition-total">${icon("ph-chart-donut")}<div><strong>${calories.toLocaleString()}</strong><span>kcal planned today</span></div></div><div class="macro-list">${macroRow("Meals", `${itemCount} of 4`, itemCount * 25, "carbs")}${macroRow("Calorie target", "1,700 kcal", Math.min(100, calories / 17), "fat")}</div></aside>
@@ -858,10 +919,14 @@ function renderRecipes() {
 
 function renderRecipeDetail(item) {
   if (!item) return renderNotFound();
+  const sourceNote = item.source === "Google Calendar" && item.sourceNote
+    ? `<section class="surface detail-section calendar-source-note" style="grid-column:1/-1"><h2>${icon("ph-calendar-check")} Imported from Google Calendar</h2><p>${esc(item.sourceNote)}</p><span>${esc(item.sourceCalendar || GOOGLE_CALENDAR_SOURCE)} · Calories and preparation time are practical estimates.</span></section>`
+    : "";
   return `
     <nav class="detail-breadcrumbs" aria-label="Breadcrumb"><a href="/recipes" data-route>Recipes</a>${icon("ph-caret-right")}<span>${esc(item.name)}</span></nav>
     <div class="detail-title"><div><h1>${esc(item.name)}</h1><p>${MEAL_LABEL[item.cat]} · ${item.cal} kcal · ${item.time} min</p><div class="tags">${item.tags.map((tag) => `<span class="tag">${esc(tag)}</span>`).join("")}</div></div><div><button class="button secondary" type="button" data-edit-recipe="${item.id}">${icon("ph-pencil-simple")} Edit recipe</button></div></div>
     <div class="detail-grid">
+      ${sourceNote}
       <section class="surface detail-section"><h2>Ingredients</h2>${item.ingredients.map((ingredient) => `<div class="ingredient-row"><span>${esc(ingredient.name)}</span><strong>${ingredient.qty} ${esc(ingredient.unit)}</strong></div>`).join("") || '<div class="empty-state">No ingredients listed.</div>'}</section>
       <aside class="surface detail-section"><h2>Meal overview</h2><img src="${esc(item.image)}" alt="${esc(item.name)}" style="width:100%;height:190px;object-fit:cover;border-radius:10px;margin-bottom:16px" /><div class="grocery-bridge" style="grid-template-columns:1fr"><a href="/grocery" data-route>${icon("ph-basket")}<div><strong>Check your grocery list</strong><span>See what you already have and what to buy</span></div>${icon("ph-caret-right")}</a></div></aside>
       <section class="surface detail-section" style="grid-column:1/-1"><h2>Method</h2>${item.steps.map((step, index) => `<div class="step-row"><span class="step-number">${index + 1}</span><span>${esc(step)}</span></div>`).join("") || '<div class="empty-state">No steps listed.</div>'}</section>
@@ -1285,6 +1350,10 @@ function wire(route) {
   $$('[data-pick]').forEach((button) => button.addEventListener("click", () => {
     const [date, meal] = button.dataset.pick.split("|");
     pickerModal(date, meal);
+  }));
+  $$('[data-calendar-recipe]').forEach((button) => button.addEventListener("click", () => {
+    const item = recipeById(button.dataset.calendarRecipe);
+    if (item) navigate(recipePath(item));
   }));
   $("[data-quick-add]")?.addEventListener("click", quickAddModal);
 

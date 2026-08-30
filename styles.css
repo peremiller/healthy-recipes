@@ -461,10 +461,29 @@ img {
 
 .planner-toolbar {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto 1fr auto auto;
   align-items: center;
   gap: 18px;
   margin-bottom: 12px;
+}
+
+.calendar-import-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 1px solid #bdd8ca;
+  border-radius: 999px;
+  background: #eef8f2;
+  color: var(--forest-800);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.calendar-import-chip .ph {
+  font-size: 16px;
 }
 
 .date-control {
@@ -669,6 +688,10 @@ img {
   padding: 10px;
 }
 
+.primary-meal-slot {
+  min-height: 104px;
+}
+
 .meal-card-button,
 .empty-meal-button {
   width: 100%;
@@ -709,6 +732,58 @@ img {
   margin-top: 2px;
   color: var(--muted);
   font-size: 10.5px;
+}
+
+.calendar-meal-options {
+  display: grid;
+  gap: 5px;
+  margin-top: 9px;
+  padding-top: 8px;
+  border-top: 1px dashed #bdd8ca;
+}
+
+.calendar-meal-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--forest-700);
+  font-size: 8.5px;
+  font-weight: 800;
+  letter-spacing: 0.35px;
+  text-transform: uppercase;
+}
+
+.calendar-meal-option {
+  width: 100%;
+  display: grid;
+  gap: 2px;
+  padding: 6px;
+  border: 1px solid #d8e9df;
+  border-radius: 7px;
+  background: #f5fbf7;
+  color: var(--forest-950);
+  text-align: left;
+  cursor: pointer;
+}
+
+.calendar-meal-option:hover {
+  border-color: #9fc7b1;
+  background: #eaf6ef;
+}
+
+.calendar-meal-option span {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: 9.5px;
+  font-weight: 650;
+  line-height: 1.25;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.calendar-meal-option small {
+  color: var(--muted);
+  font-size: 8.5px;
 }
 
 .empty-meal-button {
@@ -939,6 +1014,49 @@ img {
 
 .timeline-row:last-child {
   border-bottom: 0;
+}
+
+.timeline-meal-group {
+  border-bottom: 1px solid var(--line);
+}
+
+.timeline-meal-group:last-child {
+  border-bottom: 0;
+}
+
+.timeline-meal-group .timeline-row {
+  border-bottom: 0;
+}
+
+.timeline-meal-group > .calendar-meal-options {
+  margin: 0 22px 16px 184px;
+}
+
+.timeline-meal-group > .calendar-meal-options .calendar-meal-option {
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  padding: 8px 10px;
+}
+
+.calendar-source-note {
+  border-color: #bdd8ca;
+  background: #f3faf6;
+}
+
+.calendar-source-note h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.calendar-source-note p {
+  margin: 0 0 8px;
+  color: var(--ink);
+}
+
+.calendar-source-note span {
+  color: var(--muted);
+  font-size: 12px;
 }
 
 .meal-time {
@@ -1831,6 +1949,10 @@ img {
     justify-self: stretch;
   }
 
+  .calendar-import-chip {
+    justify-self: end;
+  }
+
   .date-control {
     justify-self: stretch;
   }
@@ -1897,6 +2019,11 @@ img {
     flex: 1;
   }
 
+  .calendar-import-chip {
+    width: 100%;
+    justify-content: center;
+  }
+
   .planner-kpis {
     grid-template-columns: 1fr;
   }
@@ -1950,6 +2077,10 @@ img {
 
   .timeline-row .meal-time {
     display: none;
+  }
+
+  .timeline-meal-group > .calendar-meal-options {
+    margin: 0 14px 14px 56px;
   }
 
   .recipe-grid {
@@ -2050,4 +2181,3 @@ img {
     padding: 22px 18px calc(22px + env(safe-area-inset-bottom));
   }
 }
-

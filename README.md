@@ -6,8 +6,8 @@ A dependency-free, offline-first web app for planning healthy meals and turning 
 
 ## Features
 
-- **🗓️ Menu Planner** — plan breakfast / lunch / dinner / snack across a **week view** (7 day-cards with per-day and weekly calorie totals) or a focused **day view**. Tap any slot to add, change, or remove a recipe.
-- **🥗 Recipe Library** — 16 seeded healthy recipes with search, meal-type filters, ingredients, and steps. Add / edit / delete your own. Includes Healthy Carbonara, Healthy Hot Pancakes, Healthy Buko Coconut Bowl, and Healthy Pancit Bihon.
+- **🗓️ Menu Planner** — plan breakfast / lunch / dinner / snack across a **week view** (7 day-cards with per-day and weekly calorie totals) or a focused **day view**. Tap any slot to add, change, or remove a recipe. Dated meal entries imported from `pjomill@gmail.com` appear as separate Google Calendar options, including overlapping meal programs and open-ended daily recurrence rules.
+- **🥗 Recipe Library** — 50 seeded healthy recipes with search, meal-type filters, ingredients, and steps. Add / edit / delete your own. The library includes 32 recipes imported from Google Calendar plus Healthy Carbonara, Healthy Hot Pancakes, Healthy Buko Coconut Bowl, Healthy Pancit Bihon, Healthy Rice Cake, and Healthy Chicken Adobo.
 - **🧺 Grocery Inventory** — track what you already have at home, with quantity steppers and units.
 - **🛒 Grocery "Need" List** — automatically sums every ingredient across the planned week, **subtracts your inventory**, and shows exactly what to buy (`buy 2.25 cup · need 2.25 · have 0`). Items fully covered by inventory move to a separate "Covered" section. Check items off and one-tap **restock them into inventory**. Add non-recipe extras too.
 
