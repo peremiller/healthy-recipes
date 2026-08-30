@@ -5,7 +5,6 @@ import { fillRollingMealPlan, MEAL_TYPES } from "./lib/meal-plan.mjs";
 import {
   CALENDAR_MEAL_DEFINITIONS,
   GOOGLE_CALENDAR_SOURCE,
-  calendarMealCountForDates,
   calendarMealNamesForDate
 } from "./lib/calendar-meals.mjs";
 
@@ -175,7 +174,7 @@ const MEAL_ICON = {
   dinner: "ph-moon-stars",
   snack: "ph-leaf"
 };
-const CONTENT_VERSION = 7;
+const CONTENT_VERSION = 8;
 
 const PHOTOS = {
   oats: "https://images.unsplash.com/photo-1494390248081-4e521a5940db?auto=format&fit=crop&w=720&q=82",
@@ -218,6 +217,124 @@ const IMAGE_BY_RECIPE = {
   "Healthy Chicken Adobo": PHOTOS.adobo
 };
 
+const MANAGED_PHOTO_URLS = new Set(Object.values(PHOTOS));
+const MANAGED_RECIPE_NAMES = new Set([
+  ...Object.keys(IMAGE_BY_RECIPE),
+  ...CALENDAR_MEAL_DEFINITIONS.map((definition) => definition.name)
+]);
+const VISUAL_PALETTES = {
+  breakfast: ["#fff2cf", "#f7c65d", "#7b4a16"],
+  lunch: ["#e8f5dd", "#74aa62", "#234f32"],
+  dinner: ["#e5edf7", "#7189aa", "#24334d"],
+  snack: ["#f7e8ef", "#cb7c9b", "#623148"]
+};
+
+function recipeNameKey(name) {
+  return String(name || "")
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function recipeIngredientSignature(item) {
+  const ingredients = (Array.isArray(item.ingredients) ? item.ingredients : [])
+    .map((ingredient) => `${recipeNameKey(ingredient.name)}:${normUnit(ingredient.unit)}:${round1(Number(ingredient.qty) || 0)}`)
+    .sort();
+  return ingredients.length ? `${item.cat || "dinner"}|${ingredients.join("|")}` : "";
+}
+
+function dedupeRecipes(recipes) {
+  const unique = [];
+  const byName = new Map();
+  const calendarByIngredients = new Map();
+  const redirects = new Map();
+
+  (Array.isArray(recipes) ? recipes : []).forEach((item) => {
+    if (!item || !item.id || !String(item.name || "").trim()) return;
+    const nameKey = recipeNameKey(item.name);
+    const signature = item.source === "Google Calendar" ? recipeIngredientSignature(item) : "";
+    const duplicate = byName.get(nameKey) || (signature ? calendarByIngredients.get(signature) : null);
+    if (!duplicate) {
+      item.aliases = [...new Set((item.aliases || []).filter(Boolean))];
+      item.sourceNotes = [...new Set([...(item.sourceNotes || []), item.sourceNote].filter(Boolean))];
+      unique.push(item);
+      byName.set(nameKey, item);
+      if (signature) calendarByIngredients.set(signature, item);
+      return;
+    }
+
+    redirects.set(item.id, duplicate.id);
+    duplicate.aliases = [...new Set([...(duplicate.aliases || []), item.name, ...(item.aliases || [])].filter(Boolean))];
+    duplicate.sourceNotes = [...new Set([
+      ...(duplicate.sourceNotes || []),
+      duplicate.sourceNote,
+      ...(item.sourceNotes || []),
+      item.sourceNote
+    ].filter(Boolean))];
+    duplicate.tags = [...new Set([...(duplicate.tags || []), ...(item.tags || [])])];
+  });
+
+  return { recipes: unique, redirects };
+}
+
+function visualEmoji(item) {
+  const text = `${item.name || ""} ${(item.ingredients || []).map((ingredient) => ingredient.name).join(" ")}`.toLowerCase();
+  if (/pancake/.test(text)) return "🥞";
+  if (/rice cake/.test(text)) return "🍘";
+  if (/pancit|bihon|noodle/.test(text)) return "🍜";
+  if (/spaghetti|carbonara|pesto/.test(text)) return "🍝";
+  if (/coconut|buko/.test(text)) return "🥥";
+  if (/apple/.test(text)) return "🍎";
+  if (/yogurt|oat|parfait|protein powder|whey|casein/.test(text)) return "🥣";
+  if (/egg/.test(text)) return "🍳";
+  if (/salmon|white fish|cod|tilapia/.test(text)) return "🐟";
+  if (/chicken|turkey/.test(text)) return "🍗";
+  if (/salad|spinach|arugula|kale/.test(text)) return "🥗";
+  if (/hummus|carrot|celery/.test(text)) return "🥕";
+  if (/soup|chili|adobo|lentil/.test(text)) return "🍲";
+  if (/tofu|rice|quinoa/.test(text)) return "🍛";
+  return "🍽️";
+}
+
+function visualTitleLines(value, max = 29) {
+  const words = String(value || "Recipe").split(/\s+/);
+  const lines = [""];
+  words.forEach((word) => {
+    const current = lines[lines.length - 1];
+    if (current && `${current} ${word}`.length > max && lines.length < 2) lines.push(word);
+    else lines[lines.length - 1] = current ? `${current} ${word}` : word;
+  });
+  if (lines.length === 2 && lines[1].length > max + 4) lines[1] = `${lines[1].slice(0, max + 1).trim()}…`;
+  return lines;
+}
+
+function recipeVisualData(item) {
+  const [light, accent, dark] = VISUAL_PALETTES[item.cat] || VISUAL_PALETTES.dinner;
+  const lines = visualTitleLines(item.name);
+  const ingredients = (item.ingredients || []).slice(0, 3).map((ingredient) => ingredient.name).join(" · ") || "Balanced meal";
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="720" height="420" viewBox="0 0 720 420" role="img" aria-label="${esc(item.name)}">
+    <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="${light}"/><stop offset="1" stop-color="#fffdf7"/></linearGradient><filter id="shadow"><feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="${dark}" flood-opacity=".18"/></filter></defs>
+    <rect width="720" height="420" rx="32" fill="url(#bg)"/>
+    <circle cx="590" cy="72" r="96" fill="${accent}" opacity=".17"/><circle cx="100" cy="82" r="54" fill="${accent}" opacity=".12"/>
+    <ellipse cx="360" cy="184" rx="170" ry="116" fill="#fff" opacity=".95" filter="url(#shadow)"/><ellipse cx="360" cy="192" rx="137" ry="83" fill="${light}" stroke="${accent}" stroke-width="5"/>
+    <text x="360" y="228" text-anchor="middle" font-family="Apple Color Emoji, Segoe UI Emoji, sans-serif" font-size="112">${visualEmoji(item)}</text>
+    <rect x="28" y="24" width="124" height="34" rx="17" fill="${dark}" opacity=".92"/><text x="90" y="47" text-anchor="middle" fill="#fff" font-family="Arial, sans-serif" font-size="15" font-weight="700" letter-spacing="1">${esc((MEAL_LABEL[item.cat] || "Meal").toUpperCase())}</text>
+    <rect x="0" y="286" width="720" height="134" fill="${dark}" opacity=".94"/>
+    <text x="34" y="330" fill="#fff" font-family="Georgia, serif" font-size="29" font-weight="700">${esc(lines[0])}</text>
+    ${lines[1] ? `<text x="34" y="365" fill="#fff" font-family="Georgia, serif" font-size="29" font-weight="700">${esc(lines[1])}</text>` : ""}
+    <text x="34" y="400" fill="#fff" opacity=".78" font-family="Arial, sans-serif" font-size="16">${esc(ingredients.slice(0, 78))}</text>
+  </svg>`;
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+}
+
+function recipeImage(item) {
+  if (!item) return "";
+  if (item.visualMode === "custom" && item.image) return item.image;
+  return recipeVisualData(item);
+}
+
 function recipe(name, cat, cal, time, tags, image, ingredients, steps) {
   return {
     id: uid(),
@@ -227,6 +344,7 @@ function recipe(name, cat, cal, time, tags, image, ingredients, steps) {
     time,
     tags,
     image,
+    visualMode: "auto",
     ingredients: ingredients.map(([qty, unit, ingredientName]) => ({ qty, unit, name: ingredientName })),
     steps
   };
@@ -274,7 +392,7 @@ function newHealthyRecipes() {
 }
 
 function seed() {
-  const recipes = [
+  const rawRecipes = [
     recipe("Overnight Oats with Berries", "breakfast", 320, 5, ["high-fiber", "make-ahead"], PHOTOS.oats,
       [[0.5, "cup", "rolled oats"], [0.75, "cup", "almond milk"], [1, "tbsp", "chia seeds"], [0.5, "cup", "mixed berries"], [1, "tsp", "honey"]],
       ["Combine oats, milk, chia seeds and honey in a jar.", "Refrigerate overnight for at least four hours.", "Top with berries before serving."]),
@@ -314,6 +432,7 @@ function seed() {
     ...newHealthyRecipes(),
     ...calendarMealRecipes()
   ];
+  const { recipes } = dedupeRecipes(rawRecipes);
 
   const byName = (name) => recipes.find((item) => item.name === name).id;
   const dates = weekDates(0);
@@ -393,6 +512,17 @@ function normalize(data) {
     const fallbackImage = IMAGE_BY_RECIPE[item.name]
       || PHOTOS[item.cat === "breakfast" ? "oats" : item.cat === "lunch" ? "salad" : item.cat === "dinner" ? "tofu" : "apple"];
     item.image = !item.image || item.image.includes("photo-1467003909585-2f8a7270028?") ? fallbackImage : item.image;
+    if (!item.visualMode || (previousContentVersion < 8 && (MANAGED_RECIPE_NAMES.has(item.name) || MANAGED_PHOTO_URLS.has(item.image)))) {
+      item.visualMode = MANAGED_RECIPE_NAMES.has(item.name) || MANAGED_PHOTO_URLS.has(item.image) ? "auto" : "custom";
+    }
+  });
+  const deduped = dedupeRecipes(normalized.recipes);
+  normalized.recipes = deduped.recipes;
+  Object.values(normalized.plan).forEach((dayPlan) => {
+    if (!dayPlan || typeof dayPlan !== "object") return;
+    MEALS.forEach((meal) => {
+      if (deduped.redirects.has(dayPlan[meal])) dayPlan[meal] = deduped.redirects.get(dayPlan[meal]);
+    });
   });
   normalized.inventory = mergeRecipeIngredientsIntoInventory(normalized.recipes, normalized.inventory);
   normalized.plan = fillRollingMealPlan({
@@ -499,7 +629,7 @@ const STORES = [
   }
 ].map((store) => ({ ...store, itemKeys: new Set(store.items.map(normName)) }));
 
-let plannerMode = "week";
+let plannerMode = typeof window !== "undefined" && window.matchMedia?.("(max-width: 650px)").matches ? "day" : "week";
 let weekOffset = 0;
 let dayDate = todayISO();
 let recipeQuery = "";
@@ -534,20 +664,44 @@ function planFor(date) {
 
 function calendarRecipesFor(date, meal) {
   const names = calendarMealNamesForDate(date)[meal] || [];
-  return names
-    .map((name) => state.recipes.find((item) => item.name === name))
-    .filter(Boolean);
+  const seen = new Set();
+  return names.map((name) => state.recipes.find((item) => item.name === name || (item.aliases || []).includes(name)))
+    .filter((item) => {
+      if (!item || seen.has(item.id)) return false;
+      seen.add(item.id);
+      return true;
+    });
 }
 
 function renderCalendarMealOptions(date, meal, primaryRecipeId = null) {
   const items = calendarRecipesFor(date, meal).filter((item) => item.id !== primaryRecipeId);
   if (!items.length) return "";
-  return `<div class="calendar-meal-options">
-    <span class="calendar-meal-label">${icon("ph-calendar-check")} Google Calendar</span>
-    ${items.map((item) => `<button class="calendar-meal-option" type="button" data-calendar-recipe="${item.id}" title="Open ${esc(item.name)}">
-      <span>${esc(item.name)}</span><small>${item.cal} kcal</small>
-    </button>`).join("")}
-  </div>`;
+  return `<button class="calendar-meal-trigger" type="button" data-calendar-options="${date}|${meal}" aria-label="View ${items.length} Google Calendar meal ${items.length === 1 ? "option" : "options"} for ${MEAL_LABEL[meal]} on ${fmtLong(date)}">
+    ${icon("ph-calendar-check")}<span>${items.length} calendar ${items.length === 1 ? "option" : "options"}</span>${icon("ph-caret-right")}
+  </button>`;
+}
+
+function calendarRecipeCountForDates(dates) {
+  const ids = new Set();
+  dates.forEach((date) => MEALS.forEach((meal) => calendarRecipesFor(date, meal).forEach((item) => ids.add(item.id))));
+  return ids.size;
+}
+
+function calendarMealPickerModal(date, meal) {
+  const items = calendarRecipesFor(date, meal);
+  const currentId = planFor(date)[meal];
+  openModal(`<h2>Calendar meals · ${fmtDow(date)} ${fmtDate(date)}</h2><p class="modal-subtitle">Choose the ${MEAL_LABEL[meal].toLowerCase()} that should count toward your plan. Other calendar meals remain available here.</p>
+    <div class="calendar-picker-list">${items.map((item) => `<button class="calendar-picker-row ${item.id === currentId ? "selected" : ""}" type="button" data-use-calendar-recipe="${item.id}" ${item.id === currentId ? "disabled" : ""}>
+      <img src="${esc(recipeImage(item))}" alt="" /><span><strong>${esc(item.name)}</strong><small>${item.cal} kcal · ${item.time} min${item.id === currentId ? " · Currently planned" : ""}</small></span>${item.id === currentId ? icon("ph-check-circle") : icon("ph-arrow-right")}
+    </button>`).join("")}</div>`);
+  $$('[data-use-calendar-recipe]').forEach((button) => button.addEventListener("click", () => {
+    if (!state.plan[date]) state.plan[date] = {};
+    state.plan[date][meal] = button.dataset.useCalendarRecipe;
+    save();
+    closeModal();
+    render();
+    toast(`${MEAL_LABEL[meal]} updated from Google Calendar`);
+  }));
 }
 
 function dayCalories(date) {
@@ -768,8 +922,8 @@ function heading(title, subtitle, actions = "") {
 function plannerToolbar() {
   const dates = weekDates(weekOffset);
   const calendarCount = plannerMode === "week"
-    ? calendarMealCountForDates(dates)
-    : calendarMealCountForDates([dayDate]);
+    ? calendarRecipeCountForDates(dates)
+    : calendarRecipeCountForDates([dayDate]);
   return `
     <div class="planner-toolbar">
       <div class="segmented" aria-label="Planner view">
@@ -781,7 +935,8 @@ function plannerToolbar() {
         <span>${icon("ph-calendar-blank")} ${plannerMode === "week" ? `${fmtDate(dates[0])} — ${fmtDate(dates[6])}, ${dateFromISO(dates[6]).getFullYear()}` : fmtLong(dayDate)}</span>
         <button type="button" aria-label="Next ${plannerMode}" data-period-nav="1">${icon("ph-caret-right")}</button>
       </div>
-      <span class="calendar-import-chip">${icon("ph-google-logo")} ${calendarCount} calendar meal${calendarCount === 1 ? "" : "s"}</span>
+      <button class="button secondary planner-today-button" type="button" data-planner-today>Today</button>
+      <span class="calendar-import-chip">${icon("ph-google-logo")} ${calendarCount} scheduled recipe${calendarCount === 1 ? "" : "s"}</span>
       <button class="button" type="button" data-quick-add>${icon("ph-plus")} Add Meal</button>
     </div>`;
 }
@@ -825,7 +980,7 @@ function renderWeekPlanner() {
       const item = recipeById(planFor(date)[meal]);
       return `<div class="week-cell meal-slot ${date === today ? "today" : ""}">
         <div class="primary-meal-slot">${item ? `<button class="meal-card-button" type="button" data-pick="${date}|${meal}" aria-label="Change ${MEAL_LABEL[meal]} on ${fmtLong(date)}">
-          <img class="meal-thumb" src="${esc(item.image)}" alt="${esc(item.name)}" loading="lazy" />
+          <img class="meal-thumb" src="${esc(recipeImage(item))}" alt="${esc(item.name)}" loading="lazy" />
           <span class="meal-name">${esc(item.name)}</span><span class="meal-calories">${item.cal} kcal</span>
         </button>` : `<button class="empty-meal-button" type="button" data-pick="${date}|${meal}">${icon("ph-plus")}<span>Add meal</span></button>`}</div>
         ${renderCalendarMealOptions(date, meal, item?.id)}
@@ -885,7 +1040,7 @@ function renderDayPlanner() {
           const item = recipeById(planFor(dayDate)[meal]);
           const times = ["8:00 AM", "12:30 PM", "6:00 PM", "8:30 PM"];
           const primary = item ? `<div class="timeline-row">
-            <span class="meal-type-icon">${icon(MEAL_ICON[meal])}</span><span class="meal-time">${times[index]}</span><img src="${esc(item.image)}" alt="${esc(item.name)}" /><div class="timeline-copy"><strong>${esc(item.name)}</strong><span>${MEAL_LABEL[meal]} · ${item.cal} kcal</span></div><button class="icon-button" type="button" data-pick="${dayDate}|${meal}" aria-label="Change meal">${icon("ph-dots-three-vertical")}</button>
+            <span class="meal-type-icon">${icon(MEAL_ICON[meal])}</span><span class="meal-time">${times[index]}</span><img src="${esc(recipeImage(item))}" alt="${esc(item.name)}" /><div class="timeline-copy"><strong>${esc(item.name)}</strong><span>${MEAL_LABEL[meal]} · ${item.cal} kcal</span></div><button class="icon-button" type="button" data-pick="${dayDate}|${meal}" aria-label="Change meal">${icon("ph-dots-three-vertical")}</button>
           </div>` : `<button class="timeline-row empty-day-row" type="button" data-pick="${dayDate}|${meal}"><span class="meal-type-icon">${icon(MEAL_ICON[meal])}</span><span class="meal-time">${times[index]}</span><span></span><span>Add ${MEAL_LABEL[meal].toLowerCase()}</span>${icon("ph-plus")}</button>`;
           return `<div class="timeline-meal-group">${primary}${renderCalendarMealOptions(dayDate, meal, item?.id)}</div>`;
         }).join("")}
@@ -912,15 +1067,16 @@ function renderRecipes() {
     </div>
     ${list.length ? `<div class="recipe-grid">${list.map((item) => `
       <a class="recipe-card" href="${recipePath(item)}" data-route>
-        <img src="${esc(item.image)}" alt="${esc(item.name)}" loading="lazy" />
+        <img src="${esc(recipeImage(item))}" alt="${esc(item.name)}" loading="lazy" />
         <div class="recipe-card-body"><h2>${esc(item.name)}</h2><div class="recipe-meta"><span>${MEAL_LABEL[item.cat]}</span><span>${item.cal} kcal</span><span>${item.time} min</span></div><div class="tags">${item.tags.slice(0, 3).map((tag) => `<span class="tag">${esc(tag)}</span>`).join("")}</div></div>
       </a>`).join("")}</div>` : `<div class="surface empty-state">${icon("ph-bowl-food")}No recipes match those filters.</div>`}`;
 }
 
 function renderRecipeDetail(item) {
   if (!item) return renderNotFound();
+  const calendarNotes = [...new Set([...(item.sourceNotes || []), item.sourceNote].filter(Boolean))];
   const sourceNote = item.source === "Google Calendar" && item.sourceNote
-    ? `<section class="surface detail-section calendar-source-note" style="grid-column:1/-1"><h2>${icon("ph-calendar-check")} Imported from Google Calendar</h2><p>${esc(item.sourceNote)}</p><span>${esc(item.sourceCalendar || GOOGLE_CALENDAR_SOURCE)} · Calories and preparation time are practical estimates.</span></section>`
+    ? `<section class="surface detail-section calendar-source-note" style="grid-column:1/-1"><h2>${icon("ph-calendar-check")} Imported from Google Calendar</h2>${calendarNotes.map((note) => `<p>${esc(note)}</p>`).join("")}<span>${esc(item.sourceCalendar || GOOGLE_CALENDAR_SOURCE)} · Equivalent calendar menus are combined into one recipe. Calories and preparation time are practical estimates.</span></section>`
     : "";
   return `
     <nav class="detail-breadcrumbs" aria-label="Breadcrumb"><a href="/recipes" data-route>Recipes</a>${icon("ph-caret-right")}<span>${esc(item.name)}</span></nav>
@@ -928,7 +1084,7 @@ function renderRecipeDetail(item) {
     <div class="detail-grid">
       ${sourceNote}
       <section class="surface detail-section"><h2>Ingredients</h2>${item.ingredients.map((ingredient) => `<div class="ingredient-row"><span>${esc(ingredient.name)}</span><strong>${ingredient.qty} ${esc(ingredient.unit)}</strong></div>`).join("") || '<div class="empty-state">No ingredients listed.</div>'}</section>
-      <aside class="surface detail-section"><h2>Meal overview</h2><img src="${esc(item.image)}" alt="${esc(item.name)}" style="width:100%;height:190px;object-fit:cover;border-radius:10px;margin-bottom:16px" /><div class="grocery-bridge" style="grid-template-columns:1fr"><a href="/grocery" data-route>${icon("ph-basket")}<div><strong>Check your grocery list</strong><span>See what you already have and what to buy</span></div>${icon("ph-caret-right")}</a></div></aside>
+      <aside class="surface detail-section"><h2>Meal overview</h2><img src="${esc(recipeImage(item))}" alt="${esc(item.name)}" style="width:100%;height:190px;object-fit:cover;border-radius:10px;margin-bottom:16px" /><div class="grocery-bridge" style="grid-template-columns:1fr"><a href="/grocery" data-route>${icon("ph-basket")}<div><strong>Check your grocery list</strong><span>See what you already have and what to buy</span></div>${icon("ph-caret-right")}</a></div></aside>
       <section class="surface detail-section" style="grid-column:1/-1"><h2>Method</h2>${item.steps.map((step, index) => `<div class="step-row"><span class="step-number">${index + 1}</span><span>${esc(step)}</span></div>`).join("") || '<div class="empty-state">No steps listed.</div>'}</section>
     </div>`;
 }
@@ -1062,10 +1218,11 @@ function closeModal() {
 
 function recipeModal(existing = null) {
   const item = existing || {};
+  const customPhoto = item.visualMode === "custom" ? item.image || "" : "";
   openModal(`
     <h2>${existing ? "Edit" : "Add"} recipe</h2><p class="modal-subtitle">Keep the essentials together so planning stays quick.</p>
     <label class="form-field">Recipe name<input id="recipeName" value="${esc(item.name || "")}" placeholder="Miso salmon bowl" /></label>
-    <div class="form-grid"><label class="form-field">Meal type<select id="recipeCategory">${MEALS.map((meal) => `<option value="${meal}" ${item.cat === meal ? "selected" : ""}>${MEAL_LABEL[meal]}</option>`).join("")}</select></label><label class="form-field">Photo URL<input id="recipeImage" type="url" value="${esc(item.image || PHOTOS.salad)}" /></label></div>
+    <div class="form-grid"><label class="form-field">Meal type<select id="recipeCategory">${MEALS.map((meal) => `<option value="${meal}" ${item.cat === meal ? "selected" : ""}>${MEAL_LABEL[meal]}</option>`).join("")}</select></label><label class="form-field">Photo URL (optional)<input id="recipeImage" type="url" value="${esc(customPhoto)}" placeholder="Leave blank for an ingredient-accurate visual" /></label></div>
     <div class="form-grid"><label class="form-field">Calories<input id="recipeCalories" type="number" min="0" value="${item.cal || ""}" placeholder="450" /></label><label class="form-field">Prep time in minutes<input id="recipeTime" type="number" min="0" value="${item.time || ""}" placeholder="25" /></label></div>
     <label class="form-field">Tags<input id="recipeTags" value="${esc((item.tags || []).join(", "))}" placeholder="high-protein, quick" /></label>
     <label class="form-field">Ingredients — one per line<textarea id="recipeIngredients" placeholder="0.5 cup rolled oats\n2 eggs">${esc((item.ingredients || []).map(ingToLine).join("\n"))}</textarea></label>
@@ -1079,10 +1236,18 @@ function recipeModal(existing = null) {
       $("#recipeName").focus();
       return;
     }
+    const duplicateName = state.recipes.find((recipeItem) => recipeItem !== existing && recipeNameKey(recipeItem.name) === recipeNameKey(name));
+    if (duplicateName) {
+      toast(`“${duplicateName.name}” already exists`);
+      $("#recipeName").focus();
+      return;
+    }
+    const customImage = $("#recipeImage").value.trim();
     const data = {
       name,
       cat: $("#recipeCategory").value,
-      image: $("#recipeImage").value.trim() || PHOTOS.salad,
+      image: customImage,
+      visualMode: customImage ? "custom" : "auto",
       cal: Math.max(0, Number($("#recipeCalories").value) || 0),
       time: Math.max(0, Number($("#recipeTime").value) || 0),
       tags: $("#recipeTags").value.split(",").map((tag) => tag.trim()).filter(Boolean),
@@ -1179,7 +1344,7 @@ function pickerRows(date, meal, query = "") {
     || item.name.toLowerCase().includes(normalizedQuery)
     || item.tags.join(" ").toLowerCase().includes(normalizedQuery));
   const sorted = [...matches].sort((a, b) => Number(b.cat === meal) - Number(a.cat === meal) || a.name.localeCompare(b.name));
-  return sorted.length ? sorted.map((item) => `<button class="picker-row" type="button" data-choose-recipe="${item.id}" data-picker-date="${date}" data-picker-meal="${meal}"><img src="${esc(item.image)}" alt="" /><div><strong>${esc(item.name)}</strong><span>${item.cal} kcal · ${item.time} min</span></div><span class="tag">${MEAL_LABEL[item.cat]}</span></button>`).join("") : '<div class="empty-state">No matching recipes.</div>';
+  return sorted.length ? sorted.map((item) => `<button class="picker-row" type="button" data-choose-recipe="${item.id}" data-picker-date="${date}" data-picker-meal="${meal}"><img src="${esc(recipeImage(item))}" alt="" /><div><strong>${esc(item.name)}</strong><span>${item.cal} kcal · ${item.time} min</span></div><span class="tag">${MEAL_LABEL[item.cat]}</span></button>`).join("") : '<div class="empty-state">No matching recipes.</div>';
 }
 
 function pickerModal(date, meal) {
@@ -1347,13 +1512,18 @@ function wire(route) {
     }
     render();
   }));
+  $("[data-planner-today]")?.addEventListener("click", () => {
+    weekOffset = 0;
+    dayDate = todayISO();
+    render();
+  });
   $$('[data-pick]').forEach((button) => button.addEventListener("click", () => {
     const [date, meal] = button.dataset.pick.split("|");
     pickerModal(date, meal);
   }));
-  $$('[data-calendar-recipe]').forEach((button) => button.addEventListener("click", () => {
-    const item = recipeById(button.dataset.calendarRecipe);
-    if (item) navigate(recipePath(item));
+  $$('[data-calendar-options]').forEach((button) => button.addEventListener("click", () => {
+    const [date, meal] = button.dataset.calendarOptions.split("|");
+    calendarMealPickerModal(date, meal);
   }));
   $("[data-quick-add]")?.addEventListener("click", quickAddModal);
 

@@ -6,8 +6,8 @@ A dependency-free, offline-first web app for planning healthy meals and turning 
 
 ## Features
 
-- **🗓️ Menu Planner** — plan breakfast / lunch / dinner / snack across a **week view** (7 day-cards with per-day and weekly calorie totals) or a focused **day view**. Tap any slot to add, change, or remove a recipe. Dated meal entries imported from `pjomill@gmail.com` appear as separate Google Calendar options, including overlapping meal programs and open-ended daily recurrence rules.
-- **🥗 Recipe Library** — 50 seeded healthy recipes with search, meal-type filters, ingredients, and steps. Add / edit / delete your own. The library includes 32 recipes imported from Google Calendar plus Healthy Carbonara, Healthy Hot Pancakes, Healthy Buko Coconut Bowl, Healthy Pancit Bihon, Healthy Rice Cake, and Healthy Chicken Adobo.
+- **🗓️ Menu Planner** — plan breakfast / lunch / dinner / snack across an optimized **week view** or focused **day view**. Recurring Google Calendar meals are tucked into compact per-slot selectors instead of expanding dozens of repetitive cards, while a Today shortcut and mobile-first Day view make navigation faster.
+- **🥗 Recipe Library** — 47 unique seeded recipes with search, meal-type filters, ingredients, and steps. All 32 Google Calendar meal definitions are represented by 29 canonical calendar recipes; three equivalent menus are combined under aliases rather than displayed twice. Every managed recipe uses a unique ingredient-aware visual generated from its actual recipe name, meal type, and leading ingredients. Add / edit / delete your own recipes and optionally provide a custom photo URL.
 - **🧺 Grocery Inventory** — track what you already have at home, with quantity steppers and units.
 - **🛒 Grocery "Need" List** — automatically sums every ingredient across the planned week, **subtracts your inventory**, and shows exactly what to buy (`buy 2.25 cup · need 2.25 · have 0`). Items fully covered by inventory move to a separate "Covered" section. Check items off and one-tap **restock them into inventory**. Add non-recipe extras too.
 
