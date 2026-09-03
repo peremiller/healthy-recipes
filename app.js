@@ -26,6 +26,63 @@ const slugify = (value) => String(value || "")
   .replace(/[\u0300-\u036f]/g, "")
   .replace(/[^a-z0-9]+/g, "-")
   .replace(/^-|-$/g, "");
+const pesoFormatter = new Intl.NumberFormat("en-PH", {
+  style: "currency",
+  currency: "PHP",
+  maximumFractionDigits: 0
+});
+const fmtPeso = (value) => pesoFormatter.format(Math.max(0, Math.round(Number(value) || 0)));
+
+const INGREDIENT_COST_RULES = [
+  { terms: ["salmon"], price: 150 },
+  { terms: ["shrimp", "prawn"], price: 110 },
+  { terms: ["beef"], price: 95 },
+  { terms: ["tuna"], price: 85 },
+  { terms: ["pork"], price: 75 },
+  { terms: ["chicken", "turkey"], price: 60 },
+  { terms: ["sardine", "bangus", "tilapia", "fish"], price: 55 },
+  { terms: ["parmesan", "cheese"], price: 48 },
+  { terms: ["avocado"], price: 45 },
+  { terms: ["greek yogurt", "yogurt"], price: 38 },
+  { terms: ["almond", "walnut", "cashew", "chia", "peanut"], price: 35 },
+  { terms: ["tofu", "tokwa", "tempeh"], price: 28 },
+  { terms: ["pasta", "spaghetti", "noodle", "bihon", "sotanghon"], price: 25 },
+  { terms: ["oat", "barley", "adlai", "quinoa"], price: 22 },
+  { terms: ["potato", "kamote", "sweet potato"], price: 22 },
+  { terms: ["milk", "coconut milk"], price: 20 },
+  { terms: ["rice", "bread", "tortilla"], price: 18 },
+  { terms: ["pineapple", "mango", "apple", "banana", "berry", "papaya", "orange"], price: 18 },
+  { terms: ["egg"], price: 12 },
+  { terms: ["oil"], price: 10 },
+  { terms: ["sauce", "vinegar", "broth", "juice"], price: 8 },
+  { terms: ["garlic", "onion", "ginger", "pepper", "salt", "cinnamon", "powder"], price: 4 }
+];
+
+function ingredientCostEstimate(ingredient) {
+  const name = String(ingredient?.name || "").toLowerCase();
+  const unit = normUnit(ingredient?.unit);
+  const quantity = Math.max(0, Number(ingredient?.qty) || 0);
+  const rule = INGREDIENT_COST_RULES.find((candidate) => candidate.terms.some((term) => name.includes(term)));
+  const referencePrice = rule?.price || 14;
+  const factor = unit === "g"
+    ? quantity / 100
+    : unit === "kg"
+      ? quantity * 10
+      : unit === "tbsp"
+        ? quantity / 6
+        : unit === "tsp"
+          ? quantity / 18
+          : unit === "clove"
+            ? quantity / 3
+            : quantity;
+  return referencePrice * Math.max(0.12, Math.min(3, factor || 0.12));
+}
+
+function mealCostPeso(item) {
+  if (!item) return 0;
+  const ingredientTotal = (item.ingredients || []).reduce((total, ingredient) => total + ingredientCostEstimate(ingredient), 0);
+  return Math.max(35, Math.round((ingredientTotal + 8) / 5) * 5);
+}
 
 const isoOf = (date) => `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 const todayISO = () => isoOf(new Date());
@@ -707,6 +764,11 @@ let dayDate = todayISO();
 let recipeQuery = "";
 let recipeCat = "all";
 let storeSort = "nearest";
+const grocerySections = {
+  toBuy: true,
+  covered: true,
+  ingredients: true
+};
 const mealViz = {
   yaw: -0.62,
   pitch: -0.24,
@@ -724,8 +786,14 @@ let userLocation = {
   lat: 14.552,
   lng: 121.0487,
   label: "Bonifacio Global City",
-  source: "fallback"
+  source: "fallback",
+  accuracy: null,
+  timestamp: null
 };
+let activeLocationRequest = null;
+const LOCATION_TARGET_ACCURACY_METERS = 25;
+const LOCATION_MAX_USABLE_ACCURACY_METERS = 250;
+const LOCATION_SAMPLE_WINDOW_MS = 15000;
 
 const NAV = [
   { key: "planner", path: "/planner", label: "Planner", icon: "ph-calendar-blank" },
@@ -778,7 +846,7 @@ function calendarMealPickerModal(date, meal) {
   const currentId = planFor(date)[meal];
   openModal(`<h2>Calendar meals · ${fmtDow(date)} ${fmtDate(date)}</h2><p class="modal-subtitle">Choose the ${MEAL_LABEL[meal].toLowerCase()} that should count toward your plan. Other calendar meals remain available here.</p>
     <div class="calendar-picker-list">${items.map((item) => `<button class="calendar-picker-row ${item.id === currentId ? "selected" : ""}" type="button" data-use-calendar-recipe="${item.id}" ${item.id === currentId ? "disabled" : ""}>
-      <img src="${esc(recipeImage(item))}" alt="" /><span><strong>${esc(item.name)}</strong><small>${item.cal} kcal · ${item.time} min${item.id === currentId ? " · Currently planned" : ""}</small></span>${item.id === currentId ? icon("ph-check-circle") : icon("ph-arrow-right")}
+      <img src="${esc(recipeImage(item))}" alt="" /><span><strong>${esc(item.name)}</strong><small>${item.cal} kcal · ${fmtPeso(mealCostPeso(item))} est. · ${item.time} min${item.id === currentId ? " · Currently planned" : ""}</small></span>${item.id === currentId ? icon("ph-check-circle") : icon("ph-arrow-right")}
     </button>`).join("")}</div>`);
   $$('[data-use-calendar-recipe]').forEach((button) => button.addEventListener("click", () => {
     if (!state.plan[date]) state.plan[date] = {};
@@ -795,6 +863,10 @@ function dayCalories(date) {
     const item = recipeById(planFor(date)[meal]);
     return total + (item ? Number(item.cal) || 0 : 0);
   }, 0);
+}
+
+function dayCost(date) {
+  return MEALS.reduce((total, meal) => total + mealCostPeso(recipeById(planFor(date)[meal])), 0);
 }
 
 function weekNeeds(dates = weekDates(weekOffset)) {
@@ -850,6 +922,11 @@ function distanceTo(store) {
   return haversineKm(userLocation, store);
 }
 
+function formatDistance(distance) {
+  if (!Number.isFinite(distance)) return "Distance unavailable";
+  return `${distance < 10 ? distance.toFixed(2) : distance.toFixed(1)} km`;
+}
+
 function storeHas(store, itemName) {
   return store.itemKeys.has(normName(itemName));
 }
@@ -899,7 +976,16 @@ function groceryItemPath(item) {
 }
 
 function directionsUrl(store) {
-  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(store.address)}`;
+  const parameters = new URLSearchParams({
+    api: "1",
+    destination: `${store.name}, ${store.address}`,
+    travelmode: "driving",
+    dir_action: "navigate"
+  });
+  if (userLocation.source === "browser") {
+    parameters.set("origin", `${userLocation.lat},${userLocation.lng}`);
+  }
+  return `https://www.google.com/maps/dir/?${parameters.toString()}`;
 }
 
 function routeState() {
@@ -1034,7 +1120,7 @@ function plannerToolbar() {
 
 function renderPlanner() {
   const actions = `<a class="button secondary" href="/planner/visualization" data-route>${icon("ph-cube")} Explore 3D map</a>`;
-  return `${heading("Planner", `Plan your week. Meals imported from ${esc(GOOGLE_CALENDAR_SOURCE)} appear as calendar options.`, actions)}${plannerToolbar()}${plannerMode === "week" ? renderWeekPlanner() : renderDayPlanner()}`;
+  return `${heading("Planner", "Plan your week. Meal prices are estimated ingredient costs per serving in Philippine pesos and may vary by store.", actions)}${plannerToolbar()}${plannerMode === "week" ? renderWeekPlanner() : renderDayPlanner()}`;
 }
 
 function mealVisualizationData() {
@@ -1088,7 +1174,7 @@ function mealVizDetails(node, data) {
     return `<div class="meal-viz-detail-photo"><img src="${esc(recipeImage(item))}" alt="${esc(item.name)}" /></div>
       <span class="meal-viz-eyebrow"><i style="background:${MEAL_VISUAL[meal].color}"></i>${MEAL_LABEL[meal]} · ${fmtLong(date)}</span>
       <h2>${esc(item.name)}</h2>
-      <div class="meal-viz-nutrition"><span><strong>${item.cal}</strong> kcal</span><span><strong>${item.time}</strong> min</span><span><strong>${item.ingredients.length}</strong> ingredients</span></div>
+      <div class="meal-viz-nutrition"><span><strong>${item.cal}</strong> kcal</span><span><strong>${fmtPeso(mealCostPeso(item))}</strong> estimated</span><span><strong>${item.time}</strong> min</span><span><strong>${item.ingredients.length}</strong> ingredients</span></div>
       <div class="tags">${item.tags.slice(0, 4).map((tag) => `<span class="tag">${esc(tag)}</span>`).join("")}</div>
       <a class="button meal-viz-recipe-link" href="${recipePath(item)}" data-route>View recipe ${icon("ph-arrow-right")}</a>`;
   }
@@ -1096,23 +1182,25 @@ function mealVizDetails(node, data) {
   if (node?.kind === "day") {
     const meals = data.entries.filter((entry) => entry.date === node.date);
     const calories = meals.reduce((total, entry) => total + (Number(entry.item.cal) || 0), 0);
+    const cost = meals.reduce((total, entry) => total + mealCostPeso(entry.item), 0);
     return `<span class="meal-viz-eyebrow">Day overview</span><h2>${fmtLong(node.date)}</h2>
-      <div class="meal-viz-nutrition"><span><strong>${meals.length}</strong> meals</span><span><strong>${calories.toLocaleString()}</strong> kcal</span></div>
+      <div class="meal-viz-nutrition"><span><strong>${meals.length}</strong> meals</span><span><strong>${calories.toLocaleString()}</strong> kcal</span><span><strong>${fmtPeso(cost)}</strong> estimated</span></div>
       <div class="meal-viz-day-list">${meals.map((entry) => `<button type="button" data-viz-select="${entry.key}"><i style="background:${MEAL_VISUAL[entry.meal].color}"></i><span>${MEAL_LABEL[entry.meal]}</span><strong>${esc(entry.item.name)}</strong></button>`).join("") || "<p>No meals match this filter.</p>"}</div>`;
   }
 
   const uniqueRecipes = new Set(data.entries.map((entry) => entry.item.id)).size;
   const calories = data.entries.reduce((total, entry) => total + (Number(entry.item.cal) || 0), 0);
+  const cost = data.entries.reduce((total, entry) => total + mealCostPeso(entry.item), 0);
   return `<span class="meal-viz-eyebrow">Live plan overview</span><h2>${fmtDate(data.dates[0])} — ${fmtDate(data.dates[6])}</h2>
     <p>Select a day or meal in the map to see its details.</p>
-    <div class="meal-viz-nutrition"><span><strong>${data.entries.length}</strong> meals</span><span><strong>${uniqueRecipes}</strong> recipes</span><span><strong>${calories.toLocaleString()}</strong> kcal</span></div>`;
+    <div class="meal-viz-nutrition"><span><strong>${data.entries.length}</strong> meals</span><span><strong>${uniqueRecipes}</strong> recipes</span><span><strong>${calories.toLocaleString()}</strong> kcal</span><span><strong>${fmtPeso(cost)}</strong> estimated</span></div>`;
 }
 
 function renderMealVisualization() {
   const data = mealVisualizationData();
   const selected = data.nodes.find((node) => node.key === mealViz.selectedKey) || data.nodes[0];
   const controls = `<a class="button secondary" href="/planner" data-route>${icon("ph-arrow-left")} Back to Planner</a>`;
-  const accessibleRows = data.entries.map((entry) => `<li>${fmtLong(entry.date)}, ${MEAL_LABEL[entry.meal]}: ${esc(entry.item.name)}, ${entry.item.cal} calories</li>`).join("");
+  const accessibleRows = data.entries.map((entry) => `<li>${fmtLong(entry.date)}, ${MEAL_LABEL[entry.meal]}: ${esc(entry.item.name)}, ${entry.item.cal} calories, estimated ${fmtPeso(mealCostPeso(entry.item))}</li>`).join("");
   return `${heading("3D Meal Map", "Explore every planned meal and recipe for the selected week.", controls)}
     <div class="meal-viz-toolbar">
       <div class="date-control">
@@ -1448,7 +1536,7 @@ function renderWeekPlanner() {
       return `<div class="week-cell meal-slot ${date === today ? "today" : ""}">
         <div class="primary-meal-slot">${item ? `<button class="meal-card-button" type="button" data-pick="${date}|${meal}" aria-label="Change ${MEAL_LABEL[meal]} on ${fmtLong(date)}">
           <img class="meal-thumb" src="${esc(recipeImage(item))}" alt="${esc(item.name)}" loading="lazy" />
-          <span class="meal-name">${esc(item.name)}</span><span class="meal-calories">${item.cal} kcal</span>
+          <span class="meal-name">${esc(item.name)}</span><span class="meal-calories">${item.cal} kcal · <span class="meal-cost" data-meal-cost="${mealCostPeso(item)}">${fmtPeso(mealCostPeso(item))} est.</span></span>
         </button>` : `<button class="empty-meal-button" type="button" data-pick="${date}|${meal}">${icon("ph-plus")}<span>Add meal</span></button>`}</div>
         ${renderCalendarMealOptions(date, meal, item?.id)}
       </div>`;
@@ -1499,6 +1587,7 @@ function progressItem(iconName, label, value, percent) {
 function renderDayPlanner() {
   const itemCount = MEALS.filter((meal) => planFor(dayDate)[meal]).length;
   const calories = dayCalories(dayDate);
+  const cost = dayCost(dayDate);
   return `
     <div class="day-view">
       <section class="day-timeline">
@@ -1507,12 +1596,12 @@ function renderDayPlanner() {
           const item = recipeById(planFor(dayDate)[meal]);
           const times = ["8:00 AM", "12:30 PM", "6:00 PM", "8:30 PM"];
           const primary = item ? `<div class="timeline-row">
-            <span class="meal-type-icon">${icon(MEAL_ICON[meal])}</span><span class="meal-time">${times[index]}</span><img src="${esc(recipeImage(item))}" alt="${esc(item.name)}" /><div class="timeline-copy"><strong>${esc(item.name)}</strong><span>${MEAL_LABEL[meal]} · ${item.cal} kcal</span></div><button class="icon-button" type="button" data-pick="${dayDate}|${meal}" aria-label="Change meal">${icon("ph-dots-three-vertical")}</button>
+            <span class="meal-type-icon">${icon(MEAL_ICON[meal])}</span><span class="meal-time">${times[index]}</span><img src="${esc(recipeImage(item))}" alt="${esc(item.name)}" /><div class="timeline-copy"><strong>${esc(item.name)}</strong><span>${MEAL_LABEL[meal]} · ${item.cal} kcal · <span class="meal-cost" data-meal-cost="${mealCostPeso(item)}">${fmtPeso(mealCostPeso(item))} est.</span></span></div><button class="icon-button" type="button" data-pick="${dayDate}|${meal}" aria-label="Change meal">${icon("ph-dots-three-vertical")}</button>
           </div>` : `<button class="timeline-row empty-day-row" type="button" data-pick="${dayDate}|${meal}"><span class="meal-type-icon">${icon(MEAL_ICON[meal])}</span><span class="meal-time">${times[index]}</span><span></span><span>Add ${MEAL_LABEL[meal].toLowerCase()}</span>${icon("ph-plus")}</button>`;
           return `<div class="timeline-meal-group">${primary}${renderCalendarMealOptions(dayDate, meal, item?.id)}</div>`;
         }).join("")}
       </section>
-      <aside class="surface day-summary"><div class="panel-title"><span>Daily overview</span>${icon("ph-info")}</div><div class="nutrition-total">${icon("ph-chart-donut")}<div><strong>${calories.toLocaleString()}</strong><span>kcal planned today</span></div></div><div class="macro-list">${macroRow("Meals", `${itemCount} of 4`, itemCount * 25, "carbs")}${macroRow("Calorie target", "1,700 kcal", Math.min(100, calories / 17), "fat")}</div></aside>
+      <aside class="surface day-summary"><div class="panel-title"><span>Daily overview</span>${icon("ph-info")}</div><div class="nutrition-total">${icon("ph-chart-donut")}<div><strong>${calories.toLocaleString()}</strong><span>kcal planned today</span></div></div><div class="nutrition-total daily-cost-total" data-day-cost="${cost}">${icon("ph-wallet")}<div><strong>${fmtPeso(cost)}</strong><span>estimated total for all meals today</span></div></div><div class="macro-list">${macroRow("Meals", `${itemCount} of 4`, itemCount * 25, "carbs")}${macroRow("Calorie target", "1,700 kcal", Math.min(100, calories / 17), "fat")}</div><p class="cost-estimate-note">Ingredient-cost estimate per serving; actual prices vary by store and season.</p></aside>
     </div>`;
 }
 
@@ -1571,6 +1660,19 @@ function renderInventory() {
     </section>`;
 }
 
+function grocerySectionHeader(section, label, count, extraActions = "") {
+  const expanded = grocerySections[section];
+  const contentId = `grocery-${section}-content`;
+  return `<div class="list-section-title collapsible-section-title">
+    <div class="grocery-section-label"><span>${label}</span><span class="status-pill">${count} item${count === 1 ? "" : "s"}</span></div>
+    <div class="list-section-actions">${extraActions}<button class="button secondary small section-toggle" type="button" data-grocery-section-toggle="${section}" aria-expanded="${expanded}" aria-controls="${contentId}">${icon(expanded ? "ph-caret-up" : "ph-caret-down")} ${expanded ? "Collapse" : "Expand"}</button></div>
+  </div>`;
+}
+
+function grocerySectionContent(section, content) {
+  return `<div class="grocery-section-content" id="grocery-${section}-content" ${grocerySections[section] ? "" : "hidden"}>${content}</div>`;
+}
+
 function renderGrocery() {
   const { dates, toBuy, covered } = groceryData();
   const recipeIngredients = allRecipeIngredients(state.recipes);
@@ -1581,23 +1683,35 @@ function renderGrocery() {
     + extras.filter((item) => state.checked[`x:${item.id}`]).length;
   const total = toBuy.length + extras.length;
   const actions = `<div style="display:flex;gap:8px;flex-wrap:wrap"><a class="button secondary" href="/stores" data-route>${icon("ph-map-pin")} Compare Stores</a><button class="button" type="button" data-new-extra>${icon("ph-plus")} Add Extra</button></div>`;
+  const purchasedAction = checkedCount ? `<button class="button small" type="button" data-purchased>Move ${checkedCount} to inventory</button>` : "";
+  const toBuyContent = total
+    ? `${toBuy.map((item) => groceryRow(item, item.key)).join("")}${extras.map((item) => groceryRow(item, `x:${item.id}`, true)).join("")}`
+    : `<div class="empty-state">${icon("ph-check-circle")}Everything you need is already covered.</div>`;
+  const coveredContent = covered.length
+    ? covered.map((item) => `<div class="covered-row inventory-status-row">
+      <div class="covered-main"><strong>${esc(item.name)}</strong><span class="grocery-quantity">${item.planned ? `Need ${item.need} ${esc(item.unit)} this week · ` : ""}${item.have} ${esc(item.unit)} on hand</span></div>
+      <div class="grocery-inventory-actions"><button class="button secondary small" type="button" data-update-inventory="${esc(item.key)}">${icon("ph-pencil-simple")} Update quantity</button><button class="button danger small" type="button" data-out-of-stock="${esc(item.key)}">${icon("ph-x-circle")} Mark out of stock</button></div>
+    </div>`).join("")
+    : `<div class="empty-state">${icon("ph-archive")}No recipe ingredients are currently covered by inventory.</div>`;
+  const ingredientsContent = recipeIngredients.map((item) => {
+    const status = toBuyKeys.has(item.key) ? "to-buy" : "covered";
+    return `<div class="covered-row recipe-ingredient-status-row" data-recipe-grocery-status="${status}" data-ingredient-key="${esc(item.key)}"><div class="covered-main"><strong>${esc(item.name)}</strong><span class="grocery-quantity">Used in ${item.recipeCount} recipe${item.recipeCount === 1 ? "" : "s"} · ${item.totalQty} ${esc(item.unit)} total · ${round1(inventory[item.key] || 0)} ${esc(item.unit)} on hand</span></div><span class="status-pill ${status === "to-buy" ? "amber" : ""}">${status === "to-buy" ? "To buy" : "Covered"}</span></div>`;
+  }).join("");
   return `
     ${heading("Grocery", `Shopping list for ${fmtDate(dates[0])}–${fmtDate(dates[6])}. Select any item to find the nearest stores.`, actions)}
     <div class="grocery-summary"><div class="summary-stat"><strong>${total}</strong><span>Items to buy</span></div><div class="summary-stat"><strong>${checkedCount}</strong><span>Already in cart</span></div><div class="summary-stat"><strong>${covered.length}</strong><span>Covered by inventory</span></div></div>
+    <div class="grocery-section-controls" role="group" aria-label="Grocery section display"><span>Section display</span><button class="button secondary small" type="button" data-grocery-expand-all>${icon("ph-arrows-out-line-vertical")} Expand all</button><button class="button secondary small" type="button" data-grocery-collapse-all>${icon("ph-arrows-in-line-vertical")} Collapse all</button></div>
     <section class="list-surface">
-      <div class="list-section-title"><span>To buy</span>${checkedCount ? `<button class="button small" type="button" data-purchased>Move ${checkedCount} to inventory</button>` : ""}</div>
-      ${total ? `${toBuy.map((item) => groceryRow(item, item.key)).join("")}${extras.map((item) => groceryRow(item, `x:${item.id}`, true)).join("")}` : `<div class="empty-state">${icon("ph-check-circle")}Everything you need is already covered.</div>`}
+      ${grocerySectionHeader("toBuy", "To buy", total, purchasedAction)}
+      ${grocerySectionContent("toBuy", toBuyContent)}
     </section>
-    ${covered.length ? `<section class="list-surface" style="margin-top:16px"><div class="list-section-title"><span>Covered by inventory</span></div>${covered.map((item) => `<div class="covered-row inventory-status-row">
-      <div class="covered-main"><strong>${esc(item.name)}</strong><span class="grocery-quantity">${item.planned ? `Need ${item.need} ${esc(item.unit)} this week · ` : ""}${item.have} ${esc(item.unit)} on hand</span></div>
-      <div class="grocery-inventory-actions"><button class="button secondary small" type="button" data-update-inventory="${esc(item.key)}">${icon("ph-pencil-simple")} Update quantity</button><button class="button danger small" type="button" data-out-of-stock="${esc(item.key)}">${icon("ph-x-circle")} Mark out of stock</button></div>
-    </div>`).join("")}</section>` : ""}
     <section class="list-surface" style="margin-top:16px">
-      <div class="list-section-title"><span>All recipe ingredients</span><span class="status-pill">${recipeIngredients.length} items</span></div>
-      ${recipeIngredients.map((item) => {
-        const status = toBuyKeys.has(item.key) ? "to-buy" : "covered";
-        return `<div class="covered-row recipe-ingredient-status-row" data-recipe-grocery-status="${status}" data-ingredient-key="${esc(item.key)}"><div class="covered-main"><strong>${esc(item.name)}</strong><span class="grocery-quantity">Used in ${item.recipeCount} recipe${item.recipeCount === 1 ? "" : "s"} · ${item.totalQty} ${esc(item.unit)} total · ${round1(inventory[item.key] || 0)} ${esc(item.unit)} on hand</span></div><span class="status-pill ${status === "to-buy" ? "amber" : ""}">${status === "to-buy" ? "To buy" : "Covered"}</span></div>`;
-      }).join("")}
+      ${grocerySectionHeader("covered", "Covered by inventory", covered.length)}
+      ${grocerySectionContent("covered", coveredContent)}
+    </section>
+    <section class="list-surface" style="margin-top:16px">
+      ${grocerySectionHeader("ingredients", "All recipe ingredients", recipeIngredients.length)}
+      ${grocerySectionContent("ingredients", ingredientsContent)}
     </section>`;
 }
 
@@ -1619,8 +1733,13 @@ function groceryRow(item, checkedKey, extra = false) {
 }
 
 function renderLocationBanner() {
-  const sourceText = userLocation.source === "browser" ? "Using your current location" : "Previewing from a BGC starting point";
-  return `<div class="location-banner">${icon("ph-navigation-arrow")}<div class="location-copy"><strong>${esc(userLocation.label)}</strong><span>${sourceText}. Distances are approximate.</span></div><button class="button secondary small" type="button" data-use-location>${icon("ph-crosshair")} Use current location</button></div>`;
+  const hasDeviceLocation = userLocation.source === "browser";
+  const accuracy = hasDeviceLocation && Number.isFinite(userLocation.accuracy) ? Math.round(userLocation.accuracy) : null;
+  const quality = accuracy === null ? "BGC fallback" : accuracy <= 25 ? "Precise fix" : accuracy <= 75 ? "Accurate fix" : "Approximate fix";
+  const sourceText = hasDeviceLocation
+    ? `Device-reported accuracy ±${accuracy} m. Distances are straight-line estimates; directions use this exact origin.`
+    : "Use your current location for accurate store sorting and directions. Your location is not saved.";
+  return `<div class="location-banner">${icon("ph-navigation-arrow")}<div class="location-copy"><div class="location-title-row"><strong>${esc(userLocation.label)}</strong><span class="location-quality ${hasDeviceLocation && accuracy <= 75 ? "precise" : ""}">${quality}</span></div><span>${sourceText}</span></div><button class="button secondary small" type="button" data-use-location>${icon("ph-crosshair")} ${hasDeviceLocation ? "Refresh precise location" : "Use current location"}</button></div>`;
 }
 
 function renderGroceryItem(item, requestedSlug) {
@@ -1636,7 +1755,7 @@ function renderGroceryItem(item, requestedSlug) {
       <div class="list-section-title"><span>Where to buy</span><span class="status-pill">${stores.length} likely matches</span></div>
       ${stores.length ? stores.map((store, index) => `<div class="availability-row">
         <div class="availability-main"><span class="store-rank">${index + 1}</span><div><strong>${esc(store.name)}</strong><span>${esc(store.address)} · ${esc(store.hours)}</span></div></div>
-        <div class="availability-actions"><span class="distance">${icon("ph-navigation-arrow")} ${store.distance.toFixed(1)} km</span><a class="button secondary small" href="/stores/${store.id}" data-route>View store</a><a class="button small" href="${directionsUrl(store)}" target="_blank" rel="noreferrer">Directions ${icon("ph-arrow-square-out")}</a></div>
+        <div class="availability-actions"><span class="distance">${icon("ph-navigation-arrow")} ${formatDistance(store.distance)} straight-line</span><a class="button secondary small" href="/stores/${store.id}" data-route>View store</a><a class="button small" href="${directionsUrl(store)}" target="_blank" rel="noreferrer">Directions ${icon("ph-arrow-square-out")}</a></div>
       </div>`).join("") : `<div class="empty-state">${icon("ph-storefront")}No seeded store match is available yet. Compare all stores or add another item.</div>`}
     </section>
     <p style="color:var(--muted);font-size:11px;margin-top:12px">Availability is a planning estimate based on common store assortment, not live shelf inventory. Check the store before traveling.</p>`;
@@ -1658,7 +1777,7 @@ function storeCard(store) {
   return `<a class="store-card" href="/stores/${store.id}" data-route>
     <div><h2>${esc(store.name)}</h2><div class="store-address">${icon("ph-map-pin")}<span>${esc(store.address)}</span></div><div class="store-hours">${icon("ph-clock")}<span>${esc(store.hours)}</span></div></div>
     <div class="coverage-meter"><strong>${count}/${total}</strong><span>${percent}% of your list</span></div>
-    <div class="store-card-footer"><span class="distance">${icon("ph-navigation-arrow")} ${store.distance.toFixed(1)} km away</span><span class="store-match-link">View coverage ${icon("ph-caret-right")}</span></div>
+    <div class="store-card-footer"><span class="distance">${icon("ph-navigation-arrow")} ${formatDistance(store.distance)} straight-line</span><span class="store-match-link">View coverage ${icon("ph-caret-right")}</span></div>
   </a>`;
 }
 
@@ -1668,11 +1787,11 @@ function renderStoreDetail(store) {
   const distance = distanceTo(store);
   return `
     <nav class="detail-breadcrumbs" aria-label="Breadcrumb"><a href="/stores" data-route>Nearby Stores</a>${icon("ph-caret-right")}<span>${esc(store.name)}</span></nav>
-    <div class="detail-title"><div><h1>${esc(store.name)}</h1><p>${esc(store.address)} · ${distance.toFixed(1)} km away</p></div><a class="button" href="${directionsUrl(store)}" target="_blank" rel="noreferrer">Get directions ${icon("ph-arrow-square-out")}</a></div>
+    <div class="detail-title"><div><h1>${esc(store.name)}</h1><p>${esc(store.address)} · ${formatDistance(distance)} straight-line</p></div><a class="button" href="${directionsUrl(store)}" target="_blank" rel="noreferrer">Get directions ${icon("ph-arrow-square-out")}</a></div>
     ${renderLocationBanner()}
     <div class="detail-grid">
       <section class="surface detail-section"><h2>Available from your list</h2>${coverage.available.length ? `<div class="store-products">${coverage.available.map((item) => `<a class="product-chip" href="${groceryItemPath(item)}" data-route>${icon("ph-check")} ${esc(item.name)}</a>`).join("")}</div>` : '<div class="empty-state">No matching items yet.</div>'}</section>
-      <aside class="surface detail-section"><h2>Store overview</h2><div class="nutrition-total">${icon("ph-basket")}<div><strong>${coverage.count}/${coverage.total}</strong><span>items from your current list</span></div></div><div class="store-hours" style="margin-top:18px">${icon("ph-clock")}<span>${esc(store.hours)}</span></div><div class="store-address">${icon("ph-navigation-arrow")}<span>${distance.toFixed(1)} km from ${esc(userLocation.label)}</span></div><a class="store-match-link" style="margin-top:16px" href="${store.source}" target="_blank" rel="noreferrer">Official store information ${icon("ph-arrow-square-out")}</a></aside>
+      <aside class="surface detail-section"><h2>Store overview</h2><div class="nutrition-total">${icon("ph-basket")}<div><strong>${coverage.count}/${coverage.total}</strong><span>items from your current list</span></div></div><div class="store-hours" style="margin-top:18px">${icon("ph-clock")}<span>${esc(store.hours)}</span></div><div class="store-address">${icon("ph-navigation-arrow")}<span>${formatDistance(distance)} from ${esc(userLocation.label)}</span></div><a class="store-match-link" style="margin-top:16px" href="${store.source}" target="_blank" rel="noreferrer">Official store information ${icon("ph-arrow-square-out")}</a></aside>
       <section class="surface detail-section" style="grid-column:1/-1"><h2>Not listed at this store</h2>${coverage.missing.length ? `<div class="store-products">${coverage.missing.map((item) => `<span class="product-chip missing">${icon("ph-minus")} ${esc(item.name)}</span>`).join("")}</div>` : '<span class="status-pill">Full list coverage</span>'}</section>
     </div>
     <p style="color:var(--muted);font-size:11px;margin-top:12px">Coverage is a planning estimate rather than live shelf inventory. Confirm availability with the store before traveling.</p>`;
@@ -1872,7 +1991,7 @@ function pickerRows(date, meal, query = "") {
     || item.name.toLowerCase().includes(normalizedQuery)
     || item.tags.join(" ").toLowerCase().includes(normalizedQuery));
   const sorted = [...matches].sort((a, b) => Number(b.cat === meal) - Number(a.cat === meal) || a.name.localeCompare(b.name));
-  return sorted.length ? sorted.map((item) => `<button class="picker-row" type="button" data-choose-recipe="${item.id}" data-picker-date="${date}" data-picker-meal="${meal}"><img src="${esc(recipeImage(item))}" alt="" /><div><strong>${esc(item.name)}</strong><span>${item.cal} kcal · ${item.time} min</span></div><span class="tag">${MEAL_LABEL[item.cat]}</span></button>`).join("") : '<div class="empty-state">No matching recipes.</div>';
+  return sorted.length ? sorted.map((item) => `<button class="picker-row" type="button" data-choose-recipe="${item.id}" data-picker-date="${date}" data-picker-meal="${meal}"><img src="${esc(recipeImage(item))}" alt="" /><div><strong>${esc(item.name)}</strong><span>${item.cal} kcal · ${fmtPeso(mealCostPeso(item))} est. · ${item.time} min</span></div><span class="tag">${MEAL_LABEL[item.cat]}</span></button>`).join("") : '<div class="empty-state">No matching recipes.</div>';
 }
 
 function pickerModal(date, meal) {
@@ -1961,24 +2080,92 @@ function useCurrentLocation() {
     toast("Location is not available in this browser");
     return;
   }
+  if (activeLocationRequest) {
+    activeLocationRequest.cancelled = true;
+    if (activeLocationRequest.watchId !== null && navigator.geolocation.clearWatch) {
+      navigator.geolocation.clearWatch(activeLocationRequest.watchId);
+    }
+    clearTimeout(activeLocationRequest.timer);
+  }
   const buttons = $$('[data-use-location]');
   buttons.forEach((button) => {
     button.disabled = true;
-    button.innerHTML = `${icon("ph-spinner-gap")} Locating…`;
+    button.innerHTML = icon("ph-spinner-gap") + " Finding a precise fix…";
   });
-  navigator.geolocation.getCurrentPosition((position) => {
+
+  let bestPosition = null;
+  let settled = false;
+  const request = { watchId: null, timer: null, cancelled: false };
+  activeLocationRequest = request;
+
+  const cleanup = () => {
+    if (request.watchId !== null && navigator.geolocation.clearWatch) {
+      navigator.geolocation.clearWatch(request.watchId);
+    }
+    clearTimeout(request.timer);
+    if (activeLocationRequest === request) activeLocationRequest = null;
+  };
+
+  const finishWithBestPosition = () => {
+    if (settled || request.cancelled) return;
+    settled = true;
+    cleanup();
+    if (!bestPosition || !Number.isFinite(bestPosition.coords.accuracy)
+      || bestPosition.coords.accuracy > LOCATION_MAX_USABLE_ACCURACY_METERS) {
+      render();
+      toast(userLocation.source === "browser"
+        ? "A newer precise fix could not be confirmed. Keeping your previous location."
+        : "A precise location could not be confirmed. Showing BGC estimates instead.");
+      return;
+    }
     userLocation = {
-      lat: position.coords.latitude,
-      lng: position.coords.longitude,
+      lat: bestPosition.coords.latitude,
+      lng: bestPosition.coords.longitude,
       label: "Your current location",
-      source: "browser"
+      source: "browser",
+      accuracy: bestPosition.coords.accuracy,
+      timestamp: bestPosition.timestamp
     };
     render();
-    toast("Stores are now sorted from your location");
-  }, () => {
+    toast("Stores are sorted using a ±" + Math.round(bestPosition.coords.accuracy) + " m location fix");
+  };
+
+  const receivePosition = (position) => {
+    if (settled || request.cancelled || !Number.isFinite(position.coords.accuracy)) return;
+    if (!bestPosition || position.coords.accuracy < bestPosition.coords.accuracy) bestPosition = position;
+    buttons.forEach((button) => {
+      button.innerHTML = icon("ph-spinner-gap") + " Improving accuracy · ±" + Math.round(bestPosition.coords.accuracy) + " m";
+    });
+    if (bestPosition.coords.accuracy <= LOCATION_TARGET_ACCURACY_METERS) {
+      setTimeout(finishWithBestPosition, 0);
+    }
+  };
+
+  const fail = (error) => {
+    if (settled || request.cancelled) return;
+    if (bestPosition) {
+      finishWithBestPosition();
+      return;
+    }
+    settled = true;
+    cleanup();
     render();
-    toast("Location permission was unavailable. Showing BGC estimates instead.");
-  }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 });
+    const fallbackMessage = userLocation.source === "browser" ? " Keeping your previous location." : " Showing BGC estimates instead.";
+    const message = error?.code === 1
+      ? "Location permission was denied." + fallbackMessage
+      : error?.code === 3
+        ? "Location timed out. Move near a window and try again." + fallbackMessage
+        : "Location was unavailable." + fallbackMessage;
+    toast(message);
+  };
+
+  const options = { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 };
+  request.timer = setTimeout(finishWithBestPosition, LOCATION_SAMPLE_WINDOW_MS);
+  if (navigator.geolocation.watchPosition) {
+    request.watchId = navigator.geolocation.watchPosition(receivePosition, fail, options);
+  } else {
+    navigator.geolocation.getCurrentPosition(receivePosition, fail, options);
+  }
 }
 
 function movePurchasedToInventory() {
@@ -2082,6 +2269,24 @@ function wire(route) {
   }));
   $$('[data-update-inventory]').forEach((button) => button.addEventListener("click", () => inventoryQuantityModal(button.dataset.updateInventory)));
   $$('[data-out-of-stock]').forEach((button) => button.addEventListener("click", () => markInventoryOutOfStock(button.dataset.outOfStock)));
+  $$('[data-grocery-section-toggle]').forEach((button) => button.addEventListener("click", () => {
+    const section = button.dataset.grocerySectionToggle;
+    if (!(section in grocerySections)) return;
+    grocerySections[section] = !grocerySections[section];
+    render();
+  }));
+  $("[data-grocery-expand-all]")?.addEventListener("click", () => {
+    Object.keys(grocerySections).forEach((section) => {
+      grocerySections[section] = true;
+    });
+    render();
+  });
+  $("[data-grocery-collapse-all]")?.addEventListener("click", () => {
+    Object.keys(grocerySections).forEach((section) => {
+      grocerySections[section] = false;
+    });
+    render();
+  });
 
   $("[data-new-extra]")?.addEventListener("click", extraModal);
   $$('[data-grocery-check]').forEach((checkbox) => checkbox.addEventListener("change", () => {

@@ -739,6 +739,11 @@ img {
   font-size: 10.5px;
 }
 
+.meal-cost {
+  color: var(--forest-700);
+  font-weight: 700;
+}
+
 .calendar-meal-trigger {
   width: 100%;
   min-height: 32px;
@@ -1118,6 +1123,12 @@ img {
   font-size: 12px;
 }
 
+.timeline-copy .meal-cost {
+  display: inline;
+  margin-top: 0;
+  color: var(--forest-700);
+}
+
 .meal-type-icon {
   width: 42px;
   height: 42px;
@@ -1138,6 +1149,22 @@ img {
 
 .day-summary {
   padding: 20px;
+}
+
+.daily-cost-total {
+  margin-top: 10px;
+  background: var(--amber-soft);
+}
+
+.daily-cost-total .ph {
+  color: var(--amber);
+}
+
+.cost-estimate-note {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 10.5px;
+  line-height: 1.45;
 }
 
 .page-controls {
@@ -1387,6 +1414,41 @@ img {
   font-weight: 700;
 }
 
+.grocery-section-controls,
+.list-section-actions,
+.grocery-section-label,
+.location-title-row {
+  display: flex;
+  align-items: center;
+}
+
+.grocery-section-controls {
+  justify-content: flex-end;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.grocery-section-controls > span {
+  margin-right: 2px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.grocery-section-label,
+.list-section-actions {
+  gap: 8px;
+}
+
+.section-toggle {
+  min-width: 105px;
+  justify-content: center;
+}
+
+.grocery-section-content[hidden] {
+  display: none;
+}
+
 .grocery-row {
   grid-template-columns: 28px minmax(150px, 1fr) 145px 155px 160px 24px;
   min-height: 72px;
@@ -1497,6 +1559,30 @@ img {
   margin-top: 2px;
   color: var(--muted);
   font-size: 12px;
+}
+
+.location-title-row {
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.location-title-row .location-quality {
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: #f0eadb;
+  color: #7b642a;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.45px;
+  text-transform: uppercase;
+}
+
+.location-title-row .location-quality.precise {
+  background: #ddefe3;
+  color: var(--forest-700);
 }
 
 .sort-select {
@@ -2537,6 +2623,30 @@ img {
 
   .grocery-summary {
     grid-template-columns: 1fr;
+  }
+
+  .grocery-section-controls {
+    justify-content: stretch;
+    flex-wrap: wrap;
+  }
+
+  .grocery-section-controls > span {
+    width: 100%;
+  }
+
+  .grocery-section-controls .button {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .collapsible-section-title {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .list-section-actions {
+    width: 100%;
+    justify-content: space-between;
   }
 
   .summary-stat:first-child,

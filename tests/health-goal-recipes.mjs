@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 
 const HEALTH_RECIPE_NAMES = [
   "Savory Oatmeal with Tofu & Pechay",
@@ -95,6 +96,21 @@ assert.equal(statusRows.length, catalogIngredientKeys.size, "every recipe ingred
 assert.equal(new Set(statusRows.map((match) => match[2])).size, catalogIngredientKeys.size, "recipe ingredients must not have duplicate grocery statuses");
 assert.equal((groceryMarkup.match(/data-update-inventory=/g) || []).length, catalogIngredientKeys.size, "every classified recipe ingredient must allow inventory quantity updates");
 assert.equal((groceryMarkup.match(/data-out-of-stock=/g) || []).length, statusRows.filter((match) => match[1] === "covered").length, "every covered ingredient must allow marking it out of stock");
+assert.equal((groceryMarkup.match(/data-grocery-section-toggle=/g) || []).length, 3, "each grocery section must have an expand or collapse control");
+assert.equal((groceryMarkup.match(/aria-expanded="true"/g) || []).length, 3, "all grocery sections must start expanded");
+assert.match(groceryMarkup, /data-grocery-expand-all/, "grocery must provide Expand all");
+assert.match(groceryMarkup, /data-grocery-collapse-all/, "grocery must provide Collapse all");
+
+window.location.pathname = "/stores";
+await loadState("store-location");
+const storesMarkup = appElement.innerHTML;
+assert.match(storesMarkup, /Use current location/, "stores must offer device location");
+assert.match(storesMarkup, /Your location is not saved/, "stores must explain location privacy");
+const appSource = await readFile(new URL("../app.js", import.meta.url), "utf8");
+assert.match(appSource, /watchPosition\(receivePosition, fail, options\)/, "location must sample multiple high-accuracy fixes");
+assert.match(appSource, /maximumAge: 0/, "location must reject cached readings");
+assert.match(appSource, /LOCATION_TARGET_ACCURACY_METERS = 25/, "location must target a precise fix");
+assert.match(appSource, /parameters\.set\("origin",/, "directions must use the captured device coordinates");
 
 window.location.pathname = "/recipes";
 HEALTH_RECIPE_NAMES.forEach((name) => {
@@ -144,10 +160,25 @@ await loadState("planner-photos");
 const plannerMarkup = appElement.innerHTML;
 const plannerPhotos = [...plannerMarkup.matchAll(/<img class="meal-thumb" src="([^"]+)"/g)].map((match) => match[1]);
 assert.equal(plannerPhotos.length, 28, "the current planner week must render a photo for every meal slot");
+const plannerCosts = [...plannerMarkup.matchAll(/data-meal-cost="([0-9]+)"/g)].map((match) => Number(match[1]));
+assert.equal(plannerCosts.length, 28, "the current planner week must show an estimated Philippine peso cost for every meal");
+plannerCosts.forEach((cost) => assert.ok(cost >= 35, "each meal estimate must be a positive amount"));
+assert.match(plannerMarkup, /estimated ingredient costs per serving in Philippine pesos/, "planner must explain the PHP pricing basis");
 plannerPhotos.forEach((src) => {
   assert.match(src, /^https:\/\/images\.unsplash\.com\//, "planner meal visuals must use real food photographs");
   assert.ok(!src.startsWith("data:image/svg+xml"), "planner meal visuals must not use SVG artwork");
 });
+
+window.matchMedia = () => ({ matches: true });
+window.location.pathname = "/planner";
+await loadState("planner-daily-cost");
+const dailyPlannerMarkup = appElement.innerHTML;
+const dailyMealCosts = [...dailyPlannerMarkup.matchAll(/data-meal-cost="([0-9]+)"/g)].map((match) => Number(match[1]));
+const dailyCost = Number(dailyPlannerMarkup.match(/data-day-cost="([0-9]+)"/)?.[1]);
+assert.equal(dailyMealCosts.length, 4, "daily Planner must show a PHP estimate for every meal");
+assert.equal(dailyCost, dailyMealCosts.reduce((total, cost) => total + cost, 0), "Daily overview total must equal all meal estimates for that day");
+assert.match(dailyPlannerMarkup, /estimated total for all meals today/, "Daily overview must label the full-day PHP total");
+window.matchMedia = () => ({ matches: false });
 
 window.location.pathname = "/planner/visualization";
 await loadState("planner-visualization");
