@@ -88,7 +88,8 @@ HEALTH_RECIPE_NAMES.forEach((name) => {
 const versionEightState = {
   ...fresh,
   contentVersion: 8,
-  recipes: fresh.recipes.filter((item) => !HEALTH_RECIPE_NAMES.includes(item.name))
+  recipes: fresh.recipes.filter((item) => !HEALTH_RECIPE_NAMES.includes(item.name)),
+  inventory: fresh.inventory.map((item) => ({ ...item }))
 };
 versionEightState.recipes.push({
   id: "custom-recipe",
