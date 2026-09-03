@@ -174,7 +174,7 @@ const MEAL_ICON = {
   dinner: "ph-moon-stars",
   snack: "ph-leaf"
 };
-const CONTENT_VERSION = 8;
+const CONTENT_VERSION = 9;
 
 const PHOTOS = {
   oats: "https://images.unsplash.com/photo-1494390248081-4e521a5940db?auto=format&fit=crop&w=720&q=82",
@@ -214,7 +214,19 @@ const IMAGE_BY_RECIPE = {
   "Healthy Buko Coconut Bowl": PHOTOS.coconut,
   "Healthy Pancit Bihon": PHOTOS.pancit,
   "Healthy Rice Cake": PHOTOS.riceCake,
-  "Healthy Chicken Adobo": PHOTOS.adobo
+  "Healthy Chicken Adobo": PHOTOS.adobo,
+  "Savory Oatmeal with Tofu & Pechay": PHOTOS.oats,
+  "Cherry Chia Yogurt Oats": PHOTOS.yogurt,
+  "Malunggay Egg-White Omelet & Kamote": PHOTOS.eggs,
+  "Monggo Malunggay Bowl": PHOTOS.soup,
+  "Tofu Pinakbet with Adlai": PHOTOS.tofu,
+  "Lean Chicken Tinola Bowl": PHOTOS.soup,
+  "Calamansi Salmon with Okra & Barley": PHOTOS.salmon,
+  "Tokwa Mushroom Sisig Lettuce Cups": PHOTOS.tofu,
+  "Vegetable Kare-Kare with Brown Rice": PHOTOS.tofu,
+  "Apple Oat-Bran Yogurt Cup": PHOTOS.apple,
+  "Green Papaya Cucumber Salad": PHOTOS.salad,
+  "Soy Cacao Chia Pudding": PHOTOS.yogurt
 };
 
 const MANAGED_PHOTO_URLS = new Set(Object.values(PHOTOS));
@@ -286,6 +298,8 @@ function visualEmoji(item) {
   if (/pancit|bihon|noodle/.test(text)) return "🍜";
   if (/spaghetti|carbonara|pesto/.test(text)) return "🍝";
   if (/coconut|buko/.test(text)) return "🥥";
+  if (/monggo|tinola|pinakbet|kare-kare|sisig/.test(text)) return "🍲";
+  if (/green papaya|cucumber salad/.test(text)) return "🥗";
   if (/apple/.test(text)) return "🍎";
   if (/yogurt|oat|parfait|protein powder|whey|casein/.test(text)) return "🥣";
   if (/egg/.test(text)) return "🍳";
@@ -391,6 +405,57 @@ function newHealthyRecipes() {
   ];
 }
 
+const FOUR_GOAL_TAGS = Object.freeze([
+  "steady-blood-sugar",
+  "heart-healthy",
+  "liver-friendly",
+  "cholesterol-conscious",
+  "uric-acid-conscious",
+  "no-added-sugar",
+  "estimated-calories"
+]);
+
+function healthGoalRecipes() {
+  return [
+    recipe("Savory Oatmeal with Tofu & Pechay", "breakfast", 300, 20, [...FOUR_GOAL_TAGS, "high-fiber", "plant-protein", "lower-sodium"], PHOTOS.oats,
+      [[0.5, "cup", "rolled oats"], [100, "g", "firm tofu"], [1, "cup", "pechay"], [0.5, "cup", "tomato"], [1, "tsp", "olive oil"], [1, "clove", "garlic"], [1, "tsp", "low-sodium soy sauce"], [0.25, "tsp", "turmeric"], [0.25, "tsp", "black pepper"]],
+      ["Cook the oats with one cup of water over medium-low heat until creamy, about five minutes.", "Pat the tofu dry, crumble it, and brown it in half of the olive oil for four to five minutes.", "Add the remaining oil, garlic, tomato and turmeric. Cook until the tomato softens.", "Fold in the pechay and low-sodium soy sauce, cooking just until the leaves wilt.", "Spoon the tofu and vegetables over the oats and finish with black pepper. Do not add sugar or salty toppings."]),
+    recipe("Cherry Chia Yogurt Oats", "breakfast", 350, 8, [...FOUR_GOAL_TAGS, "high-fiber", "low-fat-dairy", "make-ahead"], PHOTOS.yogurt,
+      [[0.33, "cup", "rolled oats"], [0.75, "cup", "plain low-fat Greek yogurt"], [0.5, "cup", "unsweetened tart cherries"], [1, "tbsp", "chia seeds"], [1, "tbsp", "ground flaxseed"], [0.25, "tsp", "cinnamon"], [0.25, "cup", "water"]],
+      ["Stir the rolled oats, chia seeds, ground flaxseed and cinnamon together in a jar.", "Add the Greek yogurt and water, then mix until evenly combined.", "Fold in half of the unsweetened cherries.", "Cover and refrigerate for at least four hours or overnight.", "Top with the remaining cherries and serve without honey, syrup or sweetened granola."]),
+    recipe("Malunggay Egg-White Omelet & Kamote", "breakfast", 290, 20, [...FOUR_GOAL_TAGS, "lean-protein", "vegetable-rich", "gluten-free"], PHOTOS.eggs,
+      [[3, "", "egg white"], [1, "", "egg"], [1, "cup", "malunggay leaves"], [0.5, "cup", "tomato"], [0.25, "cup", "onion"], [1, "tsp", "olive oil"], [0.5, "cup", "roasted sweet potato"], [0.25, "tsp", "black pepper"]],
+      ["Whisk the egg whites and whole egg with black pepper.", "Heat half of the olive oil in a nonstick pan and sauté the onion and tomato for three minutes.", "Add the malunggay leaves and cook until just wilted.", "Pour in the egg mixture and cook over low heat until set, folding once.", "Serve with the measured roasted sweet potato; skip ketchup and sweet sauces."]),
+    recipe("Monggo Malunggay Bowl", "lunch", 350, 35, [...FOUR_GOAL_TAGS, "high-fiber", "plant-protein", "Filipino"], PHOTOS.soup,
+      [[0.75, "cup", "cooked mung beans"], [1, "cup", "malunggay leaves"], [0.5, "cup", "squash"], [0.5, "cup", "tomato"], [0.25, "cup", "onion"], [1, "clove", "garlic"], [1, "cup", "unsalted vegetable broth"], [1, "tsp", "olive oil"], [0.33, "cup", "brown rice"], [0.25, "tsp", "black pepper"]],
+      ["Heat the olive oil and sauté the onion, garlic and tomato until softened.", "Add the squash and unsalted broth, then simmer until the squash is almost tender.", "Stir in the cooked mung beans and simmer for eight to ten minutes.", "Fold in the malunggay leaves for the final two minutes and season with black pepper.", "Serve with one-third cup cooked brown rice. Keep the dish meat-free and do not add bagoong or processed meat."]),
+    recipe("Tofu Pinakbet with Adlai", "lunch", 370, 30, [...FOUR_GOAL_TAGS, "plant-protein", "vegetable-rich", "lower-sodium", "Filipino"], PHOTOS.tofu,
+      [[120, "g", "firm tofu"], [1, "cup", "eggplant"], [0.75, "cup", "okra"], [0.75, "cup", "squash"], [0.5, "cup", "sitaw"], [0.5, "cup", "tomato"], [0.25, "cup", "onion"], [1, "tsp", "canola oil"], [1, "tsp", "low-sodium soy sauce"], [0.5, "cup", "cooked adlai"]],
+      ["Pat the tofu dry, cube it, and brown it in half of the canola oil. Set aside.", "Add the remaining oil, onion and tomato to the pan and cook until softened.", "Add the squash with a splash of water, cover, and cook for four minutes.", "Add the eggplant, okra and sitaw. Cook until tender-crisp, then return the tofu.", "Season with one teaspoon low-sodium soy sauce and serve over the measured adlai. This version intentionally omits bagoong."]),
+    recipe("Lean Chicken Tinola Bowl", "lunch", 340, 40, [...FOUR_GOAL_TAGS, "lean-protein", "vegetable-rich", "lower-sodium", "Filipino"], PHOTOS.soup,
+      [[100, "g", "skinless chicken breast"], [1, "cup", "sayote"], [1, "cup", "malunggay leaves"], [1, "tsp", "ginger"], [0.25, "cup", "onion"], [1, "clove", "garlic"], [1.5, "cup", "unsalted chicken broth"], [1, "tsp", "olive oil"], [0.33, "cup", "brown rice"], [1, "tbsp", "calamansi juice"]],
+      ["Heat the olive oil and sauté the ginger, onion and garlic until fragrant.", "Add the chicken breast and cook until the outside is no longer pink.", "Pour in the unsalted broth and simmer gently for 12 minutes.", "Add the sayote and cook until tender, then fold in the malunggay leaves for two minutes.", "Check that the chicken reaches 74°C, finish with calamansi juice, and serve with one-third cup cooked brown rice."]),
+    recipe("Calamansi Salmon with Okra & Barley", "dinner", 460, 35, [...FOUR_GOAL_TAGS, "omega-3", "high-fiber", "moderate-fish-portion"], PHOTOS.salmon,
+      [[120, "g", "salmon fillet"], [0.5, "cup", "cooked pearl barley"], [1, "cup", "okra"], [1, "cup", "broccoli"], [1, "tsp", "olive oil"], [1, "tbsp", "calamansi juice"], [1, "tsp", "ginger"], [0.25, "tsp", "black pepper"]],
+      ["Heat the oven to 200°C and line a tray with parchment.", "Arrange the salmon, okra and broccoli on the tray. Brush with olive oil and season with ginger and black pepper.", "Bake for 12 to 15 minutes, until the salmon flakes and reaches 63°C.", "Warm the cooked barley with a splash of water.", "Finish the salmon and vegetables with calamansi juice and serve with the measured barley. Keep the fish portion to 120 grams."]),
+    recipe("Tokwa Mushroom Sisig Lettuce Cups", "dinner", 310, 30, [...FOUR_GOAL_TAGS, "plant-protein", "lower-sodium", "Filipino"], PHOTOS.tofu,
+      [[150, "g", "firm tofu"], [1, "cup", "button mushrooms"], [0.5, "cup", "red bell pepper"], [0.25, "cup", "red onion"], [1, "tbsp", "calamansi juice"], [1, "tsp", "low-sodium soy sauce"], [1, "tsp", "olive oil"], [4, "pc", "lettuce leaves"], [0.33, "cup", "brown rice"], [0.25, "tsp", "black pepper"]],
+      ["Pat the tofu dry, crumble it, and brown it in a nonstick pan with half of the olive oil.", "Add the remaining oil and mushrooms, cooking until their moisture evaporates.", "Stir in the bell pepper and red onion and cook for two minutes so they retain some crunch.", "Remove from heat and mix in the calamansi juice, low-sodium soy sauce and black pepper.", "Spoon into lettuce leaves and serve with one-third cup cooked brown rice. Do not add mayonnaise or processed meat."]),
+    recipe("Vegetable Kare-Kare with Brown Rice", "dinner", 410, 45, [...FOUR_GOAL_TAGS, "plant-protein", "high-fiber", "lower-sodium", "Filipino"], PHOTOS.tofu,
+      [[120, "g", "firm tofu"], [1, "cup", "eggplant"], [0.75, "cup", "sitaw"], [1, "cup", "pechay"], [0.75, "cup", "squash"], [1, "tbsp", "unsweetened peanut butter"], [1, "tbsp", "brown rice flour"], [1, "tsp", "canola oil"], [1, "clove", "garlic"], [0.25, "cup", "onion"], [1, "cup", "unsalted vegetable broth"], [0.33, "cup", "brown rice"]],
+      ["Brown the cubed tofu in half of the canola oil and set aside.", "Sauté the garlic and onion in the remaining oil, then add the squash and unsalted broth.", "Whisk the peanut butter and brown rice flour with a little warm broth, then stir the mixture into the pot.", "Add the eggplant and sitaw and simmer until tender; return the tofu and fold in the pechay.", "Serve with one-third cup cooked brown rice. Skip bagoong to keep sodium lower."]),
+    recipe("Apple Oat-Bran Yogurt Cup", "snack", 200, 5, [...FOUR_GOAL_TAGS, "high-fiber", "low-fat-dairy", "quick"], PHOTOS.apple,
+      [[0.5, "pc", "apple"], [0.75, "cup", "plain low-fat Greek yogurt"], [2, "tbsp", "oat bran"], [1, "tbsp", "ground flaxseed"], [0.25, "tsp", "cinnamon"]],
+      ["Dice the apple, keeping the peel for added fiber.", "Spoon the plain low-fat Greek yogurt into a bowl.", "Stir in the oat bran and ground flaxseed.", "Top with the apple and cinnamon and serve immediately without honey or syrup."]),
+    recipe("Green Papaya Cucumber Salad", "snack", 120, 10, [...FOUR_GOAL_TAGS, "vegetable-rich", "lower-sodium", "refreshing"], PHOTOS.salad,
+      [[1, "cup", "shredded green papaya"], [1, "cup", "cucumber"], [0.5, "cup", "tomato"], [1, "tbsp", "calamansi juice"], [1, "tbsp", "unsalted roasted peanuts"], [1, "tsp", "olive oil"], [0.25, "tsp", "black pepper"]],
+      ["Combine the shredded green papaya, cucumber and tomato in a bowl.", "Whisk the calamansi juice, olive oil and black pepper.", "Toss the vegetables with the dressing and let them stand for five minutes.", "Top with unsalted roasted peanuts and serve chilled. Do not add sugar, fish sauce or bagoong."]),
+    recipe("Soy Cacao Chia Pudding", "snack", 230, 5, [...FOUR_GOAL_TAGS, "plant-protein", "high-fiber", "make-ahead"], PHOTOS.yogurt,
+      [[1, "cup", "unsweetened soy milk"], [2, "tbsp", "chia seeds"], [1, "tbsp", "unsweetened cocoa powder"], [0.25, "cup", "mixed berries"], [0.25, "tsp", "cinnamon"], [0.5, "tsp", "vanilla extract"]],
+      ["Whisk the soy milk, chia seeds, cocoa powder, cinnamon and vanilla until no cocoa lumps remain.", "Rest for five minutes, whisk again, then cover.", "Refrigerate for at least four hours or overnight.", "Stir before serving and top with the mixed berries. Keep it unsweetened; do not add syrup or condensed milk."])
+  ];
+}
+
 function seed() {
   const rawRecipes = [
     recipe("Overnight Oats with Berries", "breakfast", 320, 5, ["high-fiber", "make-ahead"], PHOTOS.oats,
@@ -430,6 +495,7 @@ function seed() {
       [[1, "pc", "apple"], [2, "tbsp", "peanut butter"]],
       ["Slice the apple.", "Serve with peanut butter for dipping."]),
     ...newHealthyRecipes(),
+    ...healthGoalRecipes(),
     ...calendarMealRecipes()
   ];
   const { recipes } = dedupeRecipes(rawRecipes);
@@ -501,6 +567,15 @@ function normalize(data) {
       if (existingNames.has(item.name.toLowerCase())) return;
       normalized.recipes.push(item);
       existingNames.add(item.name.toLowerCase());
+    });
+  }
+  if (previousContentVersion < 9) {
+    const existingNames = new Set(normalized.recipes.map((item) => recipeNameKey(item.name)));
+    healthGoalRecipes().forEach((item) => {
+      const nameKey = recipeNameKey(item.name);
+      if (existingNames.has(nameKey)) return;
+      normalized.recipes.push(item);
+      existingNames.add(nameKey);
     });
   }
   normalized.contentVersion = CONTENT_VERSION;
