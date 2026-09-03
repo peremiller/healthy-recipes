@@ -131,5 +131,13 @@ plannerPhotos.forEach((src) => {
   assert.ok(!src.startsWith("data:image/svg+xml"), "planner meal visuals must not use SVG artwork");
 });
 
+window.location.pathname = "/planner/visualization";
+await loadState("planner-visualization");
+const visualizationMarkup = appElement.innerHTML;
+assert.match(visualizationMarkup, /id="mealVizCanvas"/, "the Planner must expose the 3D meal canvas");
+assert.match(visualizationMarkup, /data-viz-filter="breakfast"/, "the 3D meal map must support meal-type filters");
+assert.match(visualizationMarkup, /Live Planner data/, "the 3D meal map must identify its live Planner source");
+assert.equal((visualizationMarkup.match(/<li>[^<]+, (?:Breakfast|Lunch|Dinner|Snack):/g) || []).length, 28, "the 3D map must expose every meal in the selected week");
+
 const plannedSlots = Object.values(fresh.plan).reduce((total, day) => total + Object.values(day || {}).filter(Boolean).length, 0);
 console.log(`Health-goal checks passed: ${fresh.recipes.length} recipes, ${fresh.inventory.length} inventory entries, ${plannedSlots} planned slots.`);

@@ -174,6 +174,12 @@ const MEAL_ICON = {
   dinner: "ph-moon-stars",
   snack: "ph-leaf"
 };
+const MEAL_VISUAL = {
+  breakfast: { color: "#f2b84b", glow: "rgba(242, 184, 75, 0.35)" },
+  lunch: { color: "#63c38b", glow: "rgba(99, 195, 139, 0.35)" },
+  dinner: { color: "#91a5df", glow: "rgba(145, 165, 223, 0.35)" },
+  snack: { color: "#e27d62", glow: "rgba(226, 125, 98, 0.35)" }
+};
 const CONTENT_VERSION = 10;
 
 const PHOTOS = {
@@ -701,6 +707,19 @@ let dayDate = todayISO();
 let recipeQuery = "";
 let recipeCat = "all";
 let storeSort = "nearest";
+const mealViz = {
+  yaw: -0.62,
+  pitch: -0.24,
+  zoom: 720,
+  autoRotate: !window.matchMedia?.("(prefers-reduced-motion: reduce)").matches,
+  filter: "all",
+  selectedKey: "root",
+  raf: 0,
+  resizeObserver: null,
+  hitNodes: [],
+  images: new Map(),
+  drag: null
+};
 let userLocation = {
   lat: 14.552,
   lng: 121.0487,
@@ -710,6 +729,7 @@ let userLocation = {
 
 const NAV = [
   { key: "planner", path: "/planner", label: "Planner", icon: "ph-calendar-blank" },
+  { key: "meal-map", path: "/planner/visualization", label: "3D Meal Map", icon: "ph-cube" },
   { key: "recipes", path: "/recipes", label: "Recipes", icon: "ph-bowl-food" },
   { key: "inventory", path: "/inventory", label: "Inventory", icon: "ph-archive" },
   { key: "grocery", path: "/grocery", label: "Grocery", icon: "ph-shopping-cart-simple" },
@@ -884,6 +904,7 @@ function routeState() {
   const path = window.location.pathname.replace(/\/+$/, "") || "/";
   if (path === "/") return { section: "planner", canonical: "/planner" };
   if (path === "/planner") return { section: "planner" };
+  if (path === "/planner/visualization") return { section: "meal-map" };
   if (path === "/recipes") return { section: "recipes" };
   if (path.startsWith("/recipes/")) {
     const segment = decodeURIComponent(path.split("/")[2] || "");
@@ -952,7 +973,7 @@ function shell(route, body) {
           <button class="icon-button mobile-menu-button" type="button" aria-label="Open navigation" data-open-nav>${icon("ph-list")}</button>
           <a class="mobile-brand" href="/planner" data-route><img src="/favicon.svg" alt="" /><span>NourishPlan</span></a>
           <label class="global-search">${icon("ph-magnifying-glass")}<input id="globalSearch" type="search" placeholder="Search recipes, ingredients, meals…" /><span class="search-key">⌘ K</span></label>
-          ${route.section === "planner" ? `<div class="topbar-actions"><button class="icon-button" type="button" aria-label="Notifications">${icon("ph-bell")}</button><span class="today-date">${fmtDateWithYear()}</span></div>` : ""}
+          ${route.section === "planner" || route.section === "meal-map" ? `<div class="topbar-actions"><button class="icon-button" type="button" aria-label="Notifications">${icon("ph-bell")}</button><span class="today-date">${fmtDateWithYear()}</span></div>` : ""}
         </header>
         <main class="content" id="mainContent">${body}</main>
       </section>
@@ -960,6 +981,7 @@ function shell(route, body) {
 }
 
 function render() {
+  cleanupMealVisualization();
   keepRollingMealPlanComplete();
   const route = routeState();
   if (route.canonical) {
@@ -972,6 +994,7 @@ function render() {
   else if (route.detail === "grocery-item") body = renderGroceryItem(route.item, route.slug);
   else if (route.detail === "store") body = renderStoreDetail(route.item);
   else if (route.section === "planner") body = renderPlanner();
+  else if (route.section === "meal-map") body = renderMealVisualization();
   else if (route.section === "recipes") body = renderRecipes();
   else if (route.section === "inventory") body = renderInventory();
   else if (route.section === "grocery") body = renderGrocery();
@@ -1008,7 +1031,383 @@ function plannerToolbar() {
 }
 
 function renderPlanner() {
-  return `${heading("Planner", `Plan your week. Meals imported from ${esc(GOOGLE_CALENDAR_SOURCE)} appear as calendar options.`)}${plannerToolbar()}${plannerMode === "week" ? renderWeekPlanner() : renderDayPlanner()}`;
+  const actions = `<a class="button secondary" href="/planner/visualization" data-route>${icon("ph-cube")} Explore 3D map</a>`;
+  return `${heading("Planner", `Plan your week. Meals imported from ${esc(GOOGLE_CALENDAR_SOURCE)} appear as calendar options.`, actions)}${plannerToolbar()}${plannerMode === "week" ? renderWeekPlanner() : renderDayPlanner()}`;
+}
+
+function mealVisualizationData() {
+  const dates = weekDates(weekOffset);
+  const nodes = [{ key: "root", kind: "root", label: "Meal plan", x: 0, y: 0, z: 0 }];
+  const links = [];
+  const entries = [];
+
+  dates.forEach((date, dayIndex) => {
+    const angle = -Math.PI / 2 + dayIndex / dates.length * Math.PI * 2;
+    const dayNode = {
+      key: `day:${date}`,
+      kind: "day",
+      date,
+      label: date === todayISO() ? "Today" : fmtDow(date),
+      x: Math.cos(angle) * 330,
+      y: Math.sin(dayIndex * 1.35) * 36,
+      z: Math.sin(angle) * 330
+    };
+    nodes.push(dayNode);
+    links.push({ source: "root", target: dayNode.key, kind: "day" });
+
+    MEALS.forEach((meal, mealIndex) => {
+      if (mealViz.filter !== "all" && mealViz.filter !== meal) return;
+      const item = recipeById(planFor(date)[meal]);
+      if (!item) return;
+      const orbit = angle + (mealIndex - 1.5) * 0.34;
+      const entry = {
+        key: `${date}|${meal}`,
+        kind: "meal",
+        date,
+        meal,
+        item,
+        label: item.name,
+        x: dayNode.x + Math.cos(orbit) * 108,
+        y: (mealIndex - 1.5) * 92,
+        z: dayNode.z + Math.sin(orbit) * 108
+      };
+      entries.push(entry);
+      nodes.push(entry);
+      links.push({ source: dayNode.key, target: entry.key, kind: meal });
+    });
+  });
+
+  return { dates, nodes, links, entries };
+}
+
+function mealVizDetails(node, data) {
+  if (node?.kind === "meal") {
+    const { item, date, meal } = node;
+    return `<div class="meal-viz-detail-photo"><img src="${esc(recipeImage(item))}" alt="${esc(item.name)}" /></div>
+      <span class="meal-viz-eyebrow"><i style="background:${MEAL_VISUAL[meal].color}"></i>${MEAL_LABEL[meal]} · ${fmtLong(date)}</span>
+      <h2>${esc(item.name)}</h2>
+      <div class="meal-viz-nutrition"><span><strong>${item.cal}</strong> kcal</span><span><strong>${item.time}</strong> min</span><span><strong>${item.ingredients.length}</strong> ingredients</span></div>
+      <div class="tags">${item.tags.slice(0, 4).map((tag) => `<span class="tag">${esc(tag)}</span>`).join("")}</div>
+      <a class="button meal-viz-recipe-link" href="${recipePath(item)}" data-route>View recipe ${icon("ph-arrow-right")}</a>`;
+  }
+
+  if (node?.kind === "day") {
+    const meals = data.entries.filter((entry) => entry.date === node.date);
+    const calories = meals.reduce((total, entry) => total + (Number(entry.item.cal) || 0), 0);
+    return `<span class="meal-viz-eyebrow">Day overview</span><h2>${fmtLong(node.date)}</h2>
+      <div class="meal-viz-nutrition"><span><strong>${meals.length}</strong> meals</span><span><strong>${calories.toLocaleString()}</strong> kcal</span></div>
+      <div class="meal-viz-day-list">${meals.map((entry) => `<button type="button" data-viz-select="${entry.key}"><i style="background:${MEAL_VISUAL[entry.meal].color}"></i><span>${MEAL_LABEL[entry.meal]}</span><strong>${esc(entry.item.name)}</strong></button>`).join("") || "<p>No meals match this filter.</p>"}</div>`;
+  }
+
+  const uniqueRecipes = new Set(data.entries.map((entry) => entry.item.id)).size;
+  const calories = data.entries.reduce((total, entry) => total + (Number(entry.item.cal) || 0), 0);
+  return `<span class="meal-viz-eyebrow">Live plan overview</span><h2>${fmtDate(data.dates[0])} — ${fmtDate(data.dates[6])}</h2>
+    <p>Select a day or meal in the map to see its details.</p>
+    <div class="meal-viz-nutrition"><span><strong>${data.entries.length}</strong> meals</span><span><strong>${uniqueRecipes}</strong> recipes</span><span><strong>${calories.toLocaleString()}</strong> kcal</span></div>`;
+}
+
+function renderMealVisualization() {
+  const data = mealVisualizationData();
+  const selected = data.nodes.find((node) => node.key === mealViz.selectedKey) || data.nodes[0];
+  const controls = `<a class="button secondary" href="/planner" data-route>${icon("ph-arrow-left")} Back to Planner</a>`;
+  const accessibleRows = data.entries.map((entry) => `<li>${fmtLong(entry.date)}, ${MEAL_LABEL[entry.meal]}: ${esc(entry.item.name)}, ${entry.item.cal} calories</li>`).join("");
+  return `${heading("3D Meal Map", "Explore every planned meal and recipe for the selected week.", controls)}
+    <div class="meal-viz-toolbar">
+      <div class="date-control">
+        <button type="button" aria-label="Previous week" data-viz-week-nav="-1">${icon("ph-caret-left")}</button>
+        <span>${icon("ph-calendar-blank")} ${fmtDate(data.dates[0])} — ${fmtDate(data.dates[6])}, ${dateFromISO(data.dates[6]).getFullYear()}</span>
+        <button type="button" aria-label="Next week" data-viz-week-nav="1">${icon("ph-caret-right")}</button>
+      </div>
+      <button class="button secondary" type="button" data-viz-today>Current week</button>
+      <div class="meal-viz-filters" aria-label="Filter visualization by meal type">
+        ${["all", ...MEALS].map((meal) => `<button class="chip ${mealViz.filter === meal ? "active" : ""}" type="button" data-viz-filter="${meal}">${meal === "all" ? "All meals" : MEAL_LABEL[meal]}</button>`).join("")}
+      </div>
+    </div>
+    <div class="meal-viz-layout">
+      <section class="meal-viz-stage" aria-label="Interactive 3D meal visualization">
+        <canvas id="mealVizCanvas" role="img" tabindex="0" aria-describedby="mealVizInstructions"></canvas>
+        <div class="meal-viz-stage-top"><span class="meal-viz-live"><i></i> Live Planner data</span><span>${data.entries.length} meals</span></div>
+        <div class="meal-viz-stage-actions">
+          <button type="button" data-viz-auto>${icon(mealViz.autoRotate ? "ph-pause" : "ph-play")}<span>${mealViz.autoRotate ? "Pause" : "Rotate"}</span></button>
+          <button type="button" aria-label="Zoom out" data-viz-zoom="-1">${icon("ph-minus")}</button>
+          <button type="button" aria-label="Zoom in" data-viz-zoom="1">${icon("ph-plus")}</button>
+          <button type="button" data-viz-reset>${icon("ph-crosshair")}<span>Reset view</span></button>
+        </div>
+        <p class="meal-viz-instructions" id="mealVizInstructions">Drag to rotate · Scroll or use +/− to zoom · Select a node for details</p>
+      </section>
+      <aside class="meal-viz-detail surface" id="mealVizDetails" aria-live="polite">${mealVizDetails(selected, data)}</aside>
+    </div>
+    <div class="meal-viz-legend" aria-label="Meal type legend">${MEALS.map((meal) => `<span><i style="background:${MEAL_VISUAL[meal].color}"></i>${MEAL_LABEL[meal]}</span>`).join("")}</div>
+    <ol class="sr-only">${accessibleRows}</ol>`;
+}
+
+function cleanupMealVisualization() {
+  if (mealViz.raf && typeof cancelAnimationFrame === "function") cancelAnimationFrame(mealViz.raf);
+  mealViz.raf = 0;
+  mealViz.resizeObserver?.disconnect();
+  mealViz.resizeObserver = null;
+  mealViz.drag = null;
+}
+
+function rotateMealVizPoint(point) {
+  const yawCos = Math.cos(mealViz.yaw);
+  const yawSin = Math.sin(mealViz.yaw);
+  const pitchCos = Math.cos(mealViz.pitch);
+  const pitchSin = Math.sin(mealViz.pitch);
+  const x = point.x * yawCos - point.z * yawSin;
+  const yawZ = point.x * yawSin + point.z * yawCos;
+  const y = point.y * pitchCos - yawZ * pitchSin;
+  const z = point.y * pitchSin + yawZ * pitchCos;
+  return { x, y, z };
+}
+
+function projectMealVizPoint(point, width, height) {
+  const rotated = rotateMealVizPoint(point);
+  const scale = mealViz.zoom / Math.max(360, 980 + rotated.z);
+  return {
+    x: width / 2 + rotated.x * scale,
+    y: height / 2 + rotated.y * scale,
+    z: rotated.z,
+    scale
+  };
+}
+
+function mealVizImage(url, draw) {
+  if (!url || typeof Image === "undefined") return null;
+  if (mealViz.images.has(url)) return mealViz.images.get(url);
+  const image = new Image();
+  image.decoding = "async";
+  image.referrerPolicy = "no-referrer";
+  image.onload = draw;
+  image.onerror = draw;
+  image.src = url;
+  mealViz.images.set(url, image);
+  return image;
+}
+
+function drawMealVisualization(canvas, data) {
+  const context = canvas.getContext("2d");
+  if (!context) return;
+  const rect = canvas.getBoundingClientRect();
+  const width = Math.max(1, rect.width);
+  const height = Math.max(1, rect.height);
+  const pixelRatio = Math.min(2, window.devicePixelRatio || 1);
+  if (canvas.width !== Math.round(width * pixelRatio) || canvas.height !== Math.round(height * pixelRatio)) {
+    canvas.width = Math.round(width * pixelRatio);
+    canvas.height = Math.round(height * pixelRatio);
+  }
+  context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+  context.clearRect(0, 0, width, height);
+
+  const projected = new Map(data.nodes.map((node) => [node.key, projectMealVizPoint(node, width, height)]));
+  context.lineWidth = 1;
+  [150, 260, 375].forEach((radius, ringIndex) => {
+    context.beginPath();
+    for (let index = 0; index <= 64; index += 1) {
+      const angle = index / 64 * Math.PI * 2;
+      const point = projectMealVizPoint({ x: Math.cos(angle) * radius, y: 0, z: Math.sin(angle) * radius }, width, height);
+      if (index === 0) context.moveTo(point.x, point.y);
+      else context.lineTo(point.x, point.y);
+    }
+    context.strokeStyle = `rgba(150, 204, 174, ${0.13 - ringIndex * 0.025})`;
+    context.stroke();
+  });
+
+  data.links.forEach((link) => {
+    const source = projected.get(link.source);
+    const target = projected.get(link.target);
+    if (!source || !target) return;
+    const isMeal = link.kind !== "day";
+    context.beginPath();
+    context.moveTo(source.x, source.y);
+    context.lineTo(target.x, target.y);
+    context.strokeStyle = isMeal ? MEAL_VISUAL[link.kind].glow : "rgba(170, 221, 190, 0.22)";
+    context.lineWidth = isMeal ? 1.4 : 1;
+    context.stroke();
+  });
+
+  mealViz.hitNodes = [];
+  const sortedNodes = [...data.nodes].sort((a, b) => projected.get(b.key).z - projected.get(a.key).z);
+  sortedNodes.forEach((node) => {
+    const point = projected.get(node.key);
+    const selected = node.key === mealViz.selectedKey;
+    const radius = node.kind === "root" ? 25 : node.kind === "day" ? 13 : Math.max(17, Math.min(29, 25 * point.scale + 9));
+    const alpha = Math.max(0.45, Math.min(1, 1.04 - (point.z + 430) / 1600));
+    context.save();
+    context.globalAlpha = alpha;
+    context.shadowBlur = selected ? 28 : node.kind === "meal" ? 13 : 7;
+    context.shadowColor = node.kind === "meal" ? MEAL_VISUAL[node.meal].color : "rgba(76, 188, 126, 0.55)";
+    context.beginPath();
+    context.arc(point.x, point.y, radius + (selected ? 4 : 0), 0, Math.PI * 2);
+    context.fillStyle = node.kind === "root" ? "#f4c85d" : node.kind === "day" ? "#dff4e6" : "#173f2c";
+    context.fill();
+    context.shadowBlur = 0;
+
+    if (node.kind === "meal") {
+      const image = mealVizImage(recipeImage(node.item), () => drawMealVisualization(canvas, data));
+      context.save();
+      context.beginPath();
+      context.arc(point.x, point.y, Math.max(12, radius - 3), 0, Math.PI * 2);
+      context.clip();
+      if (image?.complete && image.naturalWidth) {
+        context.drawImage(image, point.x - radius, point.y - radius, radius * 2, radius * 2);
+      } else {
+        context.fillStyle = MEAL_VISUAL[node.meal].color;
+        context.fillRect(point.x - radius, point.y - radius, radius * 2, radius * 2);
+      }
+      context.restore();
+      context.beginPath();
+      context.arc(point.x, point.y, radius + (selected ? 4 : 0), 0, Math.PI * 2);
+      context.strokeStyle = selected ? "#ffffff" : MEAL_VISUAL[node.meal].color;
+      context.lineWidth = selected ? 3 : 2;
+      context.stroke();
+    } else {
+      context.fillStyle = node.kind === "root" ? "#183f2c" : "#16482f";
+      context.font = `700 ${node.kind === "root" ? 12 : 10}px "DM Sans", sans-serif`;
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.fillText(node.kind === "root" ? "PLAN" : fmtDow(node.date).slice(0, 2).toUpperCase(), point.x, point.y + 0.5);
+    }
+
+    if (node.kind !== "meal" || selected || point.z < 30) {
+      const label = node.kind === "meal" && node.label.length > 24 ? `${node.label.slice(0, 22)}…` : node.label;
+      context.font = `${selected ? 700 : 600} ${selected ? 12 : 10}px "DM Sans", sans-serif`;
+      const textWidth = context.measureText(label).width;
+      const labelY = point.y + radius + 16;
+      context.fillStyle = selected ? "rgba(7, 40, 27, 0.96)" : "rgba(7, 40, 27, 0.74)";
+      context.fillRect(point.x - textWidth / 2 - 7, labelY - 10, textWidth + 14, 19);
+      context.fillStyle = "#f8fff9";
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.fillText(label, point.x, labelY);
+    }
+    context.restore();
+    mealViz.hitNodes.push({ node, x: point.x, y: point.y, radius: radius + 10, z: point.z });
+  });
+}
+
+function initMealVisualization() {
+  const canvas = $("#mealVizCanvas");
+  const details = $("#mealVizDetails");
+  if (!canvas || !details || typeof requestAnimationFrame !== "function") return;
+  const data = mealVisualizationData();
+  const draw = () => drawMealVisualization(canvas, data);
+  const selectNode = (node) => {
+    if (!node) return;
+    mealViz.selectedKey = node.key;
+    details.innerHTML = mealVizDetails(node, data);
+    details.querySelectorAll("[data-viz-select]").forEach((button) => button.addEventListener("click", () => {
+      selectNode(data.nodes.find((candidate) => candidate.key === button.dataset.vizSelect));
+    }));
+    details.querySelector("[data-route]")?.addEventListener("click", (event) => {
+      event.preventDefault();
+      navigate(event.currentTarget.getAttribute("href"));
+    });
+    draw();
+  };
+
+  mealViz.resizeObserver = typeof ResizeObserver === "function" ? new ResizeObserver(draw) : null;
+  mealViz.resizeObserver?.observe(canvas);
+  canvas.addEventListener("pointerdown", (event) => {
+    canvas.setPointerCapture(event.pointerId);
+    mealViz.drag = { x: event.clientX, y: event.clientY, startX: event.clientX, startY: event.clientY };
+    canvas.classList.add("dragging");
+  });
+  canvas.addEventListener("pointermove", (event) => {
+    if (!mealViz.drag) return;
+    mealViz.yaw += (event.clientX - mealViz.drag.x) * 0.006;
+    mealViz.pitch = Math.max(-1.05, Math.min(1.05, mealViz.pitch + (event.clientY - mealViz.drag.y) * 0.004));
+    mealViz.drag.x = event.clientX;
+    mealViz.drag.y = event.clientY;
+    draw();
+  });
+  canvas.addEventListener("pointerup", (event) => {
+    const drag = mealViz.drag;
+    mealViz.drag = null;
+    canvas.classList.remove("dragging");
+    if (!drag || Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) > 7) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    const hit = [...mealViz.hitNodes]
+      .sort((a, b) => a.z - b.z)
+      .find((candidate) => Math.hypot(candidate.x - x, candidate.y - y) <= candidate.radius);
+    if (hit) selectNode(hit.node);
+  });
+  canvas.addEventListener("pointercancel", () => {
+    mealViz.drag = null;
+    canvas.classList.remove("dragging");
+  });
+  canvas.addEventListener("wheel", (event) => {
+    event.preventDefault();
+    mealViz.zoom = Math.max(430, Math.min(1050, mealViz.zoom - event.deltaY * 0.55));
+    draw();
+  }, { passive: false });
+  canvas.addEventListener("keydown", (event) => {
+    const rotations = {
+      ArrowLeft: [-0.12, 0],
+      ArrowRight: [0.12, 0],
+      ArrowUp: [0, -0.09],
+      ArrowDown: [0, 0.09]
+    };
+    if (rotations[event.key]) {
+      event.preventDefault();
+      mealViz.yaw += rotations[event.key][0];
+      mealViz.pitch = Math.max(-1.05, Math.min(1.05, mealViz.pitch + rotations[event.key][1]));
+      draw();
+    }
+    if (event.key === "+" || event.key === "=") {
+      mealViz.zoom = Math.min(1050, mealViz.zoom + 90);
+      draw();
+    }
+    if (event.key === "-") {
+      mealViz.zoom = Math.max(430, mealViz.zoom - 90);
+      draw();
+    }
+  });
+
+  $("[data-viz-auto]")?.addEventListener("click", () => {
+    mealViz.autoRotate = !mealViz.autoRotate;
+    const button = $("[data-viz-auto]");
+    if (button) button.innerHTML = `${icon(mealViz.autoRotate ? "ph-pause" : "ph-play")}<span>${mealViz.autoRotate ? "Pause" : "Rotate"}</span>`;
+  });
+  $("[data-viz-reset]")?.addEventListener("click", () => {
+    mealViz.yaw = -0.62;
+    mealViz.pitch = -0.24;
+    mealViz.zoom = 720;
+    draw();
+  });
+  $$('[data-viz-zoom]').forEach((button) => button.addEventListener("click", () => {
+    mealViz.zoom = Math.max(430, Math.min(1050, mealViz.zoom + Number(button.dataset.vizZoom) * 90));
+    draw();
+  }));
+  $$('[data-viz-filter]').forEach((button) => button.addEventListener("click", () => {
+    mealViz.filter = button.dataset.vizFilter;
+    mealViz.selectedKey = "root";
+    render();
+  }));
+  $$('[data-viz-week-nav]').forEach((button) => button.addEventListener("click", () => {
+    weekOffset += Number(button.dataset.vizWeekNav);
+    mealViz.selectedKey = "root";
+    render();
+  }));
+  $("[data-viz-today]")?.addEventListener("click", () => {
+    weekOffset = 0;
+    mealViz.selectedKey = "root";
+    render();
+  });
+
+  selectNode(data.nodes.find((node) => node.key === mealViz.selectedKey) || data.nodes[0]);
+  let previous = performance.now();
+  const tick = (time) => {
+    if (mealViz.autoRotate) {
+      mealViz.yaw += Math.min(0.012, (time - previous) * 0.000055);
+      draw();
+    }
+    previous = time;
+    mealViz.raf = requestAnimationFrame(tick);
+  };
+  mealViz.raf = requestAnimationFrame(tick);
 }
 
 function weekMetrics(dates) {
@@ -1633,6 +2032,7 @@ function wire(route) {
     storeSort = event.target.value;
     render();
   });
+  if (route.section === "meal-map") initMealVisualization();
 }
 
 function adjustInventory(id, delta) {
@@ -1644,6 +2044,13 @@ function adjustInventory(id, delta) {
 }
 
 window.addEventListener("popstate", render);
+window.addEventListener("storage", (event) => {
+  if (event.key !== LS || !event.newValue) return;
+  try {
+    state = normalize(JSON.parse(event.newValue));
+    render();
+  } catch {}
+});
 window.addEventListener("keydown", (event) => {
   if (event.key === "Escape" && $("#modalRoot").children.length) closeModal();
   if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
