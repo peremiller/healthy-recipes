@@ -827,19 +827,21 @@ function groceryData() {
   const have = inventoryByKey();
   const toBuy = [];
   const covered = [];
-  Object.keys(needs).sort((a, b) => needs[a].name.localeCompare(needs[b].name)).forEach((key) => {
-    const need = needs[key];
-    const onHand = have[key] || 0;
-    const buy = round1(Math.max(0, need.need - onHand));
+  allRecipeIngredients(state.recipes).forEach((ingredient) => {
+    const weeklyNeed = needs[ingredient.key];
+    const need = round1(weeklyNeed?.need || 0);
+    const onHand = round1(have[ingredient.key] || 0);
+    const planned = need > 0;
+    const coveredByInventory = planned ? onHand >= need : onHand > 0;
+    const buy = planned ? round1(Math.max(0, need - onHand)) : 1;
     const row = {
-      key,
-      name: need.name,
-      unit: need.unit,
-      need: round1(need.need),
-      have: round1(Math.min(onHand, need.need)),
-      buy
+      ...ingredient,
+      need,
+      have: onHand,
+      buy,
+      planned
     };
-    (buy > 0 ? toBuy : covered).push(row);
+    (coveredByInventory ? covered : toBuy).push(row);
   });
   return { dates, toBuy, covered };
 }
@@ -1573,6 +1575,7 @@ function renderGrocery() {
   const { dates, toBuy, covered } = groceryData();
   const recipeIngredients = allRecipeIngredients(state.recipes);
   const inventory = inventoryByKey();
+  const toBuyKeys = new Set(toBuy.map((item) => item.key));
   const extras = state.extras;
   const checkedCount = toBuy.filter((item) => state.checked[item.key]).length
     + extras.filter((item) => state.checked[`x:${item.id}`]).length;
@@ -1585,20 +1588,32 @@ function renderGrocery() {
       <div class="list-section-title"><span>To buy</span>${checkedCount ? `<button class="button small" type="button" data-purchased>Move ${checkedCount} to inventory</button>` : ""}</div>
       ${total ? `${toBuy.map((item) => groceryRow(item, item.key)).join("")}${extras.map((item) => groceryRow(item, `x:${item.id}`, true)).join("")}` : `<div class="empty-state">${icon("ph-check-circle")}Everything you need is already covered.</div>`}
     </section>
-    ${covered.length ? `<section class="list-surface" style="margin-top:16px"><div class="list-section-title"><span>Covered by inventory</span></div>${covered.map((item) => `<div class="covered-row"><span>${esc(item.name)}</span><span class="grocery-quantity">Need ${item.need} ${esc(item.unit)} · available at home</span></div>`).join("")}</section>` : ""}
+    ${covered.length ? `<section class="list-surface" style="margin-top:16px"><div class="list-section-title"><span>Covered by inventory</span></div>${covered.map((item) => `<div class="covered-row inventory-status-row">
+      <div class="covered-main"><strong>${esc(item.name)}</strong><span class="grocery-quantity">${item.planned ? `Need ${item.need} ${esc(item.unit)} this week · ` : ""}${item.have} ${esc(item.unit)} on hand</span></div>
+      <div class="grocery-inventory-actions"><button class="button secondary small" type="button" data-update-inventory="${esc(item.key)}">${icon("ph-pencil-simple")} Update quantity</button><button class="button danger small" type="button" data-out-of-stock="${esc(item.key)}">${icon("ph-x-circle")} Mark out of stock</button></div>
+    </div>`).join("")}</section>` : ""}
     <section class="list-surface" style="margin-top:16px">
       <div class="list-section-title"><span>All recipe ingredients</span><span class="status-pill">${recipeIngredients.length} items</span></div>
-      ${recipeIngredients.map((item) => `<div class="covered-row"><span>${esc(item.name)}</span><span class="grocery-quantity">Used in ${item.recipeCount} recipe${item.recipeCount === 1 ? "" : "s"} · ${item.totalQty} ${esc(item.unit)} total · ${round1(inventory[item.key] || 0)} ${esc(item.unit)} on hand</span></div>`).join("")}
+      ${recipeIngredients.map((item) => {
+        const status = toBuyKeys.has(item.key) ? "to-buy" : "covered";
+        return `<div class="covered-row recipe-ingredient-status-row" data-recipe-grocery-status="${status}" data-ingredient-key="${esc(item.key)}"><div class="covered-main"><strong>${esc(item.name)}</strong><span class="grocery-quantity">Used in ${item.recipeCount} recipe${item.recipeCount === 1 ? "" : "s"} · ${item.totalQty} ${esc(item.unit)} total · ${round1(inventory[item.key] || 0)} ${esc(item.unit)} on hand</span></div><span class="status-pill ${status === "to-buy" ? "amber" : ""}">${status === "to-buy" ? "To buy" : "Covered"}</span></div>`;
+      }).join("")}
     </section>`;
 }
 
 function groceryRow(item, checkedKey, extra = false) {
   const matches = storesForItem(item.name).length;
+  const quantityDetail = extra
+    ? "Added manually"
+    : item.planned
+      ? `Need ${item.need} · have ${item.have}`
+      : "Recipe ingredient · currently out of stock";
   return `<div class="grocery-row ${state.checked[checkedKey] ? "done" : ""}">
     <input type="checkbox" aria-label="Mark ${esc(item.name)} as in cart" data-grocery-check="${esc(checkedKey)}" ${state.checked[checkedKey] ? "checked" : ""} />
     <a class="grocery-product" href="${groceryItemPath(item)}" data-route><strong>${esc(item.name)}</strong>${extra ? ' <span class="tag">extra</span>' : ""}</a>
-    <span class="grocery-quantity"><strong>Buy ${item.buy ?? item.qty} ${esc(item.unit)}</strong>${extra ? "Added manually" : `Need ${item.need} · have ${item.have}`}</span>
+    <span class="grocery-quantity"><strong>Buy ${item.buy ?? item.qty} ${esc(item.unit)}</strong>${quantityDetail}</span>
     <a class="store-match-link" href="${groceryItemPath(item)}" data-route>${icon("ph-storefront")} ${matches} nearby store${matches === 1 ? "" : "s"}</a>
+    ${extra ? "<span></span>" : `<div class="grocery-inventory-actions"><button class="button secondary small" type="button" data-update-inventory="${esc(item.key)}">${icon("ph-pencil-simple")} Update inventory</button></div>`}
     ${icon("ph-caret-right")}
   </div>`;
 }
@@ -1773,6 +1788,54 @@ function inventoryModal() {
     toast("Added to inventory");
   };
   $("#inventoryName").focus();
+}
+
+function setInventoryQuantity(key, quantity, fallbackItem) {
+  const matches = state.inventory.filter((item) => keyOf(item.name, item.unit) === key);
+  if (!matches.length && fallbackItem) {
+    state.inventory.push({ id: uid(), name: fallbackItem.name, qty: quantity, unit: fallbackItem.unit });
+    return;
+  }
+  matches.forEach((item, index) => {
+    item.qty = index === 0 ? quantity : 0;
+  });
+}
+
+function inventoryQuantityModal(key) {
+  const catalogItem = allRecipeIngredients(state.recipes).find((item) => item.key === key);
+  const inventoryItem = state.inventory.find((item) => keyOf(item.name, item.unit) === key);
+  const item = catalogItem || inventoryItem;
+  if (!item) {
+    toast("Inventory item was not found");
+    return;
+  }
+  const currentQuantity = round1(inventoryByKey()[key] || 0);
+  openModal(`
+    <h2>Update ${esc(item.name)}</h2><p class="modal-subtitle">Set the exact quantity currently available in your inventory.</p>
+    <label class="form-field">Quantity on hand<input id="inventoryQuantityUpdate" type="number" min="0" step="0.25" value="${currentQuantity}" /></label>
+    <p class="form-hint">Unit: ${item.unit ? esc(item.unit) : "count"}. Set the quantity to 0 to mark this ingredient out of stock.</p>
+    <div class="modal-actions"><button class="button secondary" type="button" data-close-modal-secondary>Cancel</button><button class="button" type="button" data-save-inventory-quantity>Save quantity</button></div>`);
+  $("[data-close-modal-secondary]").onclick = closeModal;
+  $("[data-save-inventory-quantity]").onclick = () => {
+    const quantity = round1(Math.max(0, Number($("#inventoryQuantityUpdate").value) || 0));
+    setInventoryQuantity(key, quantity, item);
+    save();
+    closeModal();
+    render();
+    toast(quantity > 0 ? "Inventory quantity updated" : `${item.name} marked out of stock`);
+  };
+  $("#inventoryQuantityUpdate").focus();
+  $("#inventoryQuantityUpdate").select();
+}
+
+function markInventoryOutOfStock(key) {
+  const item = allRecipeIngredients(state.recipes).find((ingredient) => ingredient.key === key)
+    || state.inventory.find((inventoryItem) => keyOf(inventoryItem.name, inventoryItem.unit) === key);
+  if (!item) return;
+  setInventoryQuantity(key, 0, item);
+  save();
+  render();
+  toast(`${item.name} marked out of stock`);
 }
 
 function extraModal() {
@@ -2017,6 +2080,8 @@ function wire(route) {
     render();
     toast("Inventory item removed");
   }));
+  $$('[data-update-inventory]').forEach((button) => button.addEventListener("click", () => inventoryQuantityModal(button.dataset.updateInventory)));
+  $$('[data-out-of-stock]').forEach((button) => button.addEventListener("click", () => markInventoryOutOfStock(button.dataset.outOfStock)));
 
   $("[data-new-extra]")?.addEventListener("click", extraModal);
   $$('[data-grocery-check]').forEach((checkbox) => checkbox.addEventListener("change", () => {

@@ -1388,7 +1388,7 @@ img {
 }
 
 .grocery-row {
-  grid-template-columns: 28px minmax(160px, 1fr) 155px 170px 24px;
+  grid-template-columns: 28px minmax(150px, 1fr) 145px 155px 160px 24px;
   min-height: 72px;
   padding: 11px 18px;
   border-bottom: 1px solid var(--line);
@@ -1437,6 +1437,35 @@ img {
   min-height: 58px;
   padding: 10px 18px;
   border-bottom: 1px solid var(--line);
+}
+
+.covered-main {
+  min-width: 0;
+}
+
+.covered-main strong,
+.covered-main span {
+  display: block;
+}
+
+.covered-main span {
+  margin-top: 3px;
+}
+
+.grocery-inventory-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.grocery-inventory-actions .button {
+  white-space: nowrap;
+}
+
+.recipe-ingredient-status-row .status-pill {
+  flex: 0 0 auto;
 }
 
 .location-banner {
@@ -2317,11 +2346,11 @@ img {
   }
 
   .grocery-row {
-    grid-template-columns: 26px minmax(140px, 1fr) 125px 24px;
+    grid-template-columns: 26px minmax(140px, 1fr) 120px 135px 145px 24px;
   }
 
   .grocery-row .store-match-link {
-    grid-column: 2 / 4;
+    grid-column: auto;
   }
 
   .meal-viz-toolbar {
@@ -2542,9 +2571,14 @@ img {
     grid-column: 2;
   }
 
+  .grocery-row .grocery-inventory-actions {
+    grid-column: 2;
+    justify-content: flex-start;
+  }
+
   .grocery-row > .ph-caret-right {
     grid-column: 3;
-    grid-row: 1 / span 3;
+    grid-row: 1 / span 4;
   }
 
   .availability-row,
@@ -2552,6 +2586,11 @@ img {
   .covered-row {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .covered-row .grocery-inventory-actions {
+    width: 100%;
+    justify-content: flex-start;
   }
 
   .availability-actions {

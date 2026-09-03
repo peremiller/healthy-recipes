@@ -55,6 +55,12 @@ const recipeNameKey = (name) => String(name)
   .replace(/[^a-z0-9]+/g, " ")
   .trim();
 const ingredientKey = (ingredient) => `${recipeNameKey(ingredient.name)}|${ingredient.unit || ""}`;
+const groceryUnitAlias = { cups: "cup", tbsps: "tbsp", tablespoons: "tbsp", teaspoons: "tsp", tsps: "tsp", grams: "g", gram: "g", kilogram: "kg", pieces: "pc", piece: "pc", pcs: "pc", cans: "can", cloves: "clove", slices: "slice", heads: "head", bunches: "bunch", scoops: "scoop", liters: "l", liter: "l" };
+const groceryIngredientKey = (ingredient) => {
+  const name = String(ingredient.name || "").trim().toLowerCase().replace(/s$/, "");
+  const unit = String(ingredient.unit || "").trim().toLowerCase();
+  return `${name}|${groceryUnitAlias[unit] || unit}`;
+};
 
 function assertRecipeIntegrity(state, expectedCount) {
   assert.equal(state.recipes.length, expectedCount);
@@ -79,6 +85,18 @@ renderedImages.forEach((src) => {
   assert.match(src, /^https:\/\/images\.unsplash\.com\//, "managed recipe visuals must be real remote food photographs");
   assert.ok(!src.startsWith("data:image/svg+xml"), "managed recipe visuals must not be generated SVG artwork");
 });
+
+window.location.pathname = "/grocery";
+await loadState("grocery-coverage");
+const groceryMarkup = appElement.innerHTML;
+const catalogIngredientKeys = new Set(fresh.recipes.flatMap((item) => item.ingredients.map(groceryIngredientKey)));
+const statusRows = [...groceryMarkup.matchAll(/data-recipe-grocery-status="(to-buy|covered)" data-ingredient-key="([^"]+)"/g)];
+assert.equal(statusRows.length, catalogIngredientKeys.size, "every recipe ingredient must have one grocery status");
+assert.equal(new Set(statusRows.map((match) => match[2])).size, catalogIngredientKeys.size, "recipe ingredients must not have duplicate grocery statuses");
+assert.equal((groceryMarkup.match(/data-update-inventory=/g) || []).length, catalogIngredientKeys.size, "every classified recipe ingredient must allow inventory quantity updates");
+assert.equal((groceryMarkup.match(/data-out-of-stock=/g) || []).length, statusRows.filter((match) => match[1] === "covered").length, "every covered ingredient must allow marking it out of stock");
+
+window.location.pathname = "/recipes";
 HEALTH_RECIPE_NAMES.forEach((name) => {
   const item = fresh.recipes.find((recipe) => recipe.name === name);
   assert.ok(item, `${name} was not seeded`);
