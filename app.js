@@ -174,7 +174,7 @@ const MEAL_ICON = {
   dinner: "ph-moon-stars",
   snack: "ph-leaf"
 };
-const CONTENT_VERSION = 9;
+const CONTENT_VERSION = 10;
 
 const PHOTOS = {
   oats: "https://images.unsplash.com/photo-1494390248081-4e521a5940db?auto=format&fit=crop&w=720&q=82",
@@ -194,11 +194,24 @@ const PHOTOS = {
   coconut: "https://images.unsplash.com/photo-1580984969071-a8da5656c2fb?auto=format&fit=crop&w=720&q=82",
   pancit: "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=720&q=82",
   riceCake: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=720&q=82",
-  adobo: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=720&q=82"
+  adobo: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=720&q=82",
+  oatmeal: "https://images.unsplash.com/photo-1497888329096-51c27beff665?auto=format&fit=crop&w=720&q=82",
+  omelet: "https://images.unsplash.com/photo-1651442768184-a524a605c379?auto=format&fit=crop&w=720&q=82",
+  filipinoSoup: "https://images.unsplash.com/photo-1534596382981-1974b10d4e1a?auto=format&fit=crop&w=720&q=82",
+  proteinShake: "https://images.unsplash.com/photo-1775199603318-7f8a9a63b40d?auto=format&fit=crop&w=720&q=82",
+  fishSalad: "https://images.unsplash.com/photo-1716816211582-ef70b1cd2e70?auto=format&fit=crop&w=720&q=82",
+  salmonSweetPotato: "https://images.unsplash.com/photo-1602536959221-ebfb88533b4b?auto=format&fit=crop&w=720&q=82",
+  chickenRice: "https://images.unsplash.com/photo-1670164747019-3b4d77128a71?auto=format&fit=crop&w=720&q=82",
+  chiaPudding: "https://images.unsplash.com/photo-1651256785577-575d099f7223?auto=format&fit=crop&w=720&q=82",
+  chickenSalad: "https://images.unsplash.com/photo-1781332149415-f420708ab98f?auto=format&fit=crop&w=720&q=82",
+  salmonAvocado: "https://images.unsplash.com/photo-1777895816168-f9b6563826e5?auto=format&fit=crop&w=720&q=82",
+  chickenVegetables: "https://images.unsplash.com/photo-1784902540665-f6ab6dfef921?auto=format&fit=crop&w=720&q=82",
+  grilledChickenSalad: "https://images.unsplash.com/photo-1781332144017-776ef66c3ab9?auto=format&fit=crop&w=720&q=82",
+  roastChickenSweetPotato: "https://images.unsplash.com/photo-1597377779407-51e50715cc7d?auto=format&fit=crop&w=720&q=82"
 };
 const IMAGE_BY_RECIPE = {
-  "Overnight Oats with Berries": PHOTOS.oats,
-  "Veggie Egg Scramble": PHOTOS.eggs,
+  "Overnight Oats with Berries": PHOTOS.oatmeal,
+  "Veggie Egg Scramble": PHOTOS.omelet,
   "Greek Yogurt Parfait": PHOTOS.yogurt,
   "Quinoa Chickpea Salad": PHOTOS.salad,
   "Grilled Chicken Wrap": PHOTOS.wrap,
@@ -215,18 +228,53 @@ const IMAGE_BY_RECIPE = {
   "Healthy Pancit Bihon": PHOTOS.pancit,
   "Healthy Rice Cake": PHOTOS.riceCake,
   "Healthy Chicken Adobo": PHOTOS.adobo,
-  "Savory Oatmeal with Tofu & Pechay": PHOTOS.oats,
+  "Savory Oatmeal with Tofu & Pechay": PHOTOS.oatmeal,
   "Cherry Chia Yogurt Oats": PHOTOS.yogurt,
-  "Malunggay Egg-White Omelet & Kamote": PHOTOS.eggs,
-  "Monggo Malunggay Bowl": PHOTOS.soup,
+  "Malunggay Egg-White Omelet & Kamote": PHOTOS.omelet,
+  "Monggo Malunggay Bowl": PHOTOS.filipinoSoup,
   "Tofu Pinakbet with Adlai": PHOTOS.tofu,
-  "Lean Chicken Tinola Bowl": PHOTOS.soup,
-  "Calamansi Salmon with Okra & Barley": PHOTOS.salmon,
+  "Lean Chicken Tinola Bowl": PHOTOS.filipinoSoup,
+  "Calamansi Salmon with Okra & Barley": PHOTOS.salmonSweetPotato,
   "Tokwa Mushroom Sisig Lettuce Cups": PHOTOS.tofu,
-  "Vegetable Kare-Kare with Brown Rice": PHOTOS.tofu,
-  "Apple Oat-Bran Yogurt Cup": PHOTOS.apple,
+  "Vegetable Kare-Kare with Brown Rice": PHOTOS.chili,
+  "Apple Oat-Bran Yogurt Cup": PHOTOS.yogurt,
   "Green Papaya Cucumber Salad": PHOTOS.salad,
-  "Soy Cacao Chia Pudding": PHOTOS.yogurt
+  "Soy Cacao Chia Pudding": PHOTOS.chiaPudding
+};
+
+const CALENDAR_PHOTO_BY_RECIPE = {
+  "Breakfast (V-Taper Foundation)": PHOTOS.omelet,
+  "Lunch (V-Taper Foundation)": PHOTOS.roastChickenSweetPotato,
+  "Pre-Workout Snack (V-Taper Foundation)": PHOTOS.proteinShake,
+  "Dinner (V-Taper Foundation)": PHOTOS.fishSalad,
+  "Evening Snack (Sleep-Support)": PHOTOS.yogurt,
+  "Breakfast (Recovery & Refine)": PHOTOS.omelet,
+  "Lunch (Recovery & Refine)": PHOTOS.chickenSalad,
+  "Mid-Afternoon Snack (Recovery & Refine)": PHOTOS.proteinShake,
+  "Dinner (Sleep-Support Meal)": PHOTOS.salmonSweetPotato,
+  "Evening Snack (Recovery & Refine)": PHOTOS.yogurt,
+  "Breakfast: V-Taper Recovery Day": PHOTOS.omelet,
+  "Lunch: V-Taper Recovery Day": PHOTOS.grilledChickenSalad,
+  "Mid-Afternoon Snack: V-Taper Recovery Day": PHOTOS.proteinShake,
+  "Dinner: Deep Sleep Support Meal": PHOTOS.salmon,
+  "Evening Snack: V-Taper Recovery Day": PHOTOS.yogurt,
+  "Breakfast: V-Taper Foundation Day": PHOTOS.omelet,
+  "Breakfast (T-Boost)": PHOTOS.salmonAvocado,
+  "Lunch: V-Taper Foundation Day": PHOTOS.chickenRice,
+  "Lunch (T-Boost)": PHOTOS.chickenVegetables,
+  "Pre-Workout Snack (T-Boost)": PHOTOS.apple,
+  "Pre-Workout Snack: V-Taper Foundation Day": PHOTOS.proteinShake,
+  "Dinner (T-Boost)": PHOTOS.salmonSweetPotato,
+  "Dinner: V-Taper Foundation Day": PHOTOS.fishSalad,
+  "Evening Snack: Sleep-Support": PHOTOS.yogurt,
+  "Meal 1: The Breaking (Ghost Protocol)": PHOTOS.salmonAvocado,
+  "Meal 2: The Monolith (Ghost Protocol)": PHOTOS.salmon,
+  "Meal 3: The Restoration (Ghost Protocol)": PHOTOS.chickenSalad,
+  "Breakfast: Accelerated 11% Cut": PHOTOS.omelet,
+  "Lunch: Accelerated 11% Cut": PHOTOS.chickenVegetables,
+  "Pre-Workout Snack: Accelerated 11% Cut": PHOTOS.proteinShake,
+  "Dinner: Accelerated 11% Cut": PHOTOS.fishSalad,
+  "Evening Snack: Accelerated 11% Cut": PHOTOS.yogurt
 };
 
 const MANAGED_PHOTO_URLS = new Set(Object.values(PHOTOS));
@@ -234,12 +282,6 @@ const MANAGED_RECIPE_NAMES = new Set([
   ...Object.keys(IMAGE_BY_RECIPE),
   ...CALENDAR_MEAL_DEFINITIONS.map((definition) => definition.name)
 ]);
-const VISUAL_PALETTES = {
-  breakfast: ["#fff2cf", "#f7c65d", "#7b4a16"],
-  lunch: ["#e8f5dd", "#74aa62", "#234f32"],
-  dinner: ["#e5edf7", "#7189aa", "#24334d"],
-  snack: ["#f7e8ef", "#cb7c9b", "#623148"]
-};
 
 function recipeNameKey(name) {
   return String(name || "")
@@ -291,62 +333,11 @@ function dedupeRecipes(recipes) {
   return { recipes: unique, redirects };
 }
 
-function visualEmoji(item) {
-  const text = `${item.name || ""} ${(item.ingredients || []).map((ingredient) => ingredient.name).join(" ")}`.toLowerCase();
-  if (/pancake/.test(text)) return "🥞";
-  if (/rice cake/.test(text)) return "🍘";
-  if (/pancit|bihon|noodle/.test(text)) return "🍜";
-  if (/spaghetti|carbonara|pesto/.test(text)) return "🍝";
-  if (/coconut|buko/.test(text)) return "🥥";
-  if (/monggo|tinola|pinakbet|kare-kare|sisig/.test(text)) return "🍲";
-  if (/green papaya|cucumber salad/.test(text)) return "🥗";
-  if (/apple/.test(text)) return "🍎";
-  if (/yogurt|oat|parfait|protein powder|whey|casein/.test(text)) return "🥣";
-  if (/egg/.test(text)) return "🍳";
-  if (/salmon|white fish|cod|tilapia/.test(text)) return "🐟";
-  if (/chicken|turkey/.test(text)) return "🍗";
-  if (/salad|spinach|arugula|kale/.test(text)) return "🥗";
-  if (/hummus|carrot|celery/.test(text)) return "🥕";
-  if (/soup|chili|adobo|lentil/.test(text)) return "🍲";
-  if (/tofu|rice|quinoa/.test(text)) return "🍛";
-  return "🍽️";
-}
-
-function visualTitleLines(value, max = 29) {
-  const words = String(value || "Recipe").split(/\s+/);
-  const lines = [""];
-  words.forEach((word) => {
-    const current = lines[lines.length - 1];
-    if (current && `${current} ${word}`.length > max && lines.length < 2) lines.push(word);
-    else lines[lines.length - 1] = current ? `${current} ${word}` : word;
-  });
-  if (lines.length === 2 && lines[1].length > max + 4) lines[1] = `${lines[1].slice(0, max + 1).trim()}…`;
-  return lines;
-}
-
-function recipeVisualData(item) {
-  const [light, accent, dark] = VISUAL_PALETTES[item.cat] || VISUAL_PALETTES.dinner;
-  const lines = visualTitleLines(item.name);
-  const ingredients = (item.ingredients || []).slice(0, 3).map((ingredient) => ingredient.name).join(" · ") || "Balanced meal";
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="720" height="420" viewBox="0 0 720 420" role="img" aria-label="${esc(item.name)}">
-    <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="${light}"/><stop offset="1" stop-color="#fffdf7"/></linearGradient><filter id="shadow"><feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="${dark}" flood-opacity=".18"/></filter></defs>
-    <rect width="720" height="420" rx="32" fill="url(#bg)"/>
-    <circle cx="590" cy="72" r="96" fill="${accent}" opacity=".17"/><circle cx="100" cy="82" r="54" fill="${accent}" opacity=".12"/>
-    <ellipse cx="360" cy="184" rx="170" ry="116" fill="#fff" opacity=".95" filter="url(#shadow)"/><ellipse cx="360" cy="192" rx="137" ry="83" fill="${light}" stroke="${accent}" stroke-width="5"/>
-    <text x="360" y="228" text-anchor="middle" font-family="Apple Color Emoji, Segoe UI Emoji, sans-serif" font-size="112">${visualEmoji(item)}</text>
-    <rect x="28" y="24" width="124" height="34" rx="17" fill="${dark}" opacity=".92"/><text x="90" y="47" text-anchor="middle" fill="#fff" font-family="Arial, sans-serif" font-size="15" font-weight="700" letter-spacing="1">${esc((MEAL_LABEL[item.cat] || "Meal").toUpperCase())}</text>
-    <rect x="0" y="286" width="720" height="134" fill="${dark}" opacity=".94"/>
-    <text x="34" y="330" fill="#fff" font-family="Georgia, serif" font-size="29" font-weight="700">${esc(lines[0])}</text>
-    ${lines[1] ? `<text x="34" y="365" fill="#fff" font-family="Georgia, serif" font-size="29" font-weight="700">${esc(lines[1])}</text>` : ""}
-    <text x="34" y="400" fill="#fff" opacity=".78" font-family="Arial, sans-serif" font-size="16">${esc(ingredients.slice(0, 78))}</text>
-  </svg>`;
-  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
-}
-
 function recipeImage(item) {
   if (!item) return "";
   if (item.visualMode === "custom" && item.image) return item.image;
-  return recipeVisualData(item);
+  const mealFallback = PHOTOS[item.cat === "breakfast" ? "oatmeal" : item.cat === "lunch" ? "salad" : item.cat === "dinner" ? "tofu" : "apple"];
+  return IMAGE_BY_RECIPE[item.name] || CALENDAR_PHOTO_BY_RECIPE[item.name] || item.image || mealFallback;
 }
 
 function recipe(name, cat, cal, time, tags, image, ingredients, steps) {
@@ -1297,7 +1288,7 @@ function recipeModal(existing = null) {
   openModal(`
     <h2>${existing ? "Edit" : "Add"} recipe</h2><p class="modal-subtitle">Keep the essentials together so planning stays quick.</p>
     <label class="form-field">Recipe name<input id="recipeName" value="${esc(item.name || "")}" placeholder="Miso salmon bowl" /></label>
-    <div class="form-grid"><label class="form-field">Meal type<select id="recipeCategory">${MEALS.map((meal) => `<option value="${meal}" ${item.cat === meal ? "selected" : ""}>${MEAL_LABEL[meal]}</option>`).join("")}</select></label><label class="form-field">Photo URL (optional)<input id="recipeImage" type="url" value="${esc(customPhoto)}" placeholder="Leave blank for an ingredient-accurate visual" /></label></div>
+    <div class="form-grid"><label class="form-field">Meal type<select id="recipeCategory">${MEALS.map((meal) => `<option value="${meal}" ${item.cat === meal ? "selected" : ""}>${MEAL_LABEL[meal]}</option>`).join("")}</select></label><label class="form-field">Photo URL (optional)<input id="recipeImage" type="url" value="${esc(customPhoto)}" placeholder="Leave blank to use a real meal photo" /></label></div>
     <div class="form-grid"><label class="form-field">Calories<input id="recipeCalories" type="number" min="0" value="${item.cal || ""}" placeholder="450" /></label><label class="form-field">Prep time in minutes<input id="recipeTime" type="number" min="0" value="${item.time || ""}" placeholder="25" /></label></div>
     <label class="form-field">Tags<input id="recipeTags" value="${esc((item.tags || []).join(", "))}" placeholder="high-protein, quick" /></label>
     <label class="form-field">Ingredients — one per line<textarea id="recipeIngredients" placeholder="0.5 cup rolled oats\n2 eggs">${esc((item.ingredients || []).map(ingToLine).join("\n"))}</textarea></label>

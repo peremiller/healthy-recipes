@@ -70,12 +70,15 @@ function assertRecipeIntegrity(state, expectedCount) {
 
 const fresh = await loadState("fresh");
 const freshMarkup = appElement.innerHTML;
-assert.equal(fresh.contentVersion, 9);
+assert.equal(fresh.contentVersion, 10);
 assertRecipeIntegrity(fresh, 59);
 assert.equal((freshMarkup.match(/class="recipe-card"/g) || []).length, 59, "all seeded recipes must render as cards");
 const renderedImages = [...freshMarkup.matchAll(/<img src="([^"]+)" alt="[^"]+" loading="lazy"/g)].map((match) => match[1]);
 assert.equal(renderedImages.length, 59, "every recipe card must render a visual");
-assert.equal(new Set(renderedImages).size, 59, "every recipe visual must be distinct");
+renderedImages.forEach((src) => {
+  assert.match(src, /^https:\/\/images\.unsplash\.com\//, "managed recipe visuals must be real remote food photographs");
+  assert.ok(!src.startsWith("data:image/svg+xml"), "managed recipe visuals must not be generated SVG artwork");
+});
 HEALTH_RECIPE_NAMES.forEach((name) => {
   const item = fresh.recipes.find((recipe) => recipe.name === name);
   assert.ok(item, `${name} was not seeded`);
@@ -116,7 +119,17 @@ migrated.recipes = migrated.recipes.filter((item) => item.name !== removedName);
 storage.set("nourishplan.v2", JSON.stringify(migrated));
 const afterDeletion = await loadState("deletion");
 assertRecipeIntegrity(afterDeletion, 59);
-assert.ok(!afterDeletion.recipes.some((item) => item.name === removedName), "a version-9 user deletion must remain deleted");
+assert.ok(!afterDeletion.recipes.some((item) => item.name === removedName), "a version-10 user deletion must remain deleted");
+
+window.location.pathname = "/planner";
+await loadState("planner-photos");
+const plannerMarkup = appElement.innerHTML;
+const plannerPhotos = [...plannerMarkup.matchAll(/<img class="meal-thumb" src="([^"]+)"/g)].map((match) => match[1]);
+assert.equal(plannerPhotos.length, 28, "the current planner week must render a photo for every meal slot");
+plannerPhotos.forEach((src) => {
+  assert.match(src, /^https:\/\/images\.unsplash\.com\//, "planner meal visuals must use real food photographs");
+  assert.ok(!src.startsWith("data:image/svg+xml"), "planner meal visuals must not use SVG artwork");
+});
 
 const plannedSlots = Object.values(fresh.plan).reduce((total, day) => total + Object.values(day || {}).filter(Boolean).length, 0);
 console.log(`Health-goal checks passed: ${fresh.recipes.length} recipes, ${fresh.inventory.length} inventory entries, ${plannedSlots} planned slots.`);
