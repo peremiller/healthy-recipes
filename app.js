@@ -237,7 +237,7 @@ const MEAL_VISUAL = {
   dinner: { color: "#91a5df", glow: "rgba(145, 165, 223, 0.35)" },
   snack: { color: "#e27d62", glow: "rgba(226, 125, 98, 0.35)" }
 };
-const CONTENT_VERSION = 10;
+const CONTENT_VERSION = 11;
 
 const PHOTOS = {
   oats: "https://images.unsplash.com/photo-1494390248081-4e521a5940db?auto=format&fit=crop&w=720&q=82",
@@ -270,7 +270,10 @@ const PHOTOS = {
   salmonAvocado: "https://images.unsplash.com/photo-1777895816168-f9b6563826e5?auto=format&fit=crop&w=720&q=82",
   chickenVegetables: "https://images.unsplash.com/photo-1784902540665-f6ab6dfef921?auto=format&fit=crop&w=720&q=82",
   grilledChickenSalad: "https://images.unsplash.com/photo-1781332144017-776ef66c3ab9?auto=format&fit=crop&w=720&q=82",
-  roastChickenSweetPotato: "https://images.unsplash.com/photo-1597377779407-51e50715cc7d?auto=format&fit=crop&w=720&q=82"
+  roastChickenSweetPotato: "https://images.unsplash.com/photo-1597377779407-51e50715cc7d?auto=format&fit=crop&w=720&q=82",
+  citrusChickenBowl: "https://images.unsplash.com/photo-1785961259195-8e3eb12a8807?auto=format&fit=crop&w=720&q=82",
+  misoSalmonBowl: "https://images.unsplash.com/photo-1670944316338-40c256cb144e?auto=format&fit=crop&w=720&q=82",
+  falafelEggBowl: "https://images.unsplash.com/photo-1680405531955-8b4981bb1b0c?auto=format&fit=crop&w=720&q=82"
 };
 const IMAGE_BY_RECIPE = {
   "Overnight Oats with Berries": PHOTOS.oatmeal,
@@ -302,7 +305,10 @@ const IMAGE_BY_RECIPE = {
   "Vegetable Kare-Kare with Brown Rice": PHOTOS.chili,
   "Apple Oat-Bran Yogurt Cup": PHOTOS.yogurt,
   "Green Papaya Cucumber Salad": PHOTOS.salad,
-  "Soy Cacao Chia Pudding": PHOTOS.chiaPudding
+  "Soy Cacao Chia Pudding": PHOTOS.chiaPudding,
+  "Citrus-Herb Grilled Chicken Bowl": PHOTOS.citrusChickenBowl,
+  "Miso Glazed Salmon Fillet": PHOTOS.misoSalmonBowl,
+  "Mediterranean Falafel & Egg Bowl": PHOTOS.falafelEggBowl
 };
 
 const CALENDAR_PHOTO_BY_RECIPE = {
@@ -510,6 +516,20 @@ function healthGoalRecipes() {
   ];
 }
 
+function requestedBowlRecipes() {
+  return [
+    recipe("Citrus-Herb Grilled Chicken Bowl", "lunch", 510, 35, [...FOUR_GOAL_TAGS, "high-protein", "whole-grain", "vegetable-rich", "meal-prep"], PHOTOS.citrusChickenBowl,
+      [[150, "g", "skinless chicken breast"], [0.5, "cup", "cooked tri-color quinoa"], [1, "cup", "broccoli"], [0.5, "cup", "cherry tomatoes"], [0.25, "cup", "red onion"], [2, "tbsp", "lemon juice"], [1, "tbsp", "apple cider vinegar"], [2, "tsp", "olive oil"], [1, "clove", "garlic"], [1, "tbsp", "fresh parsley"], [0.5, "tsp", "dried oregano"], [0.25, "tsp", "black pepper"]],
+      ["Combine the sliced red onion with the apple cider vinegar and one tablespoon of water. Set aside for at least 15 minutes to quick-pickle without added sugar.", "Coat the chicken with one tablespoon lemon juice, half of the olive oil, oregano and black pepper. Grill over medium-high heat for five to six minutes per side, until the center reaches 74°C, then rest and slice.", "Roast the broccoli and cherry tomatoes at 210°C with a light coating of the remaining oil for 12 to 15 minutes.", "Whisk the remaining lemon juice with the minced garlic, parsley and any remaining olive oil to make the garlic-herb vinaigrette.", "Add the cooked tri-color quinoa to a bowl, then arrange the roasted vegetables, drained pickled onion and sliced charred chicken on top.", "Drizzle with the garlic-herb vinaigrette. Brown rice may replace the quinoa in the same measured portion."]),
+    recipe("Miso Glazed Salmon Fillet", "dinner", 560, 30, [...FOUR_GOAL_TAGS, "omega-3", "high-protein", "vegetable-rich", "lower-sodium"], PHOTOS.misoSalmonBowl,
+      [[120, "g", "salmon fillet"], [0.5, "cup", "cooked brown rice"], [0.5, "cup", "shelled edamame"], [1, "cup", "shredded purple cabbage"], [0.5, "cup", "cucumber"], [1, "tbsp", "white miso paste"], [1, "tsp", "low-sodium soy sauce"], [1, "tsp", "rice vinegar"], [1, "tsp", "sesame oil"], [1, "tsp", "grated ginger"], [1, "tsp", "sesame seeds"]],
+      ["Whisk the white miso, low-sodium soy sauce, half of the rice vinegar, sesame oil and grated ginger into a smooth sesame-ginger glaze.", "Pat the salmon dry and brush it with half of the glaze.", "Heat a nonstick skillet over medium-high heat. Cook the salmon skin-side down for four to five minutes, turn, add the remaining glaze, and cook until the center reaches 63°C.", "Steam the shelled edamame until hot. Use a vegetable peeler to cut the cucumber into ribbons.", "Season the warm brown rice with the remaining rice vinegar, add it to a bowl, and arrange the edamame, shredded purple cabbage and cucumber ribbons around it.", "Place the pan-roasted salmon fillet on top, spoon over the warm glaze, and finish with sesame seeds."]),
+    recipe("Mediterranean Falafel & Egg Bowl", "lunch", 540, 40, [...FOUR_GOAL_TAGS, "vegetarian", "high-fiber", "plant-protein", "Mediterranean"], PHOTOS.falafelEggBowl,
+      [[0.75, "cup", "cooked chickpeas"], [0.25, "cup", "fresh parsley"], [1, "clove", "garlic"], [0.5, "tsp", "ground cumin"], [1, "tsp", "olive oil"], [2, "", "egg"], [2, "tbsp", "hummus"], [2, "cup", "mixed greens"], [4, "pc", "kalamata olives"], [0.5, "cup", "cucumber"], [1, "tbsp", "tahini"], [1, "tbsp", "lemon juice"], [0.25, "tsp", "black pepper"]],
+      ["Heat the oven to 200°C and line a small baking tray.", "Pulse the chickpeas, parsley, garlic, cumin and black pepper until crumbly. Shape into three small patties, brush with olive oil, and bake for 18 to 20 minutes, turning halfway.", "Lower the eggs into gently boiling water for seven minutes, then transfer them to ice water. Peel and halve once cool enough to handle.", "Finely grate half of the cucumber and whisk it with the tahini, lemon juice and one to two tablespoons of water until pourable. Slice the remaining cucumber.", "Fill a bowl with the mixed greens and sliced cucumber, then add the baked falafel patties, soft-boiled eggs, hummus and kalamata olives.", "Drizzle with the cucumber-tahini dressing and serve immediately."])
+  ];
+}
+
 function seed() {
   const rawRecipes = [
     recipe("Overnight Oats with Berries", "breakfast", 320, 5, ["high-fiber", "make-ahead"], PHOTOS.oats,
@@ -550,6 +570,7 @@ function seed() {
       ["Slice the apple.", "Serve with peanut butter for dipping."]),
     ...newHealthyRecipes(),
     ...healthGoalRecipes(),
+    ...requestedBowlRecipes(),
     ...calendarMealRecipes()
   ];
   const { recipes } = dedupeRecipes(rawRecipes);
@@ -626,6 +647,15 @@ function normalize(data) {
   if (previousContentVersion < 9) {
     const existingNames = new Set(normalized.recipes.map((item) => recipeNameKey(item.name)));
     healthGoalRecipes().forEach((item) => {
+      const nameKey = recipeNameKey(item.name);
+      if (existingNames.has(nameKey)) return;
+      normalized.recipes.push(item);
+      existingNames.add(nameKey);
+    });
+  }
+  if (previousContentVersion < 11) {
+    const existingNames = new Set(normalized.recipes.map((item) => recipeNameKey(item.name)));
+    requestedBowlRecipes().forEach((item) => {
       const nameKey = recipeNameKey(item.name);
       if (existingNames.has(nameKey)) return;
       normalized.recipes.push(item);

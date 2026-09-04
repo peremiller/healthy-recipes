@@ -15,6 +15,16 @@ const HEALTH_RECIPE_NAMES = [
   "Green Papaya Cucumber Salad",
   "Soy Cacao Chia Pudding"
 ];
+const REQUESTED_BOWL_RECIPE_NAMES = [
+  "Citrus-Herb Grilled Chicken Bowl",
+  "Miso Glazed Salmon Fillet",
+  "Mediterranean Falafel & Egg Bowl"
+];
+const REQUESTED_BOWL_INGREDIENTS = {
+  "Citrus-Herb Grilled Chicken Bowl": ["skinless chicken breast", "cooked tri-color quinoa", "broccoli", "cherry tomatoes", "red onion", "lemon juice", "garlic", "fresh parsley"],
+  "Miso Glazed Salmon Fillet": ["salmon fillet", "cooked brown rice", "shelled edamame", "shredded purple cabbage", "cucumber", "white miso paste", "grated ginger", "sesame seeds"],
+  "Mediterranean Falafel & Egg Bowl": ["cooked chickpeas", "egg", "hummus", "mixed greens", "kalamata olives", "cucumber", "tahini", "lemon juice"]
+};
 
 const storage = new Map();
 const appElement = { innerHTML: "" };
@@ -77,11 +87,11 @@ function assertRecipeIntegrity(state, expectedCount) {
 
 const fresh = await loadState("fresh");
 const freshMarkup = appElement.innerHTML;
-assert.equal(fresh.contentVersion, 10);
-assertRecipeIntegrity(fresh, 59);
-assert.equal((freshMarkup.match(/class="recipe-card"/g) || []).length, 59, "all seeded recipes must render as cards");
+assert.equal(fresh.contentVersion, 11);
+assertRecipeIntegrity(fresh, 62);
+assert.equal((freshMarkup.match(/class="recipe-card"/g) || []).length, 62, "all seeded recipes must render as cards");
 const renderedImages = [...freshMarkup.matchAll(/<img src="([^"]+)" alt="[^"]+" loading="lazy"/g)].map((match) => match[1]);
-assert.equal(renderedImages.length, 59, "every recipe card must render a visual");
+assert.equal(renderedImages.length, 62, "every recipe card must render a visual");
 renderedImages.forEach((src) => {
   assert.match(src, /^https:\/\/images\.unsplash\.com\//, "managed recipe visuals must be real remote food photographs");
   assert.ok(!src.startsWith("data:image/svg+xml"), "managed recipe visuals must not be generated SVG artwork");
@@ -121,11 +131,19 @@ HEALTH_RECIPE_NAMES.forEach((name) => {
   assert.ok(item.ingredients.length >= 5, `${name} needs complete ingredients`);
   assert.ok(item.steps.length >= 4, `${name} needs complete preparation steps`);
 });
+REQUESTED_BOWL_RECIPE_NAMES.forEach((name) => {
+  const item = fresh.recipes.find((recipe) => recipe.name === name);
+  assert.ok(item, `${name} was not seeded`);
+  const ingredientNames = new Set(item.ingredients.map((ingredient) => ingredient.name));
+  REQUESTED_BOWL_INGREDIENTS[name].forEach((ingredient) => assert.ok(ingredientNames.has(ingredient), `${name} is missing ${ingredient}`));
+  assert.ok(item.steps.length >= 6, `${name} needs complete preparation steps`);
+  assert.match(item.image, /^https:\/\/images\.unsplash\.com\//, `${name} must use a real food photograph`);
+});
 
 const versionEightState = {
   ...fresh,
   contentVersion: 8,
-  recipes: fresh.recipes.filter((item) => !HEALTH_RECIPE_NAMES.includes(item.name)),
+  recipes: fresh.recipes.filter((item) => !HEALTH_RECIPE_NAMES.includes(item.name) && !REQUESTED_BOWL_RECIPE_NAMES.includes(item.name)),
   inventory: fresh.inventory.map((item) => ({ ...item }))
 };
 versionEightState.recipes.push({
@@ -143,8 +161,9 @@ versionEightState.inventory.push({ id: "custom-stock", name: "custom greens", qt
 storage.set("nourishplan.v2", JSON.stringify(versionEightState));
 
 const migrated = await loadState("migration");
-assertRecipeIntegrity(migrated, 60);
+assertRecipeIntegrity(migrated, 63);
 assert.equal(migrated.recipes.filter((item) => HEALTH_RECIPE_NAMES.includes(item.name)).length, 12, "migration must add each health recipe once");
+assert.equal(migrated.recipes.filter((item) => REQUESTED_BOWL_RECIPE_NAMES.includes(item.name)).length, 3, "migration must add each requested bowl recipe once");
 assert.ok(migrated.recipes.some((item) => item.id === "custom-recipe"), "custom recipes must be preserved");
 assert.equal(migrated.inventory.find((item) => item.id === "custom-stock")?.qty, 7, "custom inventory quantities must be preserved");
 
@@ -152,8 +171,8 @@ const removedName = HEALTH_RECIPE_NAMES[0];
 migrated.recipes = migrated.recipes.filter((item) => item.name !== removedName);
 storage.set("nourishplan.v2", JSON.stringify(migrated));
 const afterDeletion = await loadState("deletion");
-assertRecipeIntegrity(afterDeletion, 59);
-assert.ok(!afterDeletion.recipes.some((item) => item.name === removedName), "a version-10 user deletion must remain deleted");
+assertRecipeIntegrity(afterDeletion, 62);
+assert.ok(!afterDeletion.recipes.some((item) => item.name === removedName), "a version-11 user deletion must remain deleted");
 
 window.location.pathname = "/planner";
 await loadState("planner-photos");
