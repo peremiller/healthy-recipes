@@ -2,6 +2,7 @@
 
 import { haversineKm } from "./lib/geo.mjs";
 import { fillRollingMealPlan, MEAL_TYPES } from "./lib/meal-plan.mjs";
+import { IMPORTED_RECIPE_DEFINITIONS } from "./lib/imported-recipes.mjs";
 import {
   CALENDAR_MEAL_DEFINITIONS,
   GOOGLE_CALENDAR_SOURCE,
@@ -237,7 +238,7 @@ const MEAL_VISUAL = {
   dinner: { color: "#91a5df", glow: "rgba(145, 165, 223, 0.35)" },
   snack: { color: "#e27d62", glow: "rgba(226, 125, 98, 0.35)" }
 };
-const CONTENT_VERSION = 11;
+const CONTENT_VERSION = 12;
 
 const PHOTOS = {
   oats: "https://images.unsplash.com/photo-1494390248081-4e521a5940db?auto=format&fit=crop&w=720&q=82",
@@ -273,7 +274,15 @@ const PHOTOS = {
   roastChickenSweetPotato: "https://images.unsplash.com/photo-1597377779407-51e50715cc7d?auto=format&fit=crop&w=720&q=82",
   citrusChickenBowl: "https://images.unsplash.com/photo-1785961259195-8e3eb12a8807?auto=format&fit=crop&w=720&q=82",
   misoSalmonBowl: "https://images.unsplash.com/photo-1670944316338-40c256cb144e?auto=format&fit=crop&w=720&q=82",
-  falafelEggBowl: "https://images.unsplash.com/photo-1680405531955-8b4981bb1b0c?auto=format&fit=crop&w=720&q=82"
+  falafelEggBowl: "https://images.unsplash.com/photo-1680405531955-8b4981bb1b0c?auto=format&fit=crop&w=720&q=82",
+  tea: "https://images.unsplash.com/photo-1544787219-7f47ccb76574?auto=format&fit=crop&w=720&q=82",
+  pasta: "https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=720&q=82",
+  cake: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=720&q=82",
+  dessert: "https://images.unsplash.com/photo-1551024506-0bccd828d307?auto=format&fit=crop&w=720&q=82",
+  fruit: "https://images.unsplash.com/photo-1490474418585-ba9bad8fd0ea?auto=format&fit=crop&w=720&q=82",
+  rice: "https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=720&q=82",
+  drink: "https://images.unsplash.com/photo-1544145945-f90425340c7e?auto=format&fit=crop&w=720&q=82",
+  fish: "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=720&q=82"
 };
 const IMAGE_BY_RECIPE = {
   "Overnight Oats with Berries": PHOTOS.oatmeal,
@@ -349,7 +358,8 @@ const CALENDAR_PHOTO_BY_RECIPE = {
 const MANAGED_PHOTO_URLS = new Set(Object.values(PHOTOS));
 const MANAGED_RECIPE_NAMES = new Set([
   ...Object.keys(IMAGE_BY_RECIPE),
-  ...CALENDAR_MEAL_DEFINITIONS.map((definition) => definition.name)
+  ...CALENDAR_MEAL_DEFINITIONS.map((definition) => definition.name),
+  ...IMPORTED_RECIPE_DEFINITIONS.map((definition) => definition.name)
 ]);
 
 function recipeNameKey(name) {
@@ -439,6 +449,24 @@ function calendarMealRecipes() {
     source: "Google Calendar",
     sourceCalendar: GOOGLE_CALENDAR_SOURCE,
     sourceNote: definition.calendarNote
+  }));
+}
+
+function importedRecipes() {
+  return IMPORTED_RECIPE_DEFINITIONS.map((definition) => ({
+    ...recipe(
+      definition.name,
+      definition.cat,
+      definition.cal,
+      definition.time,
+      definition.tags,
+      PHOTOS[definition.imageKey] || PHOTOS.salad,
+      definition.ingredients,
+      definition.steps
+    ),
+    source: definition.source,
+    sourceNote: definition.sourceNote,
+    aliases: [...new Set(definition.aliases || [])]
   }));
 }
 
@@ -571,6 +599,7 @@ function seed() {
     ...newHealthyRecipes(),
     ...healthGoalRecipes(),
     ...requestedBowlRecipes(),
+    ...importedRecipes(),
     ...calendarMealRecipes()
   ];
   const { recipes } = dedupeRecipes(rawRecipes);
@@ -662,6 +691,15 @@ function normalize(data) {
       existingNames.add(nameKey);
     });
   }
+  if (previousContentVersion < 12) {
+    const existingNames = new Set(normalized.recipes.map((item) => recipeNameKey(item.name)));
+    importedRecipes().forEach((item) => {
+      const nameKey = recipeNameKey(item.name);
+      if (existingNames.has(nameKey)) return;
+      normalized.recipes.push(item);
+      existingNames.add(nameKey);
+    });
+  }
   normalized.contentVersion = CONTENT_VERSION;
   normalized.recipes.forEach((item) => {
     item.ingredients = Array.isArray(item.ingredients) ? item.ingredients : [];
@@ -712,7 +750,7 @@ function keepRollingMealPlanComplete() {
     weeks: 4,
     meals: MEALS
   });
-  if (!completed.filled) return false;
+  if (!completed.filled && !completed.repeatsResolved) return false;
   state.plan = completed.plan;
   save();
   return true;
@@ -846,6 +884,62 @@ function planFor(date) {
   return state.plan[date] || {};
 }
 
+function adjacentDates(date) {
+  return [-1, 1].map((offset) => {
+    const adjacent = dateFromISO(date);
+    adjacent.setDate(adjacent.getDate() + offset);
+    return isoOf(adjacent);
+  });
+}
+
+function hasAdjacentMeal(date, recipeId) {
+  return adjacentDates(date).some((adjacent) => Object.values(planFor(adjacent)).includes(recipeId));
+}
+
+function setPlannedMeal(date, meal, recipeId, successMessage = "Meal planned") {
+  const item = recipeById(recipeId);
+  if (!item) return false;
+  if (hasAdjacentMeal(date, recipeId)) {
+    toast(`Choose another meal — ${item.name} is already planned on an adjacent day`);
+    return false;
+  }
+  if (!state.plan[date]) state.plan[date] = {};
+  state.plan[date][meal] = recipeId;
+  save();
+  closeModal();
+  render();
+  toast(successMessage);
+  return true;
+}
+
+function recipeContainsHummus(item) {
+  return (item?.ingredients || []).some((ingredient) => recipeNameKey(ingredient.name).includes("hummus"));
+}
+
+function hummusAlternativeFor(date, meal, currentItem) {
+  if (!recipeContainsHummus(currentItem)) return null;
+  const blocked = new Set([
+    currentItem.id,
+    ...Object.values(planFor(date)),
+    ...adjacentDates(date).flatMap((adjacent) => Object.values(planFor(adjacent)))
+  ]);
+  const category = state.recipes.filter((item) => item.cat === meal && !recipeContainsHummus(item) && !blocked.has(item.id));
+  const candidates = category.length
+    ? category
+    : state.recipes.filter((item) => !recipeContainsHummus(item) && !blocked.has(item.id));
+  if (!candidates.length) return null;
+  const hash = `${date}|${meal}`.split("").reduce((total, character) => total + character.charCodeAt(0), 0);
+  return candidates.sort((a, b) => a.name.localeCompare(b.name))[hash % candidates.length];
+}
+
+function renderHummusAlternative(date, meal, currentItem) {
+  const alternative = hummusAlternativeFor(date, meal, currentItem);
+  if (!alternative) return "";
+  return `<button class="hummus-alternative" type="button" data-use-hummus-alternative="${date}|${meal}|${alternative.id}" aria-label="Use hummus-free alternative ${esc(alternative.name)}">
+    <img src="${esc(recipeImage(alternative))}" alt="" loading="lazy" /><span><small>Hummus-free alternative</small><strong>${esc(alternative.name)}</strong></span>${icon("ph-swap")}
+  </button>`;
+}
+
 function calendarRecipesFor(date, meal) {
   const names = calendarMealNamesForDate(date)[meal] || [];
   const seen = new Set();
@@ -879,12 +973,7 @@ function calendarMealPickerModal(date, meal) {
       <img src="${esc(recipeImage(item))}" alt="" /><span><strong>${esc(item.name)}</strong><small>${item.cal} kcal · ${fmtPeso(mealCostPeso(item))} est. · ${item.time} min${item.id === currentId ? " · Currently planned" : ""}</small></span>${item.id === currentId ? icon("ph-check-circle") : icon("ph-arrow-right")}
     </button>`).join("")}</div>`);
   $$('[data-use-calendar-recipe]').forEach((button) => button.addEventListener("click", () => {
-    if (!state.plan[date]) state.plan[date] = {};
-    state.plan[date][meal] = button.dataset.useCalendarRecipe;
-    save();
-    closeModal();
-    render();
-    toast(`${MEAL_LABEL[meal]} updated from Google Calendar`);
+    setPlannedMeal(date, meal, button.dataset.useCalendarRecipe, `${MEAL_LABEL[meal]} updated from Google Calendar`);
   }));
 }
 
@@ -1569,6 +1658,7 @@ function renderWeekPlanner() {
           <span class="meal-name">${esc(item.name)}</span><span class="meal-calories">${item.cal} kcal · <span class="meal-cost" data-meal-cost="${mealCostPeso(item)}">${fmtPeso(mealCostPeso(item))} est.</span></span>
         </button>` : `<button class="empty-meal-button" type="button" data-pick="${date}|${meal}">${icon("ph-plus")}<span>Add meal</span></button>`}</div>
         ${renderCalendarMealOptions(date, meal, item?.id)}
+        ${renderHummusAlternative(date, meal, item)}
       </div>`;
     }).join("")}`).join("");
   return `
@@ -1628,7 +1718,7 @@ function renderDayPlanner() {
           const primary = item ? `<div class="timeline-row">
             <span class="meal-type-icon">${icon(MEAL_ICON[meal])}</span><span class="meal-time">${times[index]}</span><img src="${esc(recipeImage(item))}" alt="${esc(item.name)}" /><div class="timeline-copy"><strong>${esc(item.name)}</strong><span>${MEAL_LABEL[meal]} · ${item.cal} kcal · <span class="meal-cost" data-meal-cost="${mealCostPeso(item)}">${fmtPeso(mealCostPeso(item))} est.</span></span></div><button class="icon-button" type="button" data-pick="${dayDate}|${meal}" aria-label="Change meal">${icon("ph-dots-three-vertical")}</button>
           </div>` : `<button class="timeline-row empty-day-row" type="button" data-pick="${dayDate}|${meal}"><span class="meal-type-icon">${icon(MEAL_ICON[meal])}</span><span class="meal-time">${times[index]}</span><span></span><span>Add ${MEAL_LABEL[meal].toLowerCase()}</span>${icon("ph-plus")}</button>`;
-          return `<div class="timeline-meal-group">${primary}${renderCalendarMealOptions(dayDate, meal, item?.id)}</div>`;
+          return `<div class="timeline-meal-group">${primary}${renderCalendarMealOptions(dayDate, meal, item?.id)}${renderHummusAlternative(dayDate, meal, item)}</div>`;
         }).join("")}
       </section>
       <aside class="surface day-summary"><div class="panel-title"><span>Daily overview</span>${icon("ph-info")}</div><div class="nutrition-total">${icon("ph-chart-donut")}<div><strong>${calories.toLocaleString()}</strong><span>kcal planned today</span></div></div><div class="nutrition-total daily-cost-total" data-day-cost="${cost}">${icon("ph-wallet")}<div><strong>${fmtPeso(cost)}</strong><span>estimated total for all meals today</span></div></div><div class="macro-list">${macroRow("Meals", `${itemCount} of 4`, itemCount * 25, "carbs")}${macroRow("Calorie target", "1,700 kcal", Math.min(100, calories / 17), "fat")}</div><p class="cost-estimate-note">Ingredient-cost estimate per serving; actual prices vary by store and season.</p></aside>
@@ -1639,7 +1729,7 @@ function renderRecipes() {
   const query = recipeQuery.trim().toLowerCase();
   const list = state.recipes.filter((item) => {
     const matchesCategory = recipeCat === "all" || item.cat === recipeCat;
-    const haystack = [item.name, ...item.tags, ...item.ingredients.map((ingredient) => ingredient.name)].join(" ").toLowerCase();
+    const haystack = [item.name, ...(item.aliases || []), ...item.tags, ...item.ingredients.map((ingredient) => ingredient.name)].join(" ").toLowerCase();
     return matchesCategory && (!query || haystack.includes(query));
   });
   const actions = `<button class="button" type="button" data-new-recipe>${icon("ph-plus")} Add Recipe</button>`;
@@ -1661,8 +1751,8 @@ function renderRecipes() {
 function renderRecipeDetail(item) {
   if (!item) return renderNotFound();
   const calendarNotes = [...new Set([...(item.sourceNotes || []), item.sourceNote].filter(Boolean))];
-  const sourceNote = item.source === "Google Calendar" && item.sourceNote
-    ? `<section class="surface detail-section calendar-source-note" style="grid-column:1/-1"><h2>${icon("ph-calendar-check")} Imported from Google Calendar</h2>${calendarNotes.map((note) => `<p>${esc(note)}</p>`).join("")}<span>${esc(item.sourceCalendar || GOOGLE_CALENDAR_SOURCE)} · Equivalent calendar menus are combined into one recipe. Calories and preparation time are practical estimates.</span></section>`
+  const sourceNote = item.source && calendarNotes.length
+    ? `<section class="surface detail-section calendar-source-note" style="grid-column:1/-1"><h2>${icon(item.source === "Google Calendar" ? "ph-calendar-check" : "ph-file-pdf")} ${item.source === "Google Calendar" ? "Imported from Google Calendar" : "Adapted from your attachment"}</h2>${calendarNotes.map((note) => `<p>${esc(note)}</p>`).join("")}<span>${esc(item.sourceCalendar || item.source)} · Calories and preparation time are practical estimates.</span></section>`
     : "";
   return `
     <nav class="detail-breadcrumbs" aria-label="Breadcrumb"><a href="/recipes" data-route>Recipes</a>${icon("ph-caret-right")}<span>${esc(item.name)}</span></nav>
@@ -2039,12 +2129,7 @@ function wirePickerRows() {
     button.onclick = () => {
       const date = button.dataset.pickerDate;
       const meal = button.dataset.pickerMeal;
-      if (!state.plan[date]) state.plan[date] = {};
-      state.plan[date][meal] = button.dataset.chooseRecipe;
-      save();
-      closeModal();
-      render();
-      toast("Meal planned");
+      setPlannedMeal(date, meal, button.dataset.chooseRecipe);
     };
   });
 }
@@ -2269,6 +2354,10 @@ function wire(route) {
   $$('[data-calendar-options]').forEach((button) => button.addEventListener("click", () => {
     const [date, meal] = button.dataset.calendarOptions.split("|");
     calendarMealPickerModal(date, meal);
+  }));
+  $$('[data-use-hummus-alternative]').forEach((button) => button.addEventListener("click", () => {
+    const [date, meal, recipeId] = button.dataset.useHummusAlternative.split("|");
+    setPlannedMeal(date, meal, recipeId, "Hummus-free alternative planned");
   }));
   $("[data-quick-add]")?.addEventListener("click", quickAddModal);
 

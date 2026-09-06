@@ -775,6 +775,56 @@ img {
   margin-left: auto;
 }
 
+.hummus-alternative {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 7px;
+  margin-top: 7px;
+  padding: 7px;
+  border: 1px solid #e9d9a3;
+  border-radius: 8px;
+  background: #fffaf0;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.hummus-alternative:hover {
+  border-color: #d4b85d;
+  background: #fff5d8;
+}
+
+.hummus-alternative img {
+  width: 34px;
+  height: 34px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+.hummus-alternative small,
+.hummus-alternative strong {
+  display: block;
+}
+
+.hummus-alternative small {
+  color: #806b2f;
+  font-size: 8.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.35px;
+}
+
+.hummus-alternative strong {
+  margin-top: 1px;
+  overflow: hidden;
+  font-size: 9.5px;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .calendar-picker-list {
   display: grid;
   gap: 9px;
@@ -1071,6 +1121,11 @@ img {
 }
 
 .timeline-meal-group > .calendar-meal-trigger {
+  width: auto;
+  margin: 0 22px 16px 184px;
+}
+
+.timeline-meal-group > .hummus-alternative {
   width: auto;
   margin: 0 22px 16px 184px;
 }
@@ -2585,6 +2640,10 @@ img {
   }
 
   .timeline-meal-group > .calendar-meal-trigger {
+    margin: 0 14px 14px 56px;
+  }
+
+  .timeline-meal-group > .hummus-alternative {
     margin: 0 14px 14px 56px;
   }
 

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import { EYE_SUPPORTIVE_RECIPES, IMPORTED_RECIPE_DEFINITIONS } from "../lib/imported-recipes.mjs";
 
 const HEALTH_RECIPE_NAMES = [
   "Savory Oatmeal with Tofu & Pechay",
@@ -25,6 +26,8 @@ const REQUESTED_BOWL_INGREDIENTS = {
   "Miso Glazed Salmon Fillet": ["salmon fillet", "cooked brown rice", "shelled edamame", "shredded purple cabbage", "cucumber", "white miso paste", "grated ginger", "sesame seeds"],
   "Mediterranean Falafel & Egg Bowl": ["cooked chickpeas", "egg", "hummus", "mixed greens", "kalamata olives", "cucumber", "tahini", "lemon juice"]
 };
+const IMPORTED_RECIPE_NAMES = IMPORTED_RECIPE_DEFINITIONS.map((item) => item.name);
+const EXPECTED_RECIPE_COUNT = 62 + IMPORTED_RECIPE_DEFINITIONS.length;
 
 const storage = new Map();
 const appElement = { innerHTML: "" };
@@ -76,22 +79,31 @@ const groceryIngredientKey = (ingredient) => {
 function assertRecipeIntegrity(state, expectedCount) {
   assert.equal(state.recipes.length, expectedCount);
   assert.equal(new Set(state.recipes.map((item) => recipeNameKey(item.name))).size, expectedCount, "recipe names must be unique");
+  const signatures = state.recipes.map((item) => `${item.cat}|${item.ingredients.map((ingredient) => `${recipeNameKey(ingredient.name)}:${ingredient.unit}:${ingredient.qty}`).sort().join("|")}`);
+  assert.equal(new Set(signatures).size, expectedCount, "exact ingredient-and-quantity duplicates must be consolidated");
 
   const recipeIngredientKeys = new Set(state.recipes.flatMap((item) => item.ingredients.map(ingredientKey)));
   const inventoryKeys = new Set(state.inventory.map(ingredientKey));
   recipeIngredientKeys.forEach((key) => assert.ok(inventoryKeys.has(key), `inventory is missing ${key}`));
 
-  const usedRecipeIds = new Set(Object.values(state.plan).flatMap((day) => Object.values(day || {})).filter(Boolean));
-  state.recipes.forEach((item) => assert.ok(usedRecipeIds.has(item.id), `${item.name} is missing from the rolling planner`));
+  const plannedDays = Object.keys(state.plan).sort().slice(0, 28);
+  const usedRecipeIds = new Set(plannedDays.flatMap((date) => Object.values(state.plan[date] || {})).filter(Boolean));
+  assert.ok(usedRecipeIds.size >= 100, "the four-week planner must maintain a broad recipe rotation");
+  plannedDays.slice(1).forEach((date, index) => {
+    const previousIds = new Set(Object.values(state.plan[plannedDays[index]] || {}));
+    Object.values(state.plan[date] || {}).forEach((recipeId) => {
+      assert.ok(!previousIds.has(recipeId), `recipe ${recipeId} repeats on consecutive days`);
+    });
+  });
 }
 
 const fresh = await loadState("fresh");
 const freshMarkup = appElement.innerHTML;
-assert.equal(fresh.contentVersion, 11);
-assertRecipeIntegrity(fresh, 62);
-assert.equal((freshMarkup.match(/class="recipe-card"/g) || []).length, 62, "all seeded recipes must render as cards");
+assert.equal(fresh.contentVersion, 12);
+assertRecipeIntegrity(fresh, EXPECTED_RECIPE_COUNT);
+assert.equal((freshMarkup.match(/class="recipe-card"/g) || []).length, EXPECTED_RECIPE_COUNT, "all seeded recipes must render as cards");
 const renderedImages = [...freshMarkup.matchAll(/<img src="([^"]+)" alt="[^"]+" loading="lazy"/g)].map((match) => match[1]);
-assert.equal(renderedImages.length, 62, "every recipe card must render a visual");
+assert.equal(renderedImages.length, EXPECTED_RECIPE_COUNT, "every recipe card must render a visual");
 renderedImages.forEach((src) => {
   assert.match(src, /^https:\/\/images\.unsplash\.com\//, "managed recipe visuals must be real remote food photographs");
   assert.ok(!src.startsWith("data:image/svg+xml"), "managed recipe visuals must not be generated SVG artwork");
@@ -139,6 +151,35 @@ REQUESTED_BOWL_RECIPE_NAMES.forEach((name) => {
   assert.ok(item.steps.length >= 6, `${name} needs complete preparation steps`);
   assert.match(item.image, /^https:\/\/images\.unsplash\.com\//, `${name} must use a real food photograph`);
 });
+IMPORTED_RECIPE_NAMES.forEach((name) => {
+  const item = fresh.recipes.find((recipe) => recipe.name === name);
+  assert.ok(item, `${name} was not imported`);
+  assert.ok(item.ingredients.length >= 2, `${name} needs measurable ingredients`);
+  assert.ok(item.steps.length >= 3, `${name} needs a complete method`);
+  assert.ok(item.source, `${name} needs attachment provenance`);
+  assert.match(item.image, /^https:\/\/images\.unsplash\.com\//, `${name} must use a real food photograph`);
+});
+EYE_SUPPORTIVE_RECIPES.forEach(({ name }) => {
+  const item = fresh.recipes.find((recipe) => recipe.name === name);
+  ["eye-supportive", "vitamin-a-foods", "lutein-zeaxanthin-foods"]
+    .forEach((tag) => assert.ok(item.tags.includes(tag), `${name} is missing ${tag}`));
+});
+assert.deepEqual(
+  fresh.recipes.find((item) => item.name === "Tuna Calamansi Yogurt Spread").aliases,
+  ["Tuna Yogurt Spread"],
+  "equivalent spread names must be retained as aliases instead of duplicate cards"
+);
+
+const versionElevenState = {
+  ...fresh,
+  contentVersion: 11,
+  recipes: fresh.recipes.filter((item) => !IMPORTED_RECIPE_NAMES.includes(item.name)),
+  inventory: fresh.inventory.map((item) => ({ ...item }))
+};
+storage.set("nourishplan.v2", JSON.stringify(versionElevenState));
+const attachmentMigration = await loadState("attachment-migration");
+assertRecipeIntegrity(attachmentMigration, EXPECTED_RECIPE_COUNT);
+assert.equal(attachmentMigration.recipes.filter((item) => IMPORTED_RECIPE_NAMES.includes(item.name)).length, IMPORTED_RECIPE_NAMES.length, "version-11 users must receive every attachment recipe once");
 
 const versionEightState = {
   ...fresh,
@@ -161,18 +202,27 @@ versionEightState.inventory.push({ id: "custom-stock", name: "custom greens", qt
 storage.set("nourishplan.v2", JSON.stringify(versionEightState));
 
 const migrated = await loadState("migration");
-assertRecipeIntegrity(migrated, 63);
+assertRecipeIntegrity(migrated, EXPECTED_RECIPE_COUNT + 1);
 assert.equal(migrated.recipes.filter((item) => HEALTH_RECIPE_NAMES.includes(item.name)).length, 12, "migration must add each health recipe once");
 assert.equal(migrated.recipes.filter((item) => REQUESTED_BOWL_RECIPE_NAMES.includes(item.name)).length, 3, "migration must add each requested bowl recipe once");
 assert.ok(migrated.recipes.some((item) => item.id === "custom-recipe"), "custom recipes must be preserved");
 assert.equal(migrated.inventory.find((item) => item.id === "custom-stock")?.qty, 7, "custom inventory quantities must be preserved");
 
 const removedName = HEALTH_RECIPE_NAMES[0];
-migrated.recipes = migrated.recipes.filter((item) => item.name !== removedName);
+const removedAttachmentName = IMPORTED_RECIPE_NAMES[0];
+migrated.recipes = migrated.recipes.filter((item) => item.name !== removedName && item.name !== removedAttachmentName);
 storage.set("nourishplan.v2", JSON.stringify(migrated));
 const afterDeletion = await loadState("deletion");
-assertRecipeIntegrity(afterDeletion, 62);
-assert.ok(!afterDeletion.recipes.some((item) => item.name === removedName), "a version-11 user deletion must remain deleted");
+assertRecipeIntegrity(afterDeletion, EXPECTED_RECIPE_COUNT - 1);
+assert.ok(!afterDeletion.recipes.some((item) => item.name === removedName), "a version-12 user deletion must remain deleted");
+assert.ok(!afterDeletion.recipes.some((item) => item.name === removedAttachmentName), "a version-12 attachment-recipe deletion must remain deleted");
+
+const attachmentDetail = fresh.recipes.find((item) => item.name === "Garden Salad");
+window.location.pathname = `/recipes/garden-salad-${attachmentDetail.id}`;
+storage.set("nourishplan.v2", JSON.stringify(fresh));
+await loadState("attachment-detail");
+assert.match(appElement.innerHTML, /Adapted from your attachment/, "attachment recipe details must show their provenance");
+assert.match(appElement.innerHTML, /Cook Book\.docx\.pdf \/ Flavorful Healthy Diet_ A Cookbook\.pptx\.pdf/, "attachment recipe details must identify their source files");
 
 window.location.pathname = "/planner";
 await loadState("planner-photos");
@@ -183,6 +233,7 @@ const plannerCosts = [...plannerMarkup.matchAll(/data-meal-cost="([0-9]+)"/g)].m
 assert.equal(plannerCosts.length, 28, "the current planner week must show an estimated Philippine peso cost for every meal");
 plannerCosts.forEach((cost) => assert.ok(cost >= 35, "each meal estimate must be a positive amount"));
 assert.match(plannerMarkup, /estimated ingredient costs per serving in Philippine pesos/, "planner must explain the PHP pricing basis");
+assert.match(plannerMarkup, /data-use-hummus-alternative=/, "every visible hummus meal must offer a hummus-free alternative");
 plannerPhotos.forEach((src) => {
   assert.match(src, /^https:\/\/images\.unsplash\.com\//, "planner meal visuals must use real food photographs");
   assert.ok(!src.startsWith("data:image/svg+xml"), "planner meal visuals must not use SVG artwork");
