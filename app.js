@@ -912,32 +912,42 @@ function setPlannedMeal(date, meal, recipeId, successMessage = "Meal planned") {
   return true;
 }
 
-function recipeContainsHummus(item) {
-  return (item?.ingredients || []).some((ingredient) => recipeNameKey(ingredient.name).includes("hummus"));
+const MEAL_ALTERNATIVE_RULES = [
+  { key: "hummus", term: "hummus", label: "Hummus-free alternative" },
+  { key: "turkey", term: "turkey", label: "Turkey-free alternative" }
+];
+
+function recipeContainsTerm(item, term) {
+  const searchText = [item?.name, ...(item?.aliases || []), ...(item?.ingredients || []).map((ingredient) => ingredient.name)]
+    .map(recipeNameKey)
+    .join(" ");
+  return searchText.includes(recipeNameKey(term));
 }
 
-function hummusAlternativeFor(date, meal, currentItem) {
-  if (!recipeContainsHummus(currentItem)) return null;
+function mealAlternativeFor(date, meal, currentItem, term) {
+  if (!recipeContainsTerm(currentItem, term)) return null;
   const blocked = new Set([
     currentItem.id,
     ...Object.values(planFor(date)),
     ...adjacentDates(date).flatMap((adjacent) => Object.values(planFor(adjacent)))
   ]);
-  const category = state.recipes.filter((item) => item.cat === meal && !recipeContainsHummus(item) && !blocked.has(item.id));
+  const category = state.recipes.filter((item) => item.cat === meal && !recipeContainsTerm(item, term) && !blocked.has(item.id));
   const candidates = category.length
     ? category
-    : state.recipes.filter((item) => !recipeContainsHummus(item) && !blocked.has(item.id));
+    : state.recipes.filter((item) => !recipeContainsTerm(item, term) && !blocked.has(item.id));
   if (!candidates.length) return null;
-  const hash = `${date}|${meal}`.split("").reduce((total, character) => total + character.charCodeAt(0), 0);
+  const hash = `${date}|${meal}|${term}`.split("").reduce((total, character) => total + character.charCodeAt(0), 0);
   return candidates.sort((a, b) => a.name.localeCompare(b.name))[hash % candidates.length];
 }
 
-function renderHummusAlternative(date, meal, currentItem) {
-  const alternative = hummusAlternativeFor(date, meal, currentItem);
-  if (!alternative) return "";
-  return `<button class="hummus-alternative" type="button" data-use-hummus-alternative="${date}|${meal}|${alternative.id}" aria-label="Use hummus-free alternative ${esc(alternative.name)}">
-    <img src="${esc(recipeImage(alternative))}" alt="" loading="lazy" /><span><small>Hummus-free alternative</small><strong>${esc(alternative.name)}</strong></span>${icon("ph-swap")}
-  </button>`;
+function renderMealAlternatives(date, meal, currentItem) {
+  return MEAL_ALTERNATIVE_RULES.map((rule) => {
+    const alternative = mealAlternativeFor(date, meal, currentItem, rule.term);
+    if (!alternative) return "";
+    return `<button class="meal-alternative ${rule.key}-alternative" type="button" data-use-meal-alternative="${date}|${meal}|${alternative.id}|${rule.key}" data-alternative-kind="${rule.key}" aria-label="Use ${rule.label.toLowerCase()} ${esc(alternative.name)}">
+      <img src="${esc(recipeImage(alternative))}" alt="" loading="lazy" /><span><small>${rule.label}</small><strong>${esc(alternative.name)}</strong></span>${icon("ph-swap")}
+    </button>`;
+  }).join("");
 }
 
 function calendarRecipesFor(date, meal) {
@@ -1658,7 +1668,7 @@ function renderWeekPlanner() {
           <span class="meal-name">${esc(item.name)}</span><span class="meal-calories">${item.cal} kcal · <span class="meal-cost" data-meal-cost="${mealCostPeso(item)}">${fmtPeso(mealCostPeso(item))} est.</span></span>
         </button>` : `<button class="empty-meal-button" type="button" data-pick="${date}|${meal}">${icon("ph-plus")}<span>Add meal</span></button>`}</div>
         ${renderCalendarMealOptions(date, meal, item?.id)}
-        ${renderHummusAlternative(date, meal, item)}
+        ${renderMealAlternatives(date, meal, item)}
       </div>`;
     }).join("")}`).join("");
   return `
@@ -1718,7 +1728,7 @@ function renderDayPlanner() {
           const primary = item ? `<div class="timeline-row">
             <span class="meal-type-icon">${icon(MEAL_ICON[meal])}</span><span class="meal-time">${times[index]}</span><img src="${esc(recipeImage(item))}" alt="${esc(item.name)}" /><div class="timeline-copy"><strong>${esc(item.name)}</strong><span>${MEAL_LABEL[meal]} · ${item.cal} kcal · <span class="meal-cost" data-meal-cost="${mealCostPeso(item)}">${fmtPeso(mealCostPeso(item))} est.</span></span></div><button class="icon-button" type="button" data-pick="${dayDate}|${meal}" aria-label="Change meal">${icon("ph-dots-three-vertical")}</button>
           </div>` : `<button class="timeline-row empty-day-row" type="button" data-pick="${dayDate}|${meal}"><span class="meal-type-icon">${icon(MEAL_ICON[meal])}</span><span class="meal-time">${times[index]}</span><span></span><span>Add ${MEAL_LABEL[meal].toLowerCase()}</span>${icon("ph-plus")}</button>`;
-          return `<div class="timeline-meal-group">${primary}${renderCalendarMealOptions(dayDate, meal, item?.id)}${renderHummusAlternative(dayDate, meal, item)}</div>`;
+          return `<div class="timeline-meal-group">${primary}${renderCalendarMealOptions(dayDate, meal, item?.id)}${renderMealAlternatives(dayDate, meal, item)}</div>`;
         }).join("")}
       </section>
       <aside class="surface day-summary"><div class="panel-title"><span>Daily overview</span>${icon("ph-info")}</div><div class="nutrition-total">${icon("ph-chart-donut")}<div><strong>${calories.toLocaleString()}</strong><span>kcal planned today</span></div></div><div class="nutrition-total daily-cost-total" data-day-cost="${cost}">${icon("ph-wallet")}<div><strong>${fmtPeso(cost)}</strong><span>estimated total for all meals today</span></div></div><div class="macro-list">${macroRow("Meals", `${itemCount} of 4`, itemCount * 25, "carbs")}${macroRow("Calorie target", "1,700 kcal", Math.min(100, calories / 17), "fat")}</div><p class="cost-estimate-note">Ingredient-cost estimate per serving; actual prices vary by store and season.</p></aside>
@@ -2355,9 +2365,10 @@ function wire(route) {
     const [date, meal] = button.dataset.calendarOptions.split("|");
     calendarMealPickerModal(date, meal);
   }));
-  $$('[data-use-hummus-alternative]').forEach((button) => button.addEventListener("click", () => {
-    const [date, meal, recipeId] = button.dataset.useHummusAlternative.split("|");
-    setPlannedMeal(date, meal, recipeId, "Hummus-free alternative planned");
+  $$('[data-use-meal-alternative]').forEach((button) => button.addEventListener("click", () => {
+    const [date, meal, recipeId, kind] = button.dataset.useMealAlternative.split("|");
+    const label = MEAL_ALTERNATIVE_RULES.find((rule) => rule.key === kind)?.label || "Alternative";
+    setPlannedMeal(date, meal, recipeId, `${label} planned`);
   }));
   $("[data-quick-add]")?.addEventListener("click", quickAddModal);
 

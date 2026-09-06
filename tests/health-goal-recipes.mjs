@@ -233,7 +233,22 @@ const plannerCosts = [...plannerMarkup.matchAll(/data-meal-cost="([0-9]+)"/g)].m
 assert.equal(plannerCosts.length, 28, "the current planner week must show an estimated Philippine peso cost for every meal");
 plannerCosts.forEach((cost) => assert.ok(cost >= 35, "each meal estimate must be a positive amount"));
 assert.match(plannerMarkup, /estimated ingredient costs per serving in Philippine pesos/, "planner must explain the PHP pricing basis");
-assert.match(plannerMarkup, /data-use-hummus-alternative=/, "every visible hummus meal must offer a hummus-free alternative");
+const visibleSlots = [...plannerMarkup.matchAll(/data-pick="([^|"]+)\|([^"]+)"/g)].map((match) => ({ date: match[1], meal: match[2] }));
+const plannedRecipeForSlot = ({ date, meal }) => fresh.recipes.find((item) => item.id === fresh.plan[date]?.[meal]);
+const containsTerm = (item, term) => [item?.name, ...(item?.aliases || []), ...(item?.ingredients || []).map((ingredient) => ingredient.name)]
+  .some((value) => recipeNameKey(value).includes(term));
+const hummusMeals = visibleSlots.map(plannedRecipeForSlot).filter((item) => containsTerm(item, "hummus"));
+const turkeyMeals = visibleSlots.map(plannedRecipeForSlot).filter((item) => containsTerm(item, "turkey"));
+const hummusAlternatives = [...plannerMarkup.matchAll(/data-use-meal-alternative="([^|"]+)\|([^|"]+)\|([^|"]+)\|hummus"/g)];
+const turkeyAlternatives = [...plannerMarkup.matchAll(/data-use-meal-alternative="([^|"]+)\|([^|"]+)\|([^|"]+)\|turkey"/g)];
+assert.equal(hummusAlternatives.length, hummusMeals.length, "every visible hummus meal must offer a hummus-free alternative");
+assert.equal(turkeyAlternatives.length, turkeyMeals.length, "every visible turkey meal must offer a turkey-free alternative");
+turkeyAlternatives.forEach((match) => {
+  const alternative = fresh.recipes.find((item) => item.id === match[3]);
+  assert.ok(alternative, "each turkey alternative must resolve to a recipe");
+  assert.ok(!containsTerm(alternative, "turkey"), "a turkey-free alternative must not contain turkey");
+});
+assert.match(plannerMarkup, /Turkey-free alternative/, "turkey alternatives must be clearly labeled");
 plannerPhotos.forEach((src) => {
   assert.match(src, /^https:\/\/images\.unsplash\.com\//, "planner meal visuals must use real food photographs");
   assert.ok(!src.startsWith("data:image/svg+xml"), "planner meal visuals must not use SVG artwork");
