@@ -748,7 +748,8 @@ function keepRollingMealPlanComplete() {
     plan: state.plan,
     recipes: state.recipes,
     weeks: 4,
-    meals: MEALS
+    meals: MEALS,
+    ensureCoverage: false
   });
   if (!completed.filled && !completed.repeatsResolved) return false;
   state.plan = completed.plan;

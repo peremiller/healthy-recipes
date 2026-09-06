@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { EYE_SUPPORTIVE_RECIPES, IMPORTED_RECIPE_DEFINITIONS } from "../lib/imported-recipes.mjs";
+import { fillRollingMealPlan } from "../lib/meal-plan.mjs";
 
 const HEALTH_RECIPE_NAMES = [
   "Savory Oatmeal with Tofu & Pechay",
@@ -75,6 +76,16 @@ const groceryIngredientKey = (ingredient) => {
   const unit = String(ingredient.unit || "").trim().toLowerCase();
   return `${name}|${groceryUnitAlias[unit] || unit}`;
 };
+
+const coverageRecipes = ["a", "b", "c"].map((id) => ({ id, cat: "dinner" }));
+const coveragePlan = Object.fromEntries([
+  ["2026-08-31", "a"], ["2026-09-01", "b"], ["2026-09-02", "a"], ["2026-09-03", "b"],
+  ["2026-09-04", "a"], ["2026-09-05", "b"], ["2026-09-06", "a"]
+].map(([date, id]) => [date, { dinner: id }]));
+const preservedSelection = fillRollingMealPlan({ plan: coveragePlan, recipes: coverageRecipes, currentDate: new Date(2026, 8, 1), weeks: 1, meals: ["dinner"], ensureCoverage: false });
+assert.ok(!Object.values(preservedSelection.plan).some((day) => day.dinner === "c"), "routine plan repair must preserve a user's alternative selection instead of reinserting a missing recipe");
+const seededCoverage = fillRollingMealPlan({ plan: coveragePlan, recipes: coverageRecipes, currentDate: new Date(2026, 8, 1), weeks: 1, meals: ["dinner"] });
+assert.ok(Object.values(seededCoverage.plan).some((day) => day.dinner === "c"), "initial seeding and migrations must still broaden recipe coverage");
 
 function assertRecipeIntegrity(state, expectedCount) {
   assert.equal(state.recipes.length, expectedCount);
