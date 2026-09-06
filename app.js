@@ -238,7 +238,7 @@ const MEAL_VISUAL = {
   dinner: { color: "#91a5df", glow: "rgba(145, 165, 223, 0.35)" },
   snack: { color: "#e27d62", glow: "rgba(226, 125, 98, 0.35)" }
 };
-const CONTENT_VERSION = 12;
+const CONTENT_VERSION = 13;
 
 const PHOTOS = {
   oats: "https://images.unsplash.com/photo-1494390248081-4e521a5940db?auto=format&fit=crop&w=720&q=82",
@@ -282,6 +282,12 @@ const PHOTOS = {
   fruit: "https://images.unsplash.com/photo-1490474418585-ba9bad8fd0ea?auto=format&fit=crop&w=720&q=82",
   rice: "https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=720&q=82",
   drink: "https://images.unsplash.com/photo-1544145945-f90425340c7e?auto=format&fit=crop&w=720&q=82",
+  greenJuice: "https://images.unsplash.com/photo-1563822249044-754f4a05c44c?auto=format&fit=crop&w=720&q=82",
+  beetJuice: "https://images.unsplash.com/photo-1654160240092-4c68f4d62fda?auto=format&fit=crop&w=720&q=82",
+  citrusJuice: "https://images.unsplash.com/photo-1678124620656-6ebe50c0f1e4?auto=format&fit=crop&w=720&q=82",
+  pineappleJuice: "https://images.unsplash.com/photo-1541085681957-a433bdafd5b9?auto=format&fit=crop&w=720&q=82",
+  watermelonJuice: "https://images.unsplash.com/photo-1752245818743-0fa72ba80c57?auto=format&fit=crop&w=720&q=82",
+  turmericJuice: "https://images.unsplash.com/photo-1631029098074-be99eb2b425c?auto=format&fit=crop&w=720&q=82",
   fish: "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=720&q=82"
 };
 const IMAGE_BY_RECIPE = {
@@ -317,7 +323,13 @@ const IMAGE_BY_RECIPE = {
   "Soy Cacao Chia Pudding": PHOTOS.chiaPudding,
   "Citrus-Herb Grilled Chicken Bowl": PHOTOS.citrusChickenBowl,
   "Miso Glazed Salmon Fillet": PHOTOS.misoSalmonBowl,
-  "Mediterranean Falafel & Egg Bowl": PHOTOS.falafelEggBowl
+  "Mediterranean Falafel & Egg Bowl": PHOTOS.falafelEggBowl,
+  "Green Apple Cucumber Juice": PHOTOS.greenJuice,
+  "Beet Carrot Apple Juice": PHOTOS.beetJuice,
+  "Grapefruit Orange Ginger Juice": PHOTOS.citrusJuice,
+  "Pineapple Cucumber Mint Juice": PHOTOS.pineappleJuice,
+  "Watermelon Cucumber Mint Juice": PHOTOS.watermelonJuice,
+  "Orange Turmeric Ginger Juice": PHOTOS.turmericJuice
 };
 
 const CALENDAR_PHOTO_BY_RECIPE = {
@@ -558,6 +570,58 @@ function requestedBowlRecipes() {
   ];
 }
 
+const JUICE_RECIPE_SOURCE = "Screenshot 2026-09-07 at 5.23.15 AM.png";
+const JUICE_RECIPE_NOTE = "Adapted from the Diet Juice Recipes image. The original wellness labels are retained as search aliases, not medical claims. Blend without straining, keep portions small, and enjoy alongside a balanced meal or snack.";
+
+function juiceRecipes() {
+  const fromScreenshot = (item, alias, servings = 2) => ({
+    ...item,
+    aliases: [alias],
+    source: JUICE_RECIPE_SOURCE,
+    sourceNote: `${JUICE_RECIPE_NOTE} The listed batch makes ${servings === 1 ? "one small serving" : `${servings} small servings`}; calories are estimated per serving.`
+  });
+
+  return [
+    fromScreenshot(
+      recipe("Green Apple Cucumber Juice", "snack", 75, 10, ["no-added-sugar", "pulp-retaining", "small-serving", "vegan"], PHOTOS.greenJuice,
+        [[1, "pc", "cucumber"], [1, "pc", "green apple"], [1, "pc", "celery stalk"], [1, "cup", "spinach"], [0.5, "pc", "lemon"], [0.5, "inch", "fresh ginger"]],
+        ["Wash the produce thoroughly and peel the lemon; keep the cucumber and apple skins when suitable.", "Core the apple and roughly chop the cucumber, apple and celery.", "Blend all ingredients until smooth, adding only a small splash of cold water if needed.", "Do not strain, so the drink retains more of the ingredients' fiber.", "Divide into two small servings and drink immediately; refrigerate the second serving promptly."]),
+      "Green Detox"
+    ),
+    fromScreenshot(
+      recipe("Beet Carrot Apple Juice", "snack", 85, 10, ["no-added-sugar", "pulp-retaining", "small-serving", "vitamin-a-foods"], PHOTOS.beetJuice,
+        [[1, "pc", "beetroot"], [1, "pc", "carrot"], [1, "pc", "apple"], [0.5, "pc", "lemon"], [0.5, "inch", "fresh ginger"]],
+        ["Wash the beetroot, carrot, apple, lemon and ginger thoroughly.", "Peel the lemon, core the apple, and roughly chop the remaining produce.", "Blend everything until smooth, adding a small splash of cold water only if the blender needs it.", "Keep the pulp rather than straining the drink.", "Divide into two small servings and drink immediately; refrigerate the second serving promptly."]),
+      "Beet Boost"
+    ),
+    fromScreenshot(
+      recipe("Grapefruit Orange Ginger Juice", "snack", 75, 8, ["no-added-sugar", "pulp-retaining", "small-serving", "citrus"], PHOTOS.citrusJuice,
+        [[1, "pc", "grapefruit"], [1, "pc", "orange"], [0.5, "pc", "lemon"], [0.5, "inch", "fresh ginger"]],
+        ["Before preparing this drink, confirm with a pharmacist that grapefruit is safe with your medicines.", "Peel the grapefruit, orange and lemon and remove any seeds.", "Blend the citrus fruit and ginger until smooth.", "Keep the pulp instead of straining, and do not add sugar or syrup.", "Divide into two small servings and drink immediately; refrigerate the second serving promptly."]),
+      "Fat Burner"
+    ),
+    fromScreenshot(
+      recipe("Pineapple Cucumber Mint Juice", "snack", 45, 8, ["no-added-sugar", "pulp-retaining", "small-serving", "refreshing"], PHOTOS.pineappleJuice,
+        [[1, "slice", "pineapple"], [1, "pc", "cucumber"], [0.5, "pc", "lemon"], [8, "pc", "mint leaves"], [0.5, "inch", "fresh ginger"]],
+        ["Wash the cucumber, lemon, mint and ginger thoroughly.", "Peel the lemon and roughly chop the pineapple and cucumber.", "Blend all ingredients until smooth, adding a little cold water only if needed.", "Do not strain, and do not add sweetener.", "Divide into two small servings and drink immediately; refrigerate the second serving promptly."]),
+      "Tummy Cleanse"
+    ),
+    fromScreenshot(
+      recipe("Watermelon Cucumber Mint Juice", "snack", 60, 8, ["no-added-sugar", "pulp-retaining", "small-serving", "hydrating-foods"], PHOTOS.watermelonJuice,
+        [[2, "cup", "watermelon"], [0.5, "pc", "cucumber"], [0.5, "pc", "lemon"], [8, "pc", "mint leaves"]],
+        ["Wash the cucumber, lemon and mint thoroughly and remove watermelon seeds.", "Peel the lemon and roughly chop the watermelon and cucumber.", "Blend all ingredients until smooth; the watermelon should provide enough liquid.", "Keep the pulp and skip sugar, syrup and sweetened juice.", "Divide into two small servings and drink immediately; refrigerate the second serving promptly."]),
+      "Hydration Boost"
+    ),
+    fromScreenshot(
+      recipe("Orange Turmeric Ginger Juice", "snack", 75, 8, ["no-added-sugar", "pulp-retaining", "small-serving", "citrus"], PHOTOS.turmericJuice,
+        [[1, "pc", "orange"], [0.5, "pc", "lemon"], [0.5, "inch", "fresh turmeric"], [0.5, "inch", "fresh ginger"], [1, "pinch", "black pepper"]],
+        ["Wash the produce thoroughly; turmeric can stain, so protect pale surfaces and clothing.", "Peel the orange and lemon and remove any seeds. Use one-half teaspoon ground turmeric if fresh turmeric is unavailable.", "Blend the citrus fruit, turmeric, ginger and black pepper until smooth.", "Keep the pulp and do not add sugar or syrup.", "Serve one small portion immediately as part of a balanced meal or snack."]),
+      "Immunity Boost",
+      1
+    )
+  ];
+}
+
 function seed() {
   const rawRecipes = [
     recipe("Overnight Oats with Berries", "breakfast", 320, 5, ["high-fiber", "make-ahead"], PHOTOS.oats,
@@ -599,6 +663,7 @@ function seed() {
     ...newHealthyRecipes(),
     ...healthGoalRecipes(),
     ...requestedBowlRecipes(),
+    ...juiceRecipes(),
     ...importedRecipes(),
     ...calendarMealRecipes()
   ];
@@ -694,6 +759,15 @@ function normalize(data) {
   if (previousContentVersion < 12) {
     const existingNames = new Set(normalized.recipes.map((item) => recipeNameKey(item.name)));
     importedRecipes().forEach((item) => {
+      const nameKey = recipeNameKey(item.name);
+      if (existingNames.has(nameKey)) return;
+      normalized.recipes.push(item);
+      existingNames.add(nameKey);
+    });
+  }
+  if (previousContentVersion < 13) {
+    const existingNames = new Set(normalized.recipes.map((item) => recipeNameKey(item.name)));
+    juiceRecipes().forEach((item) => {
       const nameKey = recipeNameKey(item.name);
       if (existingNames.has(nameKey)) return;
       normalized.recipes.push(item);
