@@ -3,6 +3,8 @@
 import { haversineKm } from "./lib/geo.mjs";
 import { fillRollingMealPlan, MEAL_TYPES } from "./lib/meal-plan.mjs";
 import { IMPORTED_RECIPE_DEFINITIONS } from "./lib/imported-recipes.mjs";
+import { createCloudSync } from "./lib/cloud-sync.mjs";
+import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "./lib/cloud-config.mjs";
 import {
   CALENDAR_MEAL_DEFINITIONS,
   GOOGLE_CALENDAR_SOURCE,
@@ -815,7 +817,51 @@ function boot() {
 
 let state = boot();
 localStorage.setItem(LS, JSON.stringify(state));
-const save = () => localStorage.setItem(LS, JSON.stringify(state));
+let cloudStatus = {
+  phase: "local",
+  message: "Saved on this device",
+  email: "",
+  signedIn: false,
+  lastSyncedAt: null
+};
+let cloudSync;
+
+function persistLocalState() {
+  localStorage.setItem(LS, JSON.stringify(state));
+}
+
+function updateCloudStatusUI() {
+  $$('[data-cloud-status]').forEach((element) => {
+    element.textContent = cloudStatus.message;
+  });
+  $$('[data-cloud-email]').forEach((element) => {
+    element.textContent = cloudStatus.email || "Sign in to sync";
+  });
+  $$('[data-cloud-indicator]').forEach((element) => {
+    element.className = `cloud-indicator ${cloudStatus.phase}`;
+  });
+}
+
+cloudSync = createCloudSync({
+  url: SUPABASE_URL,
+  publishableKey: SUPABASE_PUBLISHABLE_KEY,
+  storage: localStorage,
+  getLocalState: () => state,
+  applyRemoteState: (payload) => {
+    state = normalize(payload);
+    persistLocalState();
+    render();
+  },
+  onStatus: (nextStatus) => {
+    cloudStatus = nextStatus;
+    updateCloudStatusUI();
+  }
+});
+
+const save = () => {
+  persistLocalState();
+  cloudSync.scheduleSave();
+};
 
 function keepRollingMealPlanComplete() {
   const completed = fillRollingMealPlan({
@@ -1241,6 +1287,10 @@ function icon(name, extra = "") {
 }
 
 function shell(route, body) {
+  const accountLabel = cloudStatus.email || "Sign in to sync";
+  const accountInitials = cloudStatus.email
+    ? cloudStatus.email.split("@")[0].split(/[._-]+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase()
+    : "NP";
   const utility = `
     <div class="utility-nav">
       <button class="nav-link" type="button" data-settings>${icon("ph-gear")}<span>Settings</span></button>
@@ -1257,7 +1307,11 @@ function shell(route, body) {
           ${NAV.map((item) => `<a class="nav-link ${route.section === item.key ? "active" : ""}" href="${item.path}" data-route>${icon(item.icon)}<span>${item.label}</span></a>`).join("")}
         </nav>
         ${utility}
-        <div class="sidebar-profile"><span class="avatar">SP</span><strong>Sarah P.</strong>${icon("ph-caret-down")}</div>
+        <button class="sidebar-profile" type="button" data-cloud-account aria-label="Open cloud sync settings">
+          <span class="avatar">${esc(accountInitials)}</span>
+          <span class="sidebar-profile-copy"><strong data-cloud-email>${esc(accountLabel)}</strong><small data-cloud-status>${esc(cloudStatus.message)}</small></span>
+          <span class="cloud-indicator ${esc(cloudStatus.phase)}" data-cloud-indicator aria-hidden="true"></span>
+        </button>
       </aside>
       <button class="mobile-overlay" type="button" aria-label="Close navigation" data-close-nav></button>
       <section class="main-shell">
@@ -2230,12 +2284,92 @@ function quickAddModal() {
 }
 
 function settingsModal() {
+  const sync = cloudSync.snapshot();
+  const lastSync = sync.lastSyncedAt
+    ? new Date(sync.lastSyncedAt).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })
+    : "Not synced yet";
+  const cloudPanel = sync.signedIn ? `
+    <section class="cloud-settings" aria-labelledby="cloudSettingsTitle">
+      <div class="cloud-settings-heading"><span class="cloud-settings-icon">${icon("ph-cloud-check")}</span><div><h3 id="cloudSettingsTitle">Cross-device sync</h3><p data-cloud-status>${esc(sync.message)}</p></div></div>
+      <dl class="cloud-account-details"><div><dt>Account</dt><dd data-cloud-email>${esc(sync.email)}</dd></div><div><dt>Last cloud update</dt><dd>${esc(lastSync)}</dd></div></dl>
+      <div class="form-grid"><button class="button" type="button" data-sync-now>${icon("ph-arrows-clockwise")} Sync now</button><button class="button secondary" type="button" data-cloud-sign-out>Sign out</button></div>
+      <p class="form-hint" data-cloud-feedback>Use this same account on every device. Offline changes stay on the device and upload when the connection returns.</p>
+    </section>` : `
+    <section class="cloud-settings" aria-labelledby="cloudSettingsTitle">
+      <div class="cloud-settings-heading"><span class="cloud-settings-icon">${icon("ph-cloud-arrow-up")}</span><div><h3 id="cloudSettingsTitle">Sync across devices</h3><p>Sign in with the same account on every phone or computer.</p></div></div>
+      <label class="form-field">Email<input id="cloudEmail" type="email" autocomplete="email" inputmode="email" placeholder="you@example.com" /></label>
+      <label class="form-field">Password<input id="cloudPassword" type="password" minlength="6" autocomplete="current-password" placeholder="At least 6 characters" /></label>
+      <div class="form-grid"><button class="button" type="button" data-cloud-sign-in>Sign in & sync</button><button class="button secondary" type="button" data-cloud-sign-up>Create sync account</button></div>
+      <p class="form-hint" data-cloud-feedback>${sync.phase === "verification" ? esc(sync.message) : "Your existing browser data uploads on the first sign-in. If cloud data already exists, that account’s latest copy is loaded."}</p>
+    </section>`;
   openModal(`
-    <h2>Data & preferences</h2><p class="modal-subtitle">Your meal plan stays in this browser. Export it whenever you want a backup.</p>
+    <h2>Data & preferences</h2><p class="modal-subtitle">Cloud sync keeps your meals available across devices; local storage keeps the app usable offline.</p>
+    ${cloudPanel}
+    <div class="settings-divider"></div>
+    <h3>Backup & restore</h3>
     <div class="form-grid"><button class="button" type="button" data-export>${icon("ph-download-simple")} Export JSON</button><button class="button secondary" type="button" data-import>${icon("ph-upload-simple")} Import JSON</button></div>
     <input id="importFile" type="file" accept="application/json" hidden />
-    <div style="border-top:1px solid var(--line);margin:22px 0 14px"></div>
+    <div class="settings-divider"></div>
     <button class="button danger" type="button" data-reset style="width:100%">Reset example data</button>`);
+  const setCloudBusy = (busy) => {
+    $$('[data-cloud-sign-in], [data-cloud-sign-up], [data-sync-now], [data-cloud-sign-out]').forEach((button) => {
+      button.disabled = busy;
+    });
+  };
+  const cloudFeedback = (message) => {
+    const element = $('[data-cloud-feedback]');
+    if (element) element.textContent = message;
+  };
+  const cloudCredentials = () => ({
+    email: $("#cloudEmail")?.value.trim() || "",
+    password: $("#cloudPassword")?.value || ""
+  });
+  const runCloudAuth = async (mode) => {
+    const { email, password } = cloudCredentials();
+    if (!/^\S+@\S+\.\S+$/.test(email)) {
+      cloudFeedback("Enter a valid email address.");
+      $("#cloudEmail")?.focus();
+      return;
+    }
+    if (password.length < 6) {
+      cloudFeedback("Use a password with at least 6 characters.");
+      $("#cloudPassword")?.focus();
+      return;
+    }
+    setCloudBusy(true);
+    cloudFeedback(mode === "signUp" ? "Creating your sync account…" : "Signing in and checking cloud data…");
+    try {
+      const result = await cloudSync[mode](email, password);
+      if (result.needsConfirmation) {
+        cloudFeedback("Check your email to confirm the account, then return here and sign in.");
+        toast("Confirmation email sent");
+      } else {
+        closeModal();
+        render();
+        toast("Meals are synced across devices");
+      }
+    } catch (error) {
+      cloudFeedback(error.message || "Could not connect the sync account.");
+    } finally {
+      setCloudBusy(false);
+    }
+  };
+  $('[data-cloud-sign-in]')?.addEventListener("click", () => runCloudAuth("signIn"));
+  $('[data-cloud-sign-up]')?.addEventListener("click", () => runCloudAuth("signUp"));
+  $('[data-sync-now]')?.addEventListener("click", async () => {
+    setCloudBusy(true);
+    cloudFeedback("Checking for changes…");
+    await cloudSync.pullNow({ announce: true });
+    cloudFeedback(cloudSync.snapshot().message);
+    setCloudBusy(false);
+  });
+  $('[data-cloud-sign-out]')?.addEventListener("click", async () => {
+    setCloudBusy(true);
+    await cloudSync.signOut();
+    closeModal();
+    render();
+    toast("Signed out · this device still has a local copy");
+  });
   $("[data-export]").onclick = () => {
     const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
     const anchor = document.createElement("a");
@@ -2407,6 +2541,7 @@ function wire(route) {
   $("[data-open-nav]")?.addEventListener("click", () => document.body.classList.add("mobile-nav-open"));
   $("[data-close-nav]")?.addEventListener("click", () => document.body.classList.remove("mobile-nav-open"));
   $("[data-settings]")?.addEventListener("click", settingsModal);
+  $("[data-cloud-account]")?.addEventListener("click", settingsModal);
   $("#globalSearch")?.addEventListener("keydown", (event) => {
     if (event.key !== "Enter") return;
     recipeQuery = event.target.value;
@@ -2533,5 +2668,17 @@ window.addEventListener("keydown", (event) => {
     $("#globalSearch")?.focus();
   }
 });
+window.addEventListener("online", () => cloudSync.pullNow({ announce: true }));
+if (typeof document.addEventListener === "function") {
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") cloudSync.pullNow();
+  });
+}
 
 render();
+cloudSync.initialize();
+if (typeof window.setInterval === "function") {
+  window.setInterval(() => {
+    if (!document.visibilityState || document.visibilityState === "visible") cloudSync.pullNow();
+  }, 30000);
+}

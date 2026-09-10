@@ -217,9 +217,17 @@ img {
   display: flex;
   align-items: center;
   gap: 11px;
+  width: 100%;
   margin-top: 18px;
   padding: 17px 10px 0;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-right: 0;
+  border-bottom: 0;
+  border-left: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
 }
 
 .avatar {
@@ -234,9 +242,54 @@ img {
   font-weight: 700;
 }
 
-.sidebar-profile strong {
+.sidebar-profile-copy {
   flex: 1;
+  min-width: 0;
+}
+
+.sidebar-profile strong,
+.sidebar-profile small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar-profile strong {
   font-weight: 500;
+}
+
+.sidebar-profile small {
+  margin-top: 2px;
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 10px;
+}
+
+.cloud-indicator {
+  width: 9px;
+  height: 9px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #9ba8a0;
+  box-shadow: 0 0 0 4px rgba(155, 168, 160, 0.12);
+}
+
+.cloud-indicator.synced {
+  background: #70df99;
+  box-shadow: 0 0 0 4px rgba(112, 223, 153, 0.13);
+}
+
+.cloud-indicator.syncing,
+.cloud-indicator.pending,
+.cloud-indicator.connecting {
+  background: #f4bd62;
+  box-shadow: 0 0 0 4px rgba(244, 189, 98, 0.13);
+}
+
+.cloud-indicator.error,
+.cloud-indicator.offline {
+  background: #f18c74;
+  box-shadow: 0 0 0 4px rgba(241, 140, 116, 0.13);
 }
 
 .main-shell {
@@ -1945,6 +1998,93 @@ img {
   justify-content: flex-end;
   gap: 9px;
   margin-top: 20px;
+}
+
+.cloud-settings {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+  padding: 18px;
+  border: 1px solid #cbdccc;
+  border-radius: var(--radius);
+  background: var(--sage-50);
+}
+
+.cloud-settings-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cloud-settings-heading h3,
+.cloud-settings-heading p,
+.modal > h3 {
+  margin: 0;
+}
+
+.cloud-settings-heading p {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.cloud-settings-icon {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 12px;
+  background: var(--forest-800);
+  color: var(--white);
+  font-size: 22px;
+}
+
+.cloud-account-details {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+}
+
+.cloud-account-details div {
+  min-width: 0;
+  padding: 10px;
+  border-radius: 9px;
+  background: var(--paper);
+}
+
+.cloud-account-details dt {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.35px;
+  text-transform: uppercase;
+}
+
+.cloud-account-details dd {
+  overflow: hidden;
+  margin: 3px 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.settings-divider {
+  margin: 22px 0 14px;
+  border-top: 1px solid var(--line);
+}
+
+button:disabled {
+  cursor: wait;
+  opacity: 0.62;
+}
+
+@media (max-width: 520px) {
+  .cloud-account-details {
+    grid-template-columns: 1fr;
+  }
 }
 
 .picker-list {

@@ -1,6 +1,6 @@
 # 🌿 NourishPlan — Healthy Recipes & Meal Planner
 
-A dependency-free, offline-first web app for planning healthy meals and turning them into a smart grocery list. It uses vanilla JavaScript modules and `localStorage`, with clean Vercel routes for every main page.
+A dependency-free, local-first web app for planning healthy meals and turning them into a smart grocery list. It uses vanilla JavaScript modules, `localStorage` for offline continuity, and optional authenticated Supabase sync for cross-device access, with clean Vercel routes for every main page.
 
 **Live:** https://healthy-recipes-murex.vercel.app
 
@@ -17,7 +17,10 @@ Ingredient names and units are normalized (cups↔cup, tbsp, tsp, pc…) so the 
 ## Other
 
 - Automatic **dark mode**, mobile-first layout.
-- **localStorage** persistence (per-device) — survives reloads.
+- **Cross-device cloud sync** — email/password accounts sync recipes, planner selections, inventory, grocery extras, and completion state. The first signed-in device uploads its current local copy; later devices load the account's cloud copy.
+- **Conflict protection** — monotonic revisions prevent a stale device from silently overwriting a newer cloud state. Visible tabs refresh from cloud every 30 seconds and on focus/reconnection.
+- **Secure shared backend** — NourishPlan uses its own `nourishplan_states` table in Supabase with RLS, authenticated-only privileges, per-row ownership checks, and a 2 MB payload limit. No Reality Studio tables or records are shared.
+- **localStorage** persistence — changes remain usable offline and queue for upload after reconnection.
 - **JSON export / import / reset** in the ⋯ menu to move data between devices.
 
 ## Run locally
