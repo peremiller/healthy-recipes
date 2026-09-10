@@ -272,6 +272,9 @@ assert.match(appElement.innerHTML, /Cook Book\.docx\.pdf \/ Flavorful Healthy Di
 window.location.pathname = "/planner";
 await loadState("planner-photos");
 const plannerMarkup = appElement.innerHTML;
+assert.match(plannerMarkup, /Not synced on this device/, "Planner must make local-only state explicit");
+assert.match(plannerMarkup, /data-cloud-account/, "Planner must offer a direct device connection action");
+assert.match(plannerMarkup, /This phone is using a separate local meal plan/, "Planner must explain why two unconnected devices can differ");
 const plannerPhotos = [...plannerMarkup.matchAll(/<img class="meal-thumb" src="([^"]+)"/g)].map((match) => match[1]);
 assert.equal(plannerPhotos.length, 28, "the current planner week must render a photo for every meal slot");
 const plannerCosts = [...plannerMarkup.matchAll(/data-meal-cost="([0-9]+)"/g)].map((match) => Number(match[1]));

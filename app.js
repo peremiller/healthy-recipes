@@ -830,6 +830,28 @@ function persistLocalState() {
   localStorage.setItem(LS, JSON.stringify(state));
 }
 
+function plannerSyncPresentation() {
+  if (!cloudStatus.signedIn) {
+    return {
+      stateClass: "is-local",
+      title: "Not synced on this device",
+      detail: "This phone is using a separate local meal plan. Connect the same account on every device to share one plan.",
+      action: "Connect this device",
+      actionIcon: "ph-device-mobile-camera",
+      secondary: false
+    };
+  }
+  const synced = cloudStatus.phase === "synced";
+  return {
+    stateClass: synced ? "is-synced" : "is-connecting",
+    title: synced ? "Synced across devices" : "Checking cloud sync",
+    detail: `${cloudStatus.email} · ${cloudStatus.message}`,
+    action: "Manage sync",
+    actionIcon: "ph-gear-six",
+    secondary: true
+  };
+}
+
 function updateCloudStatusUI() {
   $$('[data-cloud-status]').forEach((element) => {
     element.textContent = cloudStatus.message;
@@ -839,6 +861,20 @@ function updateCloudStatusUI() {
   });
   $$('[data-cloud-indicator]').forEach((element) => {
     element.className = `cloud-indicator ${cloudStatus.phase}`;
+  });
+  const plannerSync = plannerSyncPresentation();
+  $$('[data-planner-sync-banner]').forEach((element) => {
+    element.className = `planner-sync-banner ${plannerSync.stateClass}`;
+  });
+  $$('[data-planner-sync-title]').forEach((element) => {
+    element.textContent = plannerSync.title;
+  });
+  $$('[data-planner-sync-detail]').forEach((element) => {
+    element.textContent = plannerSync.detail;
+  });
+  $$('[data-planner-sync-action]').forEach((element) => {
+    element.className = `button ${plannerSync.secondary ? "secondary" : ""}`;
+    element.innerHTML = `${icon(plannerSync.actionIcon)} ${plannerSync.action}`;
   });
 }
 
@@ -1376,9 +1412,24 @@ function plannerToolbar() {
     </div>`;
 }
 
+function plannerSyncBanner() {
+  const plannerSync = plannerSyncPresentation();
+  return `
+    <section class="planner-sync-banner ${plannerSync.stateClass}" data-planner-sync-banner aria-live="polite">
+      <span class="planner-sync-icon">${icon(cloudStatus.signedIn ? "ph-cloud-check" : "ph-cloud-slash")}</span>
+      <div class="planner-sync-copy">
+        <strong data-planner-sync-title>${esc(plannerSync.title)}</strong>
+        <span data-planner-sync-detail>${esc(plannerSync.detail)}</span>
+      </div>
+      <button class="button ${plannerSync.secondary ? "secondary" : ""}" type="button" data-cloud-account data-planner-sync-action>
+        ${icon(plannerSync.actionIcon)} ${plannerSync.action}
+      </button>
+    </section>`;
+}
+
 function renderPlanner() {
   const actions = `<a class="button secondary" href="/planner/visualization" data-route>${icon("ph-cube")} Explore 3D map</a>`;
-  return `${heading("Planner", "Plan your week. Meal prices are estimated ingredient costs per serving in Philippine pesos and may vary by store.", actions)}${plannerToolbar()}${plannerMode === "week" ? renderWeekPlanner() : renderDayPlanner()}`;
+  return `${heading("Planner", "Plan your week. Meal prices are estimated ingredient costs per serving in Philippine pesos and may vary by store.", actions)}${plannerSyncBanner()}${plannerToolbar()}${plannerMode === "week" ? renderWeekPlanner() : renderDayPlanner()}`;
 }
 
 function mealVisualizationData() {
@@ -2541,7 +2592,7 @@ function wire(route) {
   $("[data-open-nav]")?.addEventListener("click", () => document.body.classList.add("mobile-nav-open"));
   $("[data-close-nav]")?.addEventListener("click", () => document.body.classList.remove("mobile-nav-open"));
   $("[data-settings]")?.addEventListener("click", settingsModal);
-  $("[data-cloud-account]")?.addEventListener("click", settingsModal);
+  $$('[data-cloud-account]').forEach((button) => button.addEventListener("click", settingsModal));
   $("#globalSearch")?.addEventListener("keydown", (event) => {
     if (event.key !== "Enter") return;
     recipeQuery = event.target.value;
