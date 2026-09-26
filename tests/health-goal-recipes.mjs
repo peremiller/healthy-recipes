@@ -37,7 +37,7 @@ const JUICE_RECIPE_NAMES = [
 ];
 const JUICE_RECIPE_ALIASES = ["Green Detox", "Beet Boost", "Fat Burner", "Tummy Cleanse", "Hydration Boost", "Immunity Boost"];
 const IMPORTED_RECIPE_NAMES = IMPORTED_RECIPE_DEFINITIONS.map((item) => item.name);
-const EXPECTED_RECIPE_COUNT = 68 + IMPORTED_RECIPE_DEFINITIONS.length;
+const EXPECTED_RECIPE_COUNT = 69 + IMPORTED_RECIPE_DEFINITIONS.length;
 
 const storage = new Map();
 const appElement = { innerHTML: "" };
@@ -119,7 +119,7 @@ function assertRecipeIntegrity(state, expectedCount) {
 
 const fresh = await loadState("fresh");
 const freshMarkup = appElement.innerHTML;
-assert.equal(fresh.contentVersion, 13);
+assert.equal(fresh.contentVersion, 14);
 assertRecipeIntegrity(fresh, EXPECTED_RECIPE_COUNT);
 assert.ok(Buffer.byteLength(JSON.stringify(fresh)) <= 2 * 1024 * 1024, "the complete app state must fit the cloud payload limit");
 assert.match(freshMarkup, /data-cloud-account/, "the application shell must expose cloud sync settings");
@@ -128,7 +128,7 @@ assert.equal((freshMarkup.match(/class="recipe-card"/g) || []).length, EXPECTED_
 const renderedImages = [...freshMarkup.matchAll(/<img src="([^"]+)" alt="[^"]+" loading="lazy"/g)].map((match) => match[1]);
 assert.equal(renderedImages.length, EXPECTED_RECIPE_COUNT, "every recipe card must render a visual");
 renderedImages.forEach((src) => {
-  assert.match(src, /^https:\/\/images\.unsplash\.com\//, "managed recipe visuals must be real remote food photographs");
+  assert.match(src, /^(https:\/\/images\.unsplash\.com\/|\/assets\/bangus-sisig\.webp$)/, "managed recipe visuals must be food photographs");
   assert.ok(!src.startsWith("data:image/svg+xml"), "managed recipe visuals must not be generated SVG artwork");
 });
 
@@ -158,6 +158,11 @@ assert.match(appSource, /LOCATION_TARGET_ACCURACY_METERS = 25/, "location must t
 assert.match(appSource, /parameters\.set\("origin",/, "directions must use the captured device coordinates");
 
 window.location.pathname = "/recipes";
+const bangusSisig = fresh.recipes.find((item) => item.name === "Bangus Sisig");
+assert.ok(bangusSisig, "bangus sisig must be seeded");
+assert.equal(bangusSisig.cat, "dinner");
+assert.ok(bangusSisig.ingredients.some((ingredient) => ingredient.name === "boneless bangus fillet"));
+assert.ok(bangusSisig.steps.length >= 4);
 HEALTH_RECIPE_NAMES.forEach((name) => {
   const item = fresh.recipes.find((recipe) => recipe.name === name);
   assert.ok(item, `${name} was not seeded`);
@@ -226,6 +231,17 @@ const juiceMigration = await loadState("juice-migration");
 assertRecipeIntegrity(juiceMigration, EXPECTED_RECIPE_COUNT);
 assert.equal(juiceMigration.recipes.filter((item) => JUICE_RECIPE_NAMES.includes(item.name)).length, JUICE_RECIPE_NAMES.length, "version-12 users must receive every pictured juice recipe once");
 
+const versionThirteenState = {
+  ...fresh,
+  contentVersion: 13,
+  recipes: fresh.recipes.filter((item) => item.name !== "Bangus Sisig"),
+  inventory: fresh.inventory.map((item) => ({ ...item }))
+};
+storage.set("nourishplan.v2", JSON.stringify(versionThirteenState));
+const bangusMigration = await loadState("bangus-migration");
+assertRecipeIntegrity(bangusMigration, EXPECTED_RECIPE_COUNT);
+assert.equal(bangusMigration.recipes.filter((item) => item.name === "Bangus Sisig").length, 1, "version-13 users must receive bangus sisig once");
+
 const versionEightState = {
   ...fresh,
   contentVersion: 8,
@@ -259,8 +275,8 @@ migrated.recipes = migrated.recipes.filter((item) => item.name !== removedName &
 storage.set("nourishplan.v2", JSON.stringify(migrated));
 const afterDeletion = await loadState("deletion");
 assertRecipeIntegrity(afterDeletion, EXPECTED_RECIPE_COUNT - 1);
-assert.ok(!afterDeletion.recipes.some((item) => item.name === removedName), "a version-13 user deletion must remain deleted");
-assert.ok(!afterDeletion.recipes.some((item) => item.name === removedAttachmentName), "a version-13 attachment-recipe deletion must remain deleted");
+assert.ok(!afterDeletion.recipes.some((item) => item.name === removedName), "a version-14 user deletion must remain deleted");
+assert.ok(!afterDeletion.recipes.some((item) => item.name === removedAttachmentName), "a version-14 attachment-recipe deletion must remain deleted");
 
 const attachmentDetail = fresh.recipes.find((item) => item.name === "Garden Salad");
 window.location.pathname = `/recipes/garden-salad-${attachmentDetail.id}`;
@@ -298,7 +314,7 @@ turkeyAlternatives.forEach((match) => {
 });
 assert.match(plannerMarkup, /Turkey-free alternative/, "turkey alternatives must be clearly labeled");
 plannerPhotos.forEach((src) => {
-  assert.match(src, /^https:\/\/images\.unsplash\.com\//, "planner meal visuals must use real food photographs");
+  assert.match(src, /^(https:\/\/images\.unsplash\.com\/|\/assets\/bangus-sisig\.webp$)/, "planner meal visuals must use food imagery");
   assert.ok(!src.startsWith("data:image/svg+xml"), "planner meal visuals must not use SVG artwork");
 });
 

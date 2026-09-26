@@ -240,7 +240,7 @@ const MEAL_VISUAL = {
   dinner: { color: "#91a5df", glow: "rgba(145, 165, 223, 0.35)" },
   snack: { color: "#e27d62", glow: "rgba(226, 125, 98, 0.35)" }
 };
-const CONTENT_VERSION = 13;
+const CONTENT_VERSION = 14;
 
 const PHOTOS = {
   oats: "https://images.unsplash.com/photo-1494390248081-4e521a5940db?auto=format&fit=crop&w=720&q=82",
@@ -290,7 +290,8 @@ const PHOTOS = {
   pineappleJuice: "https://images.unsplash.com/photo-1541085681957-a433bdafd5b9?auto=format&fit=crop&w=720&q=82",
   watermelonJuice: "https://images.unsplash.com/photo-1752245818743-0fa72ba80c57?auto=format&fit=crop&w=720&q=82",
   turmericJuice: "https://images.unsplash.com/photo-1631029098074-be99eb2b425c?auto=format&fit=crop&w=720&q=82",
-  fish: "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=720&q=82"
+  fish: "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=720&q=82",
+  bangusSisig: "/assets/bangus-sisig.webp"
 };
 const IMAGE_BY_RECIPE = {
   "Overnight Oats with Berries": PHOTOS.oatmeal,
@@ -326,6 +327,7 @@ const IMAGE_BY_RECIPE = {
   "Citrus-Herb Grilled Chicken Bowl": PHOTOS.citrusChickenBowl,
   "Miso Glazed Salmon Fillet": PHOTOS.misoSalmonBowl,
   "Mediterranean Falafel & Egg Bowl": PHOTOS.falafelEggBowl,
+  "Bangus Sisig": PHOTOS.bangusSisig,
   "Green Apple Cucumber Juice": PHOTOS.greenJuice,
   "Beet Carrot Apple Juice": PHOTOS.beetJuice,
   "Grapefruit Orange Ginger Juice": PHOTOS.citrusJuice,
@@ -572,6 +574,14 @@ function requestedBowlRecipes() {
   ];
 }
 
+function bangusSisigRecipe() {
+  return recipe("Bangus Sisig", "dinner", 350, 30,
+    ["Filipino", "high-protein", "vegetable-rich", "lower-sodium", "moderate-fish-portion", "no-added-sugar", "estimated-calories"],
+    PHOTOS.bangusSisig,
+    [[120, "g", "boneless bangus fillet"], [0.33, "cup", "cooked brown rice"], [0.25, "cup", "red onion"], [0.5, "cup", "red bell pepper"], [1, "clove", "garlic"], [1, "pc", "green chili"], [1, "tbsp", "calamansi juice"], [1, "tsp", "olive oil"], [2, "pc", "lettuce leaves"], [0.25, "tsp", "black pepper"]],
+    ["Check the bangus fillet for pin bones, pat dry, and season with black pepper. Heat a nonstick pan over medium heat with half the olive oil.", "Cook the bangus for about five to seven minutes per side, until the thickest part reaches 63°C. Remove from the pan and flake into bite-sized pieces, checking again for bones.", "Add the remaining oil, garlic, red onion, bell pepper and sliced green chili to the pan. Cook for two to three minutes until fragrant but still crisp.", "Return the flaked bangus to the pan and toss briefly until the edges brown. Turn off the heat and stir in the calamansi juice.", "Serve the sisig on the lettuce leaves with one-third cup cooked brown rice. Skip mayonnaise and salty seasoning; add extra calamansi to taste."]);
+}
+
 const JUICE_RECIPE_SOURCE = "Screenshot 2026-09-07 at 5.23.15 AM.png";
 const JUICE_RECIPE_NOTE = "Adapted from the Diet Juice Recipes image. The original wellness labels are retained as search aliases, not medical claims. Blend without straining, keep portions small, and enjoy alongside a balanced meal or snack.";
 
@@ -665,6 +675,7 @@ function seed() {
     ...newHealthyRecipes(),
     ...healthGoalRecipes(),
     ...requestedBowlRecipes(),
+    bangusSisigRecipe(),
     ...juiceRecipes(),
     ...importedRecipes(),
     ...calendarMealRecipes()
@@ -775,6 +786,12 @@ function normalize(data) {
       normalized.recipes.push(item);
       existingNames.add(nameKey);
     });
+  }
+  if (previousContentVersion < 14) {
+    const bangusSisig = bangusSisigRecipe();
+    if (!normalized.recipes.some((item) => recipeNameKey(item.name) === recipeNameKey(bangusSisig.name))) {
+      normalized.recipes.push(bangusSisig);
+    }
   }
   normalized.contentVersion = CONTENT_VERSION;
   normalized.recipes.forEach((item) => {
