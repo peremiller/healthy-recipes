@@ -240,7 +240,7 @@ const MEAL_VISUAL = {
   dinner: { color: "#91a5df", glow: "rgba(145, 165, 223, 0.35)" },
   snack: { color: "#e27d62", glow: "rgba(226, 125, 98, 0.35)" }
 };
-const CONTENT_VERSION = 14;
+const CONTENT_VERSION = 15;
 
 const PHOTOS = {
   oats: "https://images.unsplash.com/photo-1494390248081-4e521a5940db?auto=format&fit=crop&w=720&q=82",
@@ -574,6 +574,49 @@ function requestedBowlRecipes() {
   ];
 }
 
+function sariwaTableRecipes() {
+  const entries = [
+    ["Calamansi chicken grain bowl", "lunch", 540, 25, PHOTOS.citrusChickenBowl,
+      [[120,"g","cooked grilled chicken"],[150,"g","cooked brown rice"],[0.5,"cup","cucumber"],[1,"cup","lettuce"],[0.25,"cup","carrots"],[1,"pc","calamansi"],[60,"g","plain yogurt"],[1,"clove","garlic"],[10,"g","Nutrilite All Plant Protein Powder"]],
+      ["Grill chicken to 74°C and rest before slicing.","Plate brown rice, washed vegetables and chicken.","Whisk 10 g plant protein into cold yogurt with garlic and calamansi; drizzle before serving."],
+      "Soy, wheat/gluten and milk."],
+    ["Garden tofu rice bowl", "lunch", 490, 20, PHOTOS.tofu,
+      [[150,"g","firm tofu"],[150,"g","cooked brown rice"],[0.5,"cup","cucumber"],[0.25,"cup","carrots"],[1,"cup","leafy greens"],[1,"tbsp","tahini"],[1,"pc","calamansi"],[10,"g","Nutrilite All Plant Protein Powder"]],
+      ["Sear tofu until golden; cook rice and wash vegetables.","Whisk tahini, calamansi juice and a little water; mix in 10 g plant protein away from heat.","Arrange in a bowl and serve the dressing cold."],
+      "Soy, wheat/gluten and sesame."],
+    ["Chicken & greens pita", "lunch", 430, 20, PHOTOS.wrap,
+      [[1,"pc","whole wheat pita"],[100,"g","cooked chicken"],[1,"cup","lettuce"],[0.25,"cup","tomato"],[0.25,"cup","cucumber"],[60,"g","plain yogurt"],[1,"tbsp","fresh herbs"],[10,"g","Nutrilite All Plant Protein Powder"]],
+      ["Cook chicken to 74°C; warm the pita separately.","Blend 10 g plant protein into chilled yogurt with herbs.","Fill pita with vegetables and chicken, then add the cold sauce."],
+      "Wheat/gluten, soy and milk."],
+    ["Mango vanilla overnight oats", "breakfast", 410, 10, PHOTOS.oats,
+      [[40,"g","rolled oats"],[250,"ml","unsweetened soy milk"],[25,"g","Herbalife Formula 1 vanilla shake mix"],[80,"g","mango"],[1,"tbsp","pumpkin seeds"]],
+      ["Use one serving of a locally available vanilla Formula 1 variant according to its Philippine label; 25 g is a planning amount.","Stir oats and shake mix into chilled soy milk.","Refrigerate at 5°C or below overnight; top with mango and seeds."],
+      "Soy; check the chosen shake mix for milk and wheat."],
+    ["Berry yogurt breakfast cup", "breakfast", 360, 10, PHOTOS.yogurt,
+      [[180,"g","plain unsweetened yogurt"],[25,"g","Herbalife Formula 1 vanilla shake mix"],[60,"g","mixed berries"],[25,"g","rolled oats"]],
+      ["Use one serving of a locally available vanilla Formula 1 variant according to its Philippine label; 25 g is a planning amount.","Whisk the mix into chilled yogurt following the selected pack directions.","Layer with washed berries and oats; keep chilled."],
+      "Milk and soy; check the chosen shake mix for wheat."],
+    ["Chocolate banana blend", "snack", 270, 5, PHOTOS.drink,
+      [[25,"g","Herbalife Formula 1 chocolate shake mix"],[250,"ml","unsweetened soy milk"],[0.5,"pc","banana"],[4,"cubes","ice"]],
+      ["Use one serving of a locally available chocolate Formula 1 variant according to its Philippine label; 25 g is a planning amount.","Add cold soy milk, banana, powder and ice to a clean blender.","Blend smooth and serve immediately."],
+      "Soy; check the chosen shake mix for milk and wheat."],
+    ["Mango barley cooler", "snack", 90, 5, PHOTOS.pineappleJuice,
+      [[3,"g","Santé Barley no-added-sweetener powder"],[100,"g","mango"],[220,"ml","chilled water"],[4,"cubes","ice"]],
+      ["Blend mango and chilled water until smooth.","Mix in 3 g barley powder following the purchased pack directions; serve cold over ice."],
+      "Check the exact product pack and kitchen cross-contact; barley grass alone is not gluten-free certification."],
+    ["Cucumber calamansi green tea", "snack", 15, 8, PHOTOS.tea,
+      [[3,"g","Santé Barley no-added-sweetener powder"],[200,"ml","brewed green tea"],[0.25,"cup","cucumber"],[1,"pc","calamansi"],[4,"cubes","ice"]],
+      ["Brew green tea, cool rapidly and refrigerate.","Stir in 3 g barley powder according to purchased pack directions.","Add cucumber and calamansi; pour over ice."],
+      "Check the exact product pack and kitchen cross-contact; contains caffeine from green tea."]
+  ];
+  return entries.map(([name, cat, cal, time, image, ingredients, steps, allergens]) => ({
+    ...recipe(name, cat, cal, time, ["Sariwa Table", cat === "snack" ? "drink" : "café-meal", "estimated-calories"], image, ingredients, steps),
+    source: "Sariwa Table",
+    sourceUrl: "https://sariwa-table-ph.vercel.app/",
+    sourceNote: "Concept recipe from sariwa-table-ph.vercel.app. Calories are rough planning estimates, not verified nutrition facts. Product availability and use in prepared food need confirmation. Allergens: " + allergens + " Follow current Philippine product directions; no therapeutic claims."
+  }));
+}
+
 function bangusSisigRecipe() {
   return recipe("Bangus Sisig", "dinner", 350, 30,
     ["Filipino", "high-protein", "vegetable-rich", "lower-sodium", "moderate-fish-portion", "no-added-sugar", "estimated-calories"],
@@ -676,6 +719,7 @@ function seed() {
     ...healthGoalRecipes(),
     ...requestedBowlRecipes(),
     bangusSisigRecipe(),
+    ...sariwaTableRecipes(),
     ...juiceRecipes(),
     ...importedRecipes(),
     ...calendarMealRecipes()
@@ -792,6 +836,15 @@ function normalize(data) {
     if (!normalized.recipes.some((item) => recipeNameKey(item.name) === recipeNameKey(bangusSisig.name))) {
       normalized.recipes.push(bangusSisig);
     }
+  }
+  if (previousContentVersion < 15) {
+    const existingNames = new Set(normalized.recipes.map((item) => recipeNameKey(item.name)));
+    sariwaTableRecipes().forEach((item) => {
+      const nameKey = recipeNameKey(item.name);
+      if (existingNames.has(nameKey)) return;
+      normalized.recipes.push(item);
+      existingNames.add(nameKey);
+    });
   }
   normalized.contentVersion = CONTENT_VERSION;
   normalized.recipes.forEach((item) => {
@@ -1959,7 +2012,7 @@ function renderRecipeDetail(item) {
   if (!item) return renderNotFound();
   const calendarNotes = [...new Set([...(item.sourceNotes || []), item.sourceNote].filter(Boolean))];
   const sourceNote = item.source && calendarNotes.length
-    ? `<section class="surface detail-section calendar-source-note" style="grid-column:1/-1"><h2>${icon(item.source === "Google Calendar" ? "ph-calendar-check" : "ph-file-pdf")} ${item.source === "Google Calendar" ? "Imported from Google Calendar" : "Adapted from your attachment"}</h2>${calendarNotes.map((note) => `<p>${esc(note)}</p>`).join("")}<span>${esc(item.sourceCalendar || item.source)} · Calories and preparation time are practical estimates.</span></section>`
+    ? `<section class="surface detail-section calendar-source-note" style="grid-column:1/-1"><h2>${icon(item.source === "Google Calendar" ? "ph-calendar-check" : item.source === "Sariwa Table" ? "ph-link" : "ph-file-pdf")} ${item.source === "Google Calendar" ? "Imported from Google Calendar" : item.source === "Sariwa Table" ? "From Sariwa Table" : "Adapted from your attachment"}</h2>${item.source === "Sariwa Table" ? '<a href="https://sariwa-table-ph.vercel.app/" target="_blank" rel="noopener noreferrer">View original menu ↗</a>' : ""}${calendarNotes.map((note) => `<p>${esc(note)}</p>`).join("")}<span>${esc(item.sourceCalendar || item.source)} · Calories and preparation time are practical estimates.</span></section>`
     : "";
   return `
     <nav class="detail-breadcrumbs" aria-label="Breadcrumb"><a href="/recipes" data-route>Recipes</a>${icon("ph-caret-right")}<span>${esc(item.name)}</span></nav>
