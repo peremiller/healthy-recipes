@@ -37,7 +37,12 @@ const JUICE_RECIPE_NAMES = [
 ];
 const JUICE_RECIPE_ALIASES = ["Green Detox", "Beet Boost", "Fat Burner", "Tummy Cleanse", "Hydration Boost", "Immunity Boost"];
 const IMPORTED_RECIPE_NAMES = IMPORTED_RECIPE_DEFINITIONS.map((item) => item.name);
-const EXPECTED_RECIPE_COUNT = 69 + IMPORTED_RECIPE_DEFINITIONS.length;
+const SARIWA_RECIPE_NAMES = [
+  "Calamansi chicken grain bowl", "Garden tofu rice bowl", "Chicken & greens pita",
+  "Mango vanilla overnight oats", "Berry yogurt breakfast cup", "Chocolate banana blend",
+  "Mango barley cooler", "Cucumber calamansi green tea"
+];
+const EXPECTED_RECIPE_COUNT = 77 + IMPORTED_RECIPE_DEFINITIONS.length;
 
 const storage = new Map();
 const appElement = { innerHTML: "" };
@@ -119,7 +124,7 @@ function assertRecipeIntegrity(state, expectedCount) {
 
 const fresh = await loadState("fresh");
 const freshMarkup = appElement.innerHTML;
-assert.equal(fresh.contentVersion, 14);
+assert.equal(fresh.contentVersion, 15);
 assertRecipeIntegrity(fresh, EXPECTED_RECIPE_COUNT);
 assert.ok(Buffer.byteLength(JSON.stringify(fresh)) <= 2 * 1024 * 1024, "the complete app state must fit the cloud payload limit");
 assert.match(freshMarkup, /data-cloud-account/, "the application shell must expose cloud sync settings");
@@ -158,6 +163,15 @@ assert.match(appSource, /LOCATION_TARGET_ACCURACY_METERS = 25/, "location must t
 assert.match(appSource, /parameters\.set\("origin",/, "directions must use the captured device coordinates");
 
 window.location.pathname = "/recipes";
+SARIWA_RECIPE_NAMES.forEach((name) => {
+  const item = fresh.recipes.find((recipe) => recipe.name === name);
+  assert.ok(item, name + " must be seeded");
+  assert.equal(item.source, "Sariwa Table");
+  assert.ok(item.ingredients.length >= 4);
+  assert.ok(item.steps.length >= 2);
+  assert.match(item.sourceNote, /Allergens:/);
+});
+assert.equal(fresh.recipes.filter((item) => SARIWA_RECIPE_NAMES.includes(item.name)).length, 8);
 const bangusSisig = fresh.recipes.find((item) => item.name === "Bangus Sisig");
 assert.ok(bangusSisig, "bangus sisig must be seeded");
 assert.equal(bangusSisig.cat, "dinner");
@@ -242,6 +256,19 @@ const bangusMigration = await loadState("bangus-migration");
 assertRecipeIntegrity(bangusMigration, EXPECTED_RECIPE_COUNT);
 assert.equal(bangusMigration.recipes.filter((item) => item.name === "Bangus Sisig").length, 1, "version-13 users must receive bangus sisig once");
 
+const versionFourteenState = {
+  ...fresh,
+  contentVersion: 14,
+  recipes: fresh.recipes.filter((item) => !SARIWA_RECIPE_NAMES.includes(item.name)),
+  inventory: fresh.inventory.map((item) => ({ ...item }))
+};
+storage.set("nourishplan.v2", JSON.stringify(versionFourteenState));
+const sariwaMigration = await loadState("sariwa-migration");
+assertRecipeIntegrity(sariwaMigration, EXPECTED_RECIPE_COUNT);
+assert.equal(sariwaMigration.recipes.filter((item) => SARIWA_RECIPE_NAMES.includes(item.name)).length, 8, "version-14 users receive all eight Sariwa recipes once");
+const sariwaAgain = await loadState("sariwa-no-duplicates");
+assert.equal(sariwaAgain.recipes.filter((item) => SARIWA_RECIPE_NAMES.includes(item.name)).length, 8, "repeat loads must not duplicate Sariwa recipes");
+
 const versionEightState = {
   ...fresh,
   contentVersion: 8,
@@ -284,6 +311,10 @@ storage.set("nourishplan.v2", JSON.stringify(fresh));
 await loadState("attachment-detail");
 assert.match(appElement.innerHTML, /Adapted from your attachment/, "attachment recipe details must show their provenance");
 assert.match(appElement.innerHTML, /Cook Book\.docx\.pdf \/ Flavorful Healthy Diet_ A Cookbook\.pptx\.pdf/, "attachment recipe details must identify their source files");
+window.location.pathname = `/recipes/mango-barley-cooler-${fresh.recipes.find((item) => item.name === "Mango barley cooler").id}`;
+await loadState("sariwa-detail");
+assert.match(appElement.innerHTML, /From Sariwa Table/, "Sariwa recipe detail must show source");
+assert.match(appElement.innerHTML, /View original menu/, "Sariwa recipe detail must link to the source menu");
 
 window.location.pathname = "/planner";
 await loadState("planner-photos");
