@@ -1,7 +1,7 @@
 "use strict";
 
 import { haversineKm } from "./lib/geo.mjs";
-import { fillRollingMealPlan, MEAL_TYPES } from "./lib/meal-plan.mjs";
+import { fillRollingMealPlan, isPlannerRecipeAllowed, MEAL_TYPES } from "./lib/meal-plan.mjs";
 import { IMPORTED_RECIPE_DEFINITIONS } from "./lib/imported-recipes.mjs";
 import { createCloudSync } from "./lib/cloud-sync.mjs";
 import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "./lib/cloud-config.mjs";
@@ -1126,6 +1126,10 @@ function hasAdjacentMeal(date, recipeId) {
 function setPlannedMeal(date, meal, recipeId, successMessage = "Meal planned") {
   const item = recipeById(recipeId);
   if (!item) return false;
+  if (!isPlannerRecipeAllowed(item)) {
+    toast("Pancakes are excluded from the meal planner");
+    return false;
+  }
   if (hasAdjacentMeal(date, recipeId)) {
     toast(`Choose another meal — ${item.name} is already planned on an adjacent day`);
     return false;
@@ -1158,10 +1162,10 @@ function mealAlternativeFor(date, meal, currentItem, term) {
     ...Object.values(planFor(date)),
     ...adjacentDates(date).flatMap((adjacent) => Object.values(planFor(adjacent)))
   ]);
-  const category = state.recipes.filter((item) => item.cat === meal && !recipeContainsTerm(item, term) && !blocked.has(item.id));
+  const category = state.recipes.filter((item) => isPlannerRecipeAllowed(item) && item.cat === meal && !recipeContainsTerm(item, term) && !blocked.has(item.id));
   const candidates = category.length
     ? category
-    : state.recipes.filter((item) => !recipeContainsTerm(item, term) && !blocked.has(item.id));
+    : state.recipes.filter((item) => isPlannerRecipeAllowed(item) && !recipeContainsTerm(item, term) && !blocked.has(item.id));
   if (!candidates.length) return null;
   const hash = `${date}|${meal}|${term}`.split("").reduce((total, character) => total + character.charCodeAt(0), 0);
   return candidates.sort((a, b) => a.name.localeCompare(b.name))[hash % candidates.length];
@@ -1182,7 +1186,7 @@ function calendarRecipesFor(date, meal) {
   const seen = new Set();
   return names.map((name) => state.recipes.find((item) => item.name === name || (item.aliases || []).includes(name)))
     .filter((item) => {
-      if (!item || seen.has(item.id)) return false;
+      if (!isPlannerRecipeAllowed(item) || seen.has(item.id)) return false;
       seen.add(item.id);
       return true;
     });
@@ -2367,9 +2371,9 @@ function extraModal() {
 
 function pickerRows(date, meal, query = "") {
   const normalizedQuery = query.trim().toLowerCase();
-  const matches = state.recipes.filter((item) => !normalizedQuery
+  const matches = state.recipes.filter((item) => isPlannerRecipeAllowed(item) && (!normalizedQuery
     || item.name.toLowerCase().includes(normalizedQuery)
-    || item.tags.join(" ").toLowerCase().includes(normalizedQuery));
+    || item.tags.join(" ").toLowerCase().includes(normalizedQuery)));
   const sorted = [...matches].sort((a, b) => Number(b.cat === meal) - Number(a.cat === meal) || a.name.localeCompare(b.name));
   return sorted.length ? sorted.map((item) => `<button class="picker-row" type="button" data-choose-recipe="${item.id}" data-picker-date="${date}" data-picker-meal="${meal}"><img src="${esc(recipeImage(item))}" alt="" /><div><strong>${esc(item.name)}</strong><span>${item.cal} kcal · ${fmtPeso(mealCostPeso(item))} est. · ${item.time} min</span></div><span class="tag">${MEAL_LABEL[item.cat]}</span></button>`).join("") : '<div class="empty-state">No matching recipes.</div>';
 }
