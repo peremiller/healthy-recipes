@@ -240,7 +240,7 @@ const MEAL_VISUAL = {
   dinner: { color: "#91a5df", glow: "rgba(145, 165, 223, 0.35)" },
   snack: { color: "#e27d62", glow: "rgba(226, 125, 98, 0.35)" }
 };
-const CONTENT_VERSION = 15;
+const CONTENT_VERSION = 16;
 
 const PHOTOS = {
   oats: "https://images.unsplash.com/photo-1494390248081-4e521a5940db?auto=format&fit=crop&w=720&q=82",
@@ -468,8 +468,8 @@ function calendarMealRecipes() {
   }));
 }
 
-function importedRecipes() {
-  return IMPORTED_RECIPE_DEFINITIONS.map((definition) => ({
+function importedRecipes(definitions = IMPORTED_RECIPE_DEFINITIONS) {
+  return definitions.map((definition) => ({
     ...recipe(
       definition.name,
       definition.cat,
@@ -481,6 +481,7 @@ function importedRecipes() {
       definition.steps
     ),
     source: definition.source,
+    sourceUrl: definition.sourceUrl,
     sourceNote: definition.sourceNote,
     aliases: [...new Set(definition.aliases || [])]
   }));
@@ -840,6 +841,15 @@ function normalize(data) {
   if (previousContentVersion < 15) {
     const existingNames = new Set(normalized.recipes.map((item) => recipeNameKey(item.name)));
     sariwaTableRecipes().forEach((item) => {
+      const nameKey = recipeNameKey(item.name);
+      if (existingNames.has(nameKey)) return;
+      normalized.recipes.push(item);
+      existingNames.add(nameKey);
+    });
+  }
+  if (previousContentVersion < 16) {
+    const existingNames = new Set(normalized.recipes.map((item) => recipeNameKey(item.name)));
+    importedRecipes(IMPORTED_RECIPE_DEFINITIONS.filter((item) => item.source === "Body Card")).forEach((item) => {
       const nameKey = recipeNameKey(item.name);
       if (existingNames.has(nameKey)) return;
       normalized.recipes.push(item);
@@ -2015,8 +2025,16 @@ function renderRecipes() {
 function renderRecipeDetail(item) {
   if (!item) return renderNotFound();
   const calendarNotes = [...new Set([...(item.sourceNotes || []), item.sourceNote].filter(Boolean))];
+  const isBodyCard = item.source === "Body Card";
+  const sourceHeading = item.source === "Google Calendar" ? "Imported from Google Calendar"
+    : item.source === "Sariwa Table" ? "From Sariwa Table"
+    : isBodyCard ? "From Body Card Nutrition" : "Adapted from your attachment";
+  const sourceLink = isBodyCard
+    ? '<a href="https://body-card.ajmillertperez562.chatgpt.site/#nutrition" target="_blank" rel="noopener noreferrer">View original Body Card recipes ↗</a>'
+    : item.source === "Sariwa Table"
+      ? '<a href="https://sariwa-table-ph.vercel.app/" target="_blank" rel="noopener noreferrer">View original menu ↗</a>' : "";
   const sourceNote = item.source && calendarNotes.length
-    ? `<section class="surface detail-section calendar-source-note" style="grid-column:1/-1"><h2>${icon(item.source === "Google Calendar" ? "ph-calendar-check" : item.source === "Sariwa Table" ? "ph-link" : "ph-file-pdf")} ${item.source === "Google Calendar" ? "Imported from Google Calendar" : item.source === "Sariwa Table" ? "From Sariwa Table" : "Adapted from your attachment"}</h2>${item.source === "Sariwa Table" ? '<a href="https://sariwa-table-ph.vercel.app/" target="_blank" rel="noopener noreferrer">View original menu ↗</a>' : ""}${calendarNotes.map((note) => `<p>${esc(note)}</p>`).join("")}<span>${esc(item.sourceCalendar || item.source)} · Calories and preparation time are practical estimates.</span></section>`
+    ? `<section class="surface detail-section calendar-source-note" style="grid-column:1/-1"><h2>${icon(item.source === "Google Calendar" ? "ph-calendar-check" : item.source === "Sariwa Table" || isBodyCard ? "ph-link" : "ph-file-pdf")} ${sourceHeading}</h2>${sourceLink}${calendarNotes.map((note) => `<p>${esc(note)}</p>`).join("")}<span>${esc(item.sourceCalendar || item.source)} · Calories and preparation time are practical estimates.</span></section>`
     : "";
   return `
     <nav class="detail-breadcrumbs" aria-label="Breadcrumb"><a href="/recipes" data-route>Recipes</a>${icon("ph-caret-right")}<span>${esc(item.name)}</span></nav>

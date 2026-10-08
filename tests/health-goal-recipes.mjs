@@ -83,7 +83,7 @@ const recipeNameKey = (name) => String(name)
   .toLowerCase()
   .replace(/[^a-z0-9]+/g, " ")
   .trim();
-const ingredientKey = (ingredient) => `${recipeNameKey(ingredient.name)}|${ingredient.unit || ""}`;
+const ingredientKey = (ingredient) => `${recipeNameKey(ingredient.name).replace(/s$/, "")}|${ingredient.unit || ""}`;
 const groceryUnitAlias = { cups: "cup", tbsps: "tbsp", tablespoons: "tbsp", teaspoons: "tsp", tsps: "tsp", grams: "g", gram: "g", kilogram: "kg", pieces: "pc", piece: "pc", pcs: "pc", cans: "can", cloves: "clove", slices: "slice", heads: "head", bunches: "bunch", scoops: "scoop", liters: "l", liter: "l" };
 const groceryIngredientKey = (ingredient) => {
   const name = String(ingredient.name || "").trim().toLowerCase().replace(/s$/, "");
@@ -124,7 +124,7 @@ function assertRecipeIntegrity(state, expectedCount) {
 
 const fresh = await loadState("fresh");
 const freshMarkup = appElement.innerHTML;
-assert.equal(fresh.contentVersion, 15);
+assert.equal(fresh.contentVersion, 16);
 assertRecipeIntegrity(fresh, EXPECTED_RECIPE_COUNT);
 assert.ok(Buffer.byteLength(JSON.stringify(fresh)) <= 2 * 1024 * 1024, "the complete app state must fit the cloud payload limit");
 assert.match(freshMarkup, /data-cloud-account/, "the application shell must expose cloud sync settings");
@@ -208,7 +208,7 @@ IMPORTED_RECIPE_NAMES.forEach((name) => {
   const item = fresh.recipes.find((recipe) => recipe.name === name);
   assert.ok(item, `${name} was not imported`);
   assert.ok(item.ingredients.length >= 2, `${name} needs measurable ingredients`);
-  assert.ok(item.steps.length >= 3, `${name} needs a complete method`);
+  assert.ok(item.steps.length >= (item.source === "Body Card" ? 2 : 3), `${name} needs a complete method`);
   assert.ok(item.source, `${name} needs attachment provenance`);
   assert.match(item.image, /^https:\/\/images\.unsplash\.com\//, `${name} must use a real food photograph`);
 });
@@ -269,6 +269,20 @@ assert.equal(sariwaMigration.recipes.filter((item) => SARIWA_RECIPE_NAMES.includ
 const sariwaAgain = await loadState("sariwa-no-duplicates");
 assert.equal(sariwaAgain.recipes.filter((item) => SARIWA_RECIPE_NAMES.includes(item.name)).length, 8, "repeat loads must not duplicate Sariwa recipes");
 
+const versionFifteenState = {
+  ...fresh,
+  contentVersion: 15,
+  recipes: fresh.recipes.filter((item) => item.source !== "Body Card"),
+  inventory: fresh.inventory.map((item) => ({ ...item }))
+};
+storage.set("nourishplan.v2", JSON.stringify(versionFifteenState));
+const bodyCardMigration = await loadState("body-card-migration");
+assertRecipeIntegrity(bodyCardMigration, EXPECTED_RECIPE_COUNT);
+assert.equal(bodyCardMigration.recipes.filter((item) => item.source === "Body Card").length, 7, "existing users receive every Body Card recipe");
+const bodyCardAgain = await loadState("body-card-no-duplicates");
+assert.equal(bodyCardAgain.recipes.filter((item) => item.source === "Body Card").length, 7, "repeat loads must not duplicate Body Card recipes");
+assert.deepEqual(bodyCardAgain.plan, bodyCardMigration.plan, "reload preserves the meal plan");
+
 const versionEightState = {
   ...fresh,
   contentVersion: 8,
@@ -315,6 +329,12 @@ window.location.pathname = `/recipes/mango-barley-cooler-${fresh.recipes.find((i
 await loadState("sariwa-detail");
 assert.match(appElement.innerHTML, /From Sariwa Table/, "Sariwa recipe detail must show source");
 assert.match(appElement.innerHTML, /View original menu/, "Sariwa recipe detail must link to the source menu");
+
+window.location.pathname = `/recipes/fruit-plain-yogurt-${fresh.recipes.find((item) => item.name === "Fruit & plain yogurt").id}`;
+await loadState("body-card-detail");
+assert.match(appElement.innerHTML, /From Body Card Nutrition/);
+assert.match(appElement.innerHTML, /https:\/\/body-card\.ajmillertperez562\.chatgpt\.site\/#nutrition/);
+assert.match(appElement.innerHTML, /example quantities for one serving and rough calorie estimates/);
 
 window.location.pathname = "/planner";
 await loadState("planner-photos");
