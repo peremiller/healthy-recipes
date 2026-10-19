@@ -2835,6 +2835,29 @@ window.addEventListener("keydown", (event) => {
     $("#globalSearch")?.focus();
   }
 });
+// Explicit cross-app, read-only meal-plan sharing with PulseFit.
+// Only the named PulseFit production origin may request recipe titles.
+const PULSEFIT_ORIGIN = "https://pulsefit-exercise-app.vercel.app";
+function shareMealPlanWithPulseFit(event) {
+  if (event.origin !== PULSEFIT_ORIGIN || event.source !== window.opener) return;
+  if (event.data?.type !== "pulsefit:request-meals" || event.data?.version !== 1) return;
+  const result = {};
+  for (const [date, planned] of Object.entries(state.plan || {})) {
+    if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(date)) continue;
+    result[date] = {};
+    for (const meal of MEALS) {
+      const recipe = recipeById(planned?.[meal]);
+      if (recipe) result[date][meal] = recipe.name;
+    }
+  }
+  event.source.postMessage({ type: "pulsefit:meal-data", version: 1, nonce: event.data.nonce, meals: result }, PULSEFIT_ORIGIN);
+}
+window.addEventListener("message", shareMealPlanWithPulseFit);
+if (window.opener && new URLSearchParams(location.search).get("pulsefit-sync") === "1") {
+  window.addEventListener("load", () => window.opener?.postMessage({type:"pulsefit:ready",version:1}, PULSEFIT_ORIGIN));
+  // App startup and any cloud hydration can finish after window load.
+  setTimeout(() => window.opener?.postMessage({type:"pulsefit:ready",version:1}, PULSEFIT_ORIGIN), 1600);
+}
 window.addEventListener("online", () => cloudSync.pullNow({ announce: true }));
 if (typeof document.addEventListener === "function") {
   document.addEventListener("visibilitychange", () => {
