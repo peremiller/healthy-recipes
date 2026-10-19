@@ -1102,6 +1102,7 @@ const LOCATION_SAMPLE_WINDOW_MS = 15000;
 
 const NAV = [
   { key: "planner", path: "/planner", label: "Planner", icon: "ph-calendar-blank" },
+  { key: "daily-wellness", path: "/daily-wellness", label: "Meals + Exercises", icon: "ph-heartbeat" },
   { key: "meal-map", path: "/planner/visualization", label: "3D Meal Map", icon: "ph-cube" },
   { key: "recipes", path: "/recipes", label: "Recipes", icon: "ph-bowl-food" },
   { key: "inventory", path: "/inventory", label: "Inventory", icon: "ph-archive" },
@@ -1362,6 +1363,7 @@ function routeState() {
   const path = window.location.pathname.replace(/\/+$/, "") || "/";
   if (path === "/") return { section: "planner", canonical: "/planner" };
   if (path === "/planner") return { section: "planner" };
+  if (path === "/daily-wellness") return { section: "daily-wellness" };
   if (path === "/planner/visualization") return { section: "meal-map" };
   if (path === "/recipes") return { section: "recipes" };
   if (path.startsWith("/recipes/")) {
@@ -1460,6 +1462,7 @@ function render() {
   else if (route.detail === "grocery-item") body = renderGroceryItem(route.item, route.slug);
   else if (route.detail === "store") body = renderStoreDetail(route.item);
   else if (route.section === "planner") body = renderPlanner();
+  else if (route.section === "daily-wellness") body = renderDailyWellness();
   else if (route.section === "meal-map") body = renderMealVisualization();
   else if (route.section === "recipes") body = renderRecipes();
   else if (route.section === "inventory") body = renderInventory();
@@ -1511,9 +1514,46 @@ function plannerSyncBanner() {
     </section>`;
 }
 
+
+const PULSEFIT_SESSIONS = [
+  { name: "Upper A", duration: "42 min", focus: "Chest · Back · Shoulders", exercises: [["Flat Dumbbell Press","4 × 6–8"],["One-Arm Row","4 × 8–10"],["Seated Dumbbell Press","3 × 8–10"],["Pull-up / Assisted","3 × 6–10"],["Cable Curl","3 × 10–12"]] },
+  { name: "Lower A", duration: "46 min", focus: "Quads · Hamstrings · Calves", exercises: [["Front Squat","4 × 6–8"],["Romanian Deadlift","3 × 8–10"],["Leg Press","3 × 12–15"],["Leg Curl","3 × 12–15"],["Standing Calf Raise","4 × 15–20"]] },
+  { name: "Upper B", duration: "40 min", focus: "Chest · Back · Arms", exercises: [["Incline Barbell Press","4 × 8–10"],["Chest-Supported Row","4 × 10–12"],["Cable Lateral Raise","4 × 12–15"],["Rope Pushdown","3 × 12–15"],["EZ-Bar Curl","3 × 10–12"]] },
+  { name: "Spartan Circuit", duration: "32 min", focus: "Full body · Conditioning", exercises: [["Burpee","4 × 12"],["Push-up","4 × 15"],["Jump Squat","4 × 15"],["Mountain Climber","4 × 30 sec"],["Forearm Plank","3 × 45 sec"]] }
+];
+const WELLNESS_KEY = "nourishplan.pulsefit.daily.v1";
+function getExerciseOverrides() {
+  try { const data = JSON.parse(localStorage.getItem(WELLNESS_KEY) || "{}"); return data && typeof data === "object" ? data : {}; } catch { return {}; }
+}
+function dailyExerciseFor(date) {
+  const overrides = getExerciseOverrides();
+  if (Object.prototype.hasOwnProperty.call(overrides,date)) return Number(overrides[date]);
+  const dow = dateFromISO(date).getDay();
+  return ({1:0,2:1,4:2,6:3})[dow] ?? -1;
+}
+function renderDailyWellness() {
+  const start = dateFromISO(todayISO());
+  const dates = Array.from({length:7},(_,i)=>{const d=new Date(start);d.setDate(start.getDate()+i);return isoOf(d)});
+  return `${heading("Daily meals & exercises", "Your current NourishPlan meals alongside PulseFit workout sessions for the next seven days.")}<p class="muted">Exercise sessions are imported from PulseFit's training plan. The default weekly placement is a suggested schedule (Mon, Tue, Thu, Sat), not a live sync of PulseFit's personal calendar. Choose a session or rest day for any date; changes to exercises are saved on this device.</p><div style="display:grid;gap:1rem;margin-top:1rem">${dates.map(date=>{
+    const selection=dailyExerciseFor(date);
+    const workout=PULSEFIT_SESSIONS[selection];
+    return `<section class="surface" style="padding:1.1rem;border-radius:16px"><h2 style="margin:0 0 .8rem">${esc(fmtLong(date))}${date===todayISO()?" · Today":""}</h2><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1rem"><div><h3>🥗 Meals</h3>${MEALS.map(meal=>{const item=recipeById(planFor(date)[meal]);return `<p style="margin:.55rem 0"><strong>${esc(MEAL_LABEL[meal]||meal)}:</strong> ${item?`<a href="${recipePath(item)}" data-route>${esc(item.name)}</a>`:"Not planned"}</p>`}).join("")}<a href="/planner" data-route>Manage meals →</a></div><div><h3>🏃 Exercise</h3><label for="exercise-${date}" class="muted">Session</label><select id="exercise-${date}" data-daily-exercise="${date}" style="display:block;width:100%;padding:.6rem;margin:.45rem 0"><option value="-1" ${selection===-1?"selected":""}>Rest / recovery day</option>${PULSEFIT_SESSIONS.map((p,i)=>`<option value="${i}" ${selection===i?"selected":""}>${esc(p.name)} · ${esc(p.duration)}</option>`).join("")}</select>${workout?`<p>${esc(workout.focus)} · ${esc(workout.duration)}</p><ul style="padding-left:1.3rem">${workout.exercises.map(([name,sets])=>`<li>${esc(name)} — ${esc(sets)}</li>`).join("")}</ul>`:"<p class='muted'>Gentle recovery and rest.</p>"}<a href="https://pulsefit-exercise-app.vercel.app/#plan" target="_blank" rel="noopener noreferrer">Open PulseFit ↗</a></div></div></section>`;
+  }).join("")}</div>`;
+}
+document.addEventListener("change",(event)=>{
+  const select=event.target.closest("[data-daily-exercise]");
+  if (!select) return;
+  const value=Number(select.value);
+  if (!Number.isInteger(value)||value<-1||value>=PULSEFIT_SESSIONS.length)return;
+  const overrides=getExerciseOverrides();
+  overrides[select.dataset.dailyExercise]=value;
+  localStorage.setItem(WELLNESS_KEY,JSON.stringify(overrides));
+  render();
+});
+
 function renderPlanner() {
   const actions = `<a class="button secondary" href="/planner/visualization" data-route>${icon("ph-cube")} Explore 3D map</a>`;
-  return `${heading("Planner", "Plan your week. Meal prices are estimated ingredient costs per serving in Philippine pesos and may vary by store.", actions)}${plannerSyncBanner()}${plannerToolbar()}${plannerMode === "week" ? renderWeekPlanner() : renderDayPlanner()}`;
+  return `${heading("Planner", "Plan your week. Meal prices are estimated ingredient costs per serving in Philippine pesos and may vary by store.", actions)}<p style="margin:0 0 1rem"><a class="button secondary" href="/daily-wellness" data-route>🏃 View meals and exercises together →</a></p>${plannerSyncBanner()}${plannerToolbar()}${plannerMode === "week" ? renderWeekPlanner() : renderDayPlanner()}`;
 }
 
 function mealVisualizationData() {
