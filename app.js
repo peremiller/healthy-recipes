@@ -1526,12 +1526,32 @@ const PULSEFIT_SESSIONS = [
 function dailyExerciseFor(date) {
   return ({1:0,2:1,4:2,6:3})[dateFromISO(date).getDay()] ?? -1;
 }
+const PULSEFIT_MEDIA = {
+  "Push-up": { image: "push-up.webp", videoId: "7dXB7ZdOhf4" },
+  "Mountain Climber": { image: "mountain-climber.webp", videoId: "BhERlhtzQ1s" },
+  "Forearm Plank": { image: "forearm-plank.webp", videoId: "A2b2EmIg0dA" }
+};
+function exerciseMedia(name, sets) {
+  const media = PULSEFIT_MEDIA[name];
+  const photo = media
+    ? `<img src="https://pulsefit-exercise-app.vercel.app/assets/${media.image}" alt="${esc(name)} exercise demonstration" loading="lazy" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:9px" />`
+    : `<div role="img" aria-label="Illustration placeholder for ${esc(name)}" style="height:115px;display:grid;place-items:center;border-radius:9px;background:linear-gradient(135deg,#e1f3e8,#dce8f5);color:#194a39;font-size:2rem">🏋️</div>`;
+  const url = media
+    ? `https://www.youtube.com/watch?v=${media.videoId}`
+    : `https://www.youtube.com/results?search_query=${encodeURIComponent(name+" exercise proper form tutorial")}`;
+  const label = media ? "▶ Watch demonstration video" : "▶ Find demonstration videos";
+  return `<li style="list-style:none;border:1px solid var(--border, #d9e5df);border-radius:12px;padding:.7rem;min-width:0">
+     ${photo}<div style="margin:.5rem 0"><strong>${esc(name)}</strong><div class="muted">${esc(sets)}</div></div>
+     <a href="${url}" target="_blank" rel="noopener noreferrer">${label} ↗</a>
+     ${media ? `<details style="margin-top:.55rem"><summary>Play video here</summary><iframe title="${esc(name)} video tutorial" loading="lazy" src="https://www.youtube-nocookie.com/embed/${media.videoId}" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="border:0;width:100%;aspect-ratio:16/9;border-radius:8px"></iframe></details>` : `<small class="muted" style="display:block;margin-top:.35rem">Illustration placeholder; video search opens YouTube.</small>`}
+   </li>`;
+}
 function renderDailyWellness() {
   const start = dateFromISO(todayISO());
   const dates = Array.from({length:7},(_,i)=>{const d=new Date(start);d.setDate(start.getDate()+i);return isoOf(d)});
   return `${heading("Daily meals & exercises", "Your NourishPlan meals with an automatically assigned PulseFit exercise plan for every day.")}<p class="muted">Workouts are assigned automatically: Monday Upper A, Tuesday Lower A, Thursday Upper B, Saturday Spartan Circuit. Wednesday, Friday and Sunday are rest or recovery days. This is a suggested recurring schedule based on PulseFit routines, not a live sync of its calendar.</p><div style="display:grid;gap:1rem;margin-top:1rem">${dates.map(date=>{
     const workout=PULSEFIT_SESSIONS[dailyExerciseFor(date)];
-    return `<section class="surface" style="padding:1.1rem;border-radius:16px"><h2 style="margin:0 0 .8rem">${esc(fmtLong(date))}${date===todayISO()?" · Today":""}</h2><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1rem"><div><h3>🥗 Meals</h3>${MEALS.map(meal=>{const item=recipeById(planFor(date)[meal]);return `<p style="margin:.55rem 0"><strong>${esc(MEAL_LABEL[meal]||meal)}:</strong> ${item?`<a href="${recipePath(item)}" data-route>${esc(item.name)}</a>`:"Not planned"}</p>`}).join("")}<a href="/planner" data-route>Manage meals →</a></div><div><h3>🏃 Exercise</h3>${workout?`<p><strong>${esc(workout.name)}</strong> · ${esc(workout.duration)}</p><p>${esc(workout.focus)}</p><ul style="padding-left:1.3rem">${workout.exercises.map(([name,sets])=>`<li>${esc(name)} — ${esc(sets)}</li>`).join("")}</ul>`:"<p><strong>Rest / recovery day</strong></p><p class='muted'>Take it easy today. Optional gentle walking or mobility, based on comfort.</p>"}<a href="https://pulsefit-exercise-app.vercel.app/#plan" target="_blank" rel="noopener noreferrer">Open PulseFit ↗</a></div></div></section>`;
+    return `<section class="surface" style="padding:1.1rem;border-radius:16px"><h2 style="margin:0 0 .8rem">${esc(fmtLong(date))}${date===todayISO()?" · Today":""}</h2><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1rem"><div><h3>🥗 Meals</h3>${MEALS.map(meal=>{const item=recipeById(planFor(date)[meal]);return `<p style="margin:.55rem 0"><strong>${esc(MEAL_LABEL[meal]||meal)}:</strong> ${item?`<a href="${recipePath(item)}" data-route>${esc(item.name)}</a>`:"Not planned"}</p>`}).join("")}<a href="/planner" data-route>Manage meals →</a></div><div><h3>🏃 Exercise</h3>${workout?`<p><strong>${esc(workout.name)}</strong> · ${esc(workout.duration)}</p><p>${esc(workout.focus)}</p><ul style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:.65rem;padding:0;margin:1rem 0">${workout.exercises.map(([name,sets])=>exerciseMedia(name,sets)).join("")}</ul>`:"<p><strong>Rest / recovery day</strong></p><p class='muted'>Take it easy today. Optional gentle walking or mobility, based on comfort.</p>"}<a href="https://pulsefit-exercise-app.vercel.app/#plan" target="_blank" rel="noopener noreferrer">Open PulseFit ↗</a></div></div></section>`;
   }).join("")}</div>`;
 }
 
