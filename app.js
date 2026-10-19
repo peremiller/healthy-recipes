@@ -1537,7 +1537,7 @@ function renderDailyWellness() {
 
 function renderPlanner() {
   const actions = `<a class="button secondary" href="/planner/visualization" data-route>${icon("ph-cube")} Explore 3D map</a>`;
-  return `${heading("Planner", "Plan your week. Meal prices are estimated ingredient costs per serving in Philippine pesos and may vary by store.", actions)}<p style="margin:0 0 1rem"><a class="button secondary" href="/daily-wellness" data-route>🏃 View meals and exercises together →</a></p>${plannerSyncBanner()}${plannerToolbar()}${plannerMode === "week" ? renderWeekPlanner() : renderDayPlanner()}`;
+  return `${heading("Planner", "Plan your week. Meal prices are estimated ingredient costs per serving in Philippine pesos and may vary by store.", actions)}<p style="margin:0 0 1rem"><a class="button secondary" href="/daily-wellness" data-route>🏃 View meals and exercises together →</a></p><p style="margin:12px 0"><button class="button secondary" id="exportPulseFitMeals" type="button">⬇ Export meals to PulseFit</button></p>${plannerSyncBanner()}${plannerToolbar()}${plannerMode === "week" ? renderWeekPlanner() : renderDayPlanner()}`;
 }
 
 function mealVisualizationData() {
@@ -2853,6 +2853,34 @@ function shareMealPlanWithPulseFit(event) {
   event.source.postMessage({ type: "pulsefit:meal-data", version: 1, nonce: event.data.nonce, meals: result }, PULSEFIT_ORIGIN);
 }
 window.addEventListener("message", shareMealPlanWithPulseFit);
+function downloadablePulseFitPlan() {
+  const meals = {};
+  for (const [date, day] of Object.entries(state.plan || {})) {
+    if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(date)) continue;
+    const entry = {};
+    for (const meal of MEALS) {
+      const item = recipeById(day?.[meal]);
+      if (item) entry[meal] = item.name;
+    }
+    meals[date] = entry;
+  }
+  return { type: "pulsefit:meal-data", version: 1, exportedAt: new Date().toISOString(), meals };
+}
+function exportPulseFitFile() {
+  const blob = new Blob([JSON.stringify(downloadablePulseFitPlan(), null, 2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "healthy-recipes-pulsefit-meals.json";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 15000);
+}
+document.addEventListener("click", (event) => {
+  if (event.target.closest("#exportPulseFitMeals")) exportPulseFitFile();
+});
+
 if (window.opener && new URLSearchParams(location.search).get("pulsefit-sync") === "1") {
   window.addEventListener("load", () => window.opener?.postMessage({type:"pulsefit:ready",version:1}, PULSEFIT_ORIGIN));
   // App startup and any cloud hydration can finish after window load.
