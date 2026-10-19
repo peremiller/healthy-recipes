@@ -1526,6 +1526,37 @@ const PULSEFIT_SESSIONS = [
 function dailyExerciseFor(date) {
   return ({1:0,2:1,4:2,6:3})[dateFromISO(date).getDay()] ?? -1;
 }
+// Individual pose illustrations for exercises without a licensed PulseFit photo.
+// Pose geometry varies by movement; never reuse a generic workout image.
+const EXERCISE_POSES = {
+ "Flat Dumbbell Press": [[36,97,75,97,103,83],[65,97,65,64,50,51],[65,64,83,49,103,49]],
+ "One-Arm Row": [[40,106,76,67,112,74],[76,67,91,91,109,104],[76,67,49,76,36,102]],
+ "Seated Dumbbell Press": [[52,119,52,83,74,64],[74,64,87,37,87,13],[74,64,56,39,56,14]],
+ "Pull-up / Assisted": [[75,101,75,59,75,32],[75,59,55,32,42,15],[75,59,95,32,108,15]],
+ "Cable Curl": [[72,112,72,69,72,35],[72,69,49,85,51,55],[72,69,94,85,98,57]],
+ "Front Squat": [[50,123,62,83,82,65],[82,65,103,80,120,120],[82,65,56,55,41,62]],
+ "Romanian Deadlift": [[38,120,65,96,81,64],[81,64,103,77,113,108],[81,64,91,95,101,119]],
+ "Leg Press": [[37,109,64,91,87,72],[87,72,112,72,134,56],[64,91,52,117,28,122]],
+ "Leg Curl": [[32,100,72,100,96,85],[72,100,105,114,131,88],[72,100,49,115,31,115]],
+ "Standing Calf Raise": [[64,128,69,93,73,57],[73,57,57,39,52,64],[73,57,91,40,92,64]],
+ "Incline Barbell Press": [[33,111,68,88,95,71],[68,88,64,55,49,31],[68,88,86,53,106,31]],
+ "Chest-Supported Row": [[39,117,70,85,99,64],[70,85,59,112,41,125],[70,85,91,102,119,84]],
+ "Cable Lateral Raise": [[73,123,73,85,73,45],[73,62,42,54,19,44],[73,62,105,54,127,44]],
+ "Rope Pushdown": [[72,118,72,79,72,42],[72,61,58,82,56,116],[72,61,88,81,90,116]],
+ "EZ-Bar Curl": [[72,124,72,84,72,45],[72,65,51,80,57,56],[72,65,96,80,89,56]],
+ "Burpee": [[31,112,55,80,76,86],[76,86,98,108,122,112],[55,80,55,49,69,32]],
+ "Push-up": [[35,102,67,82,102,90],[35,102,26,123,20,123],[102,90,115,121,130,121]],
+ "Jump Squat": [[45,125,68,98,89,94],[89,94,108,115,121,122],[68,98,51,68,43,38]],
+ "Mountain Climber": [[34,82,70,81,103,86],[70,81,54,106,30,110],[103,86,112,110,132,112]],
+ "Forearm Plank": [[31,100,65,83,103,88],[31,100,29,116,17,116],[103,88,113,115,132,115]]
+};
+function exerciseIllustration(name) {
+  const strokes=EXERCISE_POSES[name] || [[45,120,67,80,75,44],[67,80,48,95,32,111],[67,80,95,95,110,111]];
+  const label=String(name).replace(/[&<>"]/g,"").slice(0,32);
+  const lines=strokes.map(points=>`<polyline points="${points.reduce((a,n,i)=>a+(i%2?",":" ")+n,"").trim()}" fill="none" stroke="#155c50" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>`).join("");
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect width="320" height="180" fill="#e4f3eb"/><circle cx="75" cy="32" r="12" fill="#155c50"/><line x1="16" y1="136" x2="146" y2="136" stroke="#9abcb1" stroke-width="3"/>${lines}<rect x="153" y="24" width="155" height="130" rx="15" fill="#fff" opacity=".85"/><text x="170" y="66" fill="#155c50" font-family="sans-serif" font-weight="bold" font-size="14">EXERCISE GUIDE</text><foreignObject x="168" y="77" width="130" height="68"><div xmlns="http://www.w3.org/1999/xhtml" style="font: bold 17px sans-serif; color:#123d34;overflow-wrap:break-word">${label}</div></foreignObject></svg>`;
+  return "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg);
+}
 const PULSEFIT_MEDIA = {
   "Push-up": { image: "push-up.webp", videoId: "7dXB7ZdOhf4" },
   "Mountain Climber": { image: "mountain-climber.webp", videoId: "BhERlhtzQ1s" },
@@ -1535,7 +1566,7 @@ function exerciseMedia(name, sets) {
   const media = PULSEFIT_MEDIA[name];
   const photo = media
     ? `<img src="https://pulsefit-exercise-app.vercel.app/assets/${media.image}" alt="${esc(name)} exercise demonstration" loading="lazy" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:9px" />`
-    : `<div role="img" aria-label="Illustration placeholder for ${esc(name)}" style="height:115px;display:grid;place-items:center;border-radius:9px;background:linear-gradient(135deg,#e1f3e8,#dce8f5);color:#194a39;font-size:2rem">🏋️</div>`;
+    : `<img src="${exerciseIllustration(name)}" alt="Distinct illustrated pose for ${esc(name)}" loading="lazy" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:9px" />`;
   const url = media
     ? `https://www.youtube.com/watch?v=${media.videoId}`
     : `https://www.youtube.com/results?search_query=${encodeURIComponent(name+" exercise proper form tutorial")}`;
@@ -1543,7 +1574,7 @@ function exerciseMedia(name, sets) {
   return `<li style="list-style:none;border:1px solid var(--border, #d9e5df);border-radius:12px;padding:.7rem;min-width:0">
      ${photo}<div style="margin:.5rem 0"><strong>${esc(name)}</strong><div class="muted">${esc(sets)}</div></div>
      <a href="${url}" target="_blank" rel="noopener noreferrer">${label} ↗</a>
-     ${media ? `<details style="margin-top:.55rem"><summary>Play video here</summary><iframe title="${esc(name)} video tutorial" loading="lazy" src="https://www.youtube-nocookie.com/embed/${media.videoId}" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="border:0;width:100%;aspect-ratio:16/9;border-radius:8px"></iframe></details>` : `<small class="muted" style="display:block;margin-top:.35rem">Illustration placeholder; video search opens YouTube.</small>`}
+     ${media ? `<details style="margin-top:.55rem"><summary>Play video here</summary><iframe title="${esc(name)} video tutorial" loading="lazy" src="https://www.youtube-nocookie.com/embed/${media.videoId}" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="border:0;width:100%;aspect-ratio:16/9;border-radius:8px"></iframe></details>` : `<small class="muted" style="display:block;margin-top:.35rem">Exercise-specific illustration; video search opens YouTube.</small>`}
    </li>`;
 }
 function renderDailyWellness() {
