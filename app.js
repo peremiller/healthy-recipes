@@ -2843,7 +2843,7 @@ function shareMealPlanWithPulseFit(event) {
   if (event.data?.type !== "pulsefit:request-meals" || event.data?.version !== 1) return;
   const result = {};
   for (const [date, planned] of Object.entries(state.plan || {})) {
-    if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(date)) continue;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) continue;
     result[date] = {};
     for (const meal of MEALS) {
       const recipe = recipeById(planned?.[meal]);
@@ -2856,7 +2856,7 @@ window.addEventListener("message", shareMealPlanWithPulseFit);
 function downloadablePulseFitPlan() {
   const meals = {};
   for (const [date, day] of Object.entries(state.plan || {})) {
-    if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(date)) continue;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) continue;
     const entry = {};
     for (const meal of MEALS) {
       const item = recipeById(day?.[meal]);
