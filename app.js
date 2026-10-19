@@ -1521,35 +1521,19 @@ const PULSEFIT_SESSIONS = [
   { name: "Upper B", duration: "40 min", focus: "Chest · Back · Arms", exercises: [["Incline Barbell Press","4 × 8–10"],["Chest-Supported Row","4 × 10–12"],["Cable Lateral Raise","4 × 12–15"],["Rope Pushdown","3 × 12–15"],["EZ-Bar Curl","3 × 10–12"]] },
   { name: "Spartan Circuit", duration: "32 min", focus: "Full body · Conditioning", exercises: [["Burpee","4 × 12"],["Push-up","4 × 15"],["Jump Squat","4 × 15"],["Mountain Climber","4 × 30 sec"],["Forearm Plank","3 × 45 sec"]] }
 ];
-const WELLNESS_KEY = "nourishplan.pulsefit.daily.v1";
-function getExerciseOverrides() {
-  try { const data = JSON.parse(localStorage.getItem(WELLNESS_KEY) || "{}"); return data && typeof data === "object" ? data : {}; } catch { return {}; }
-}
+// A repeatable weekly training rhythm, with recovery days between demanding sessions.
+// Monday Upper A, Tuesday Lower A, Thursday Upper B, Saturday conditioning.
 function dailyExerciseFor(date) {
-  const overrides = getExerciseOverrides();
-  if (Object.prototype.hasOwnProperty.call(overrides,date)) return Number(overrides[date]);
-  const dow = dateFromISO(date).getDay();
-  return ({1:0,2:1,4:2,6:3})[dow] ?? -1;
+  return ({1:0,2:1,4:2,6:3})[dateFromISO(date).getDay()] ?? -1;
 }
 function renderDailyWellness() {
   const start = dateFromISO(todayISO());
   const dates = Array.from({length:7},(_,i)=>{const d=new Date(start);d.setDate(start.getDate()+i);return isoOf(d)});
-  return `${heading("Daily meals & exercises", "Your current NourishPlan meals alongside PulseFit workout sessions for the next seven days.")}<p class="muted">Exercise sessions are imported from PulseFit's training plan. The default weekly placement is a suggested schedule (Mon, Tue, Thu, Sat), not a live sync of PulseFit's personal calendar. Choose a session or rest day for any date; changes to exercises are saved on this device.</p><div style="display:grid;gap:1rem;margin-top:1rem">${dates.map(date=>{
-    const selection=dailyExerciseFor(date);
-    const workout=PULSEFIT_SESSIONS[selection];
-    return `<section class="surface" style="padding:1.1rem;border-radius:16px"><h2 style="margin:0 0 .8rem">${esc(fmtLong(date))}${date===todayISO()?" · Today":""}</h2><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1rem"><div><h3>🥗 Meals</h3>${MEALS.map(meal=>{const item=recipeById(planFor(date)[meal]);return `<p style="margin:.55rem 0"><strong>${esc(MEAL_LABEL[meal]||meal)}:</strong> ${item?`<a href="${recipePath(item)}" data-route>${esc(item.name)}</a>`:"Not planned"}</p>`}).join("")}<a href="/planner" data-route>Manage meals →</a></div><div><h3>🏃 Exercise</h3><label for="exercise-${date}" class="muted">Session</label><select id="exercise-${date}" data-daily-exercise="${date}" style="display:block;width:100%;padding:.6rem;margin:.45rem 0"><option value="-1" ${selection===-1?"selected":""}>Rest / recovery day</option>${PULSEFIT_SESSIONS.map((p,i)=>`<option value="${i}" ${selection===i?"selected":""}>${esc(p.name)} · ${esc(p.duration)}</option>`).join("")}</select>${workout?`<p>${esc(workout.focus)} · ${esc(workout.duration)}</p><ul style="padding-left:1.3rem">${workout.exercises.map(([name,sets])=>`<li>${esc(name)} — ${esc(sets)}</li>`).join("")}</ul>`:"<p class='muted'>Gentle recovery and rest.</p>"}<a href="https://pulsefit-exercise-app.vercel.app/#plan" target="_blank" rel="noopener noreferrer">Open PulseFit ↗</a></div></div></section>`;
+  return `${heading("Daily meals & exercises", "Your NourishPlan meals with an automatically assigned PulseFit exercise plan for every day.")}<p class="muted">Workouts are assigned automatically: Monday Upper A, Tuesday Lower A, Thursday Upper B, Saturday Spartan Circuit. Wednesday, Friday and Sunday are rest or recovery days. This is a suggested recurring schedule based on PulseFit routines, not a live sync of its calendar.</p><div style="display:grid;gap:1rem;margin-top:1rem">${dates.map(date=>{
+    const workout=PULSEFIT_SESSIONS[dailyExerciseFor(date)];
+    return `<section class="surface" style="padding:1.1rem;border-radius:16px"><h2 style="margin:0 0 .8rem">${esc(fmtLong(date))}${date===todayISO()?" · Today":""}</h2><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1rem"><div><h3>🥗 Meals</h3>${MEALS.map(meal=>{const item=recipeById(planFor(date)[meal]);return `<p style="margin:.55rem 0"><strong>${esc(MEAL_LABEL[meal]||meal)}:</strong> ${item?`<a href="${recipePath(item)}" data-route>${esc(item.name)}</a>`:"Not planned"}</p>`}).join("")}<a href="/planner" data-route>Manage meals →</a></div><div><h3>🏃 Exercise</h3>${workout?`<p><strong>${esc(workout.name)}</strong> · ${esc(workout.duration)}</p><p>${esc(workout.focus)}</p><ul style="padding-left:1.3rem">${workout.exercises.map(([name,sets])=>`<li>${esc(name)} — ${esc(sets)}</li>`).join("")}</ul>`:"<p><strong>Rest / recovery day</strong></p><p class='muted'>Take it easy today. Optional gentle walking or mobility, based on comfort.</p>"}<a href="https://pulsefit-exercise-app.vercel.app/#plan" target="_blank" rel="noopener noreferrer">Open PulseFit ↗</a></div></div></section>`;
   }).join("")}</div>`;
 }
-document.addEventListener("change",(event)=>{
-  const select=event.target.closest("[data-daily-exercise]");
-  if (!select) return;
-  const value=Number(select.value);
-  if (!Number.isInteger(value)||value<-1||value>=PULSEFIT_SESSIONS.length)return;
-  const overrides=getExerciseOverrides();
-  overrides[select.dataset.dailyExercise]=value;
-  localStorage.setItem(WELLNESS_KEY,JSON.stringify(overrides));
-  render();
-});
 
 function renderPlanner() {
   const actions = `<a class="button secondary" href="/planner/visualization" data-route>${icon("ph-cube")} Explore 3D map</a>`;
