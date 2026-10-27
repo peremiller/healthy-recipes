@@ -1,5 +1,6 @@
 "use strict";
 
+import { containsCitrus, replaceCitrusInState } from "./lib/citrus-free.mjs";
 import { haversineKm } from "./lib/geo.mjs";
 import { fillRollingMealPlan, isPlannerRecipeAllowed, MEAL_TYPES } from "./lib/meal-plan.mjs";
 import { IMPORTED_RECIPE_DEFINITIONS } from "./lib/imported-recipes.mjs";
@@ -54,7 +55,7 @@ const INGREDIENT_COST_RULES = [
   { terms: ["potato", "kamote", "sweet potato"], price: 22 },
   { terms: ["milk", "coconut milk"], price: 20 },
   { terms: ["rice", "bread", "tortilla"], price: 18 },
-  { terms: ["pineapple", "mango", "apple", "banana", "berry", "papaya", "orange"], price: 18 },
+  { terms: ["pineapple", "mango", "apple", "banana", "berry", "papaya", "pear"], price: 18 },
   { terms: ["egg"], price: 12 },
   { terms: ["oil"], price: 10 },
   { terms: ["sauce", "vinegar", "broth", "juice"], price: 8 },
@@ -240,7 +241,7 @@ const MEAL_VISUAL = {
   dinner: { color: "#91a5df", glow: "rgba(145, 165, 223, 0.35)" },
   snack: { color: "#e27d62", glow: "rgba(226, 125, 98, 0.35)" }
 };
-const CONTENT_VERSION = 16;
+const CONTENT_VERSION = 17;
 
 const PHOTOS = {
   oats: "https://images.unsplash.com/photo-1494390248081-4e521a5940db?auto=format&fit=crop&w=720&q=82",
@@ -274,7 +275,7 @@ const PHOTOS = {
   chickenVegetables: "https://images.unsplash.com/photo-1784902540665-f6ab6dfef921?auto=format&fit=crop&w=720&q=82",
   grilledChickenSalad: "https://images.unsplash.com/photo-1781332144017-776ef66c3ab9?auto=format&fit=crop&w=720&q=82",
   roastChickenSweetPotato: "https://images.unsplash.com/photo-1597377779407-51e50715cc7d?auto=format&fit=crop&w=720&q=82",
-  citrusChickenBowl: "https://images.unsplash.com/photo-1785961259195-8e3eb12a8807?auto=format&fit=crop&w=720&q=82",
+  herbChickenBowl: "https://images.unsplash.com/photo-1785961259195-8e3eb12a8807?auto=format&fit=crop&w=720&q=82",
   misoSalmonBowl: "https://images.unsplash.com/photo-1670944316338-40c256cb144e?auto=format&fit=crop&w=720&q=82",
   falafelEggBowl: "https://images.unsplash.com/photo-1680405531955-8b4981bb1b0c?auto=format&fit=crop&w=720&q=82",
   tea: "https://images.unsplash.com/photo-1544787219-7f47ccb76574?auto=format&fit=crop&w=720&q=82",
@@ -286,7 +287,7 @@ const PHOTOS = {
   drink: "https://images.unsplash.com/photo-1544145945-f90425340c7e?auto=format&fit=crop&w=720&q=82",
   greenJuice: "https://images.unsplash.com/photo-1563822249044-754f4a05c44c?auto=format&fit=crop&w=720&q=82",
   beetJuice: "https://images.unsplash.com/photo-1654160240092-4c68f4d62fda?auto=format&fit=crop&w=720&q=82",
-  citrusJuice: "https://images.unsplash.com/photo-1678124620656-6ebe50c0f1e4?auto=format&fit=crop&w=720&q=82",
+  applePearJuice: "https://images.unsplash.com/photo-1544145945-f90425340c7e?auto=format&fit=crop&w=720&q=82",
   pineappleJuice: "https://images.unsplash.com/photo-1541085681957-a433bdafd5b9?auto=format&fit=crop&w=720&q=82",
   watermelonJuice: "https://images.unsplash.com/photo-1752245818743-0fa72ba80c57?auto=format&fit=crop&w=720&q=82",
   turmericJuice: "https://images.unsplash.com/photo-1631029098074-be99eb2b425c?auto=format&fit=crop&w=720&q=82",
@@ -318,22 +319,22 @@ const IMAGE_BY_RECIPE = {
   "Monggo Malunggay Bowl": PHOTOS.filipinoSoup,
   "Tofu Pinakbet with Adlai": PHOTOS.tofu,
   "Lean Chicken Tinola Bowl": PHOTOS.filipinoSoup,
-  "Calamansi Salmon with Okra & Barley": PHOTOS.salmonSweetPotato,
+  "Ginger Salmon with Okra & Barley": PHOTOS.salmonSweetPotato,
   "Tokwa Mushroom Sisig Lettuce Cups": PHOTOS.tofu,
   "Vegetable Kare-Kare with Brown Rice": PHOTOS.chili,
   "Apple Oat-Bran Yogurt Cup": PHOTOS.yogurt,
   "Green Papaya Cucumber Salad": PHOTOS.salad,
   "Soy Cacao Chia Pudding": PHOTOS.chiaPudding,
-  "Citrus-Herb Grilled Chicken Bowl": PHOTOS.citrusChickenBowl,
+  "Garlic-Herb Grilled Chicken Bowl": PHOTOS.herbChickenBowl,
   "Miso Glazed Salmon Fillet": PHOTOS.misoSalmonBowl,
   "Mediterranean Falafel & Egg Bowl": PHOTOS.falafelEggBowl,
   "Bangus Sisig": PHOTOS.bangusSisig,
   "Green Apple Cucumber Juice": PHOTOS.greenJuice,
   "Beet Carrot Apple Juice": PHOTOS.beetJuice,
-  "Grapefruit Orange Ginger Juice": PHOTOS.citrusJuice,
+  "Apple Pear Ginger Juice": PHOTOS.applePearJuice,
   "Pineapple Cucumber Mint Juice": PHOTOS.pineappleJuice,
   "Watermelon Cucumber Mint Juice": PHOTOS.watermelonJuice,
-  "Orange Turmeric Ginger Juice": PHOTOS.turmericJuice
+  "Carrot Turmeric Ginger Juice": PHOTOS.turmericJuice
 };
 
 const CALENDAR_PHOTO_BY_RECIPE = {
@@ -499,8 +500,8 @@ function newHealthyRecipes() {
       [[0.5, "cup", "fresh buko meat"], [0.5, "cup", "unsweetened coconut water"], [0.5, "cup", "plain Greek yogurt"], [1, "tbsp", "chia seeds"], [0.25, "cup", "diced pineapple"], [0.25, "cup", "ice"]],
       ["Chill the buko meat, coconut water and Greek yogurt before assembling.", "Slice the fresh buko meat into thin strips.", "Stir the Greek yogurt, coconut water and chia seeds together until creamy.", "Fold in the buko strips and diced pineapple.", "Serve immediately over ice, or chill for 10 minutes to let the chia seeds thicken the bowl."]),
     recipe("Healthy Pancit Bihon", "lunch", 410, 30, ["high-protein", "veggie-packed", "lower-sodium", "Filipino"], PHOTOS.pancit,
-      [[60, "g", "bihon noodles"], [80, "g", "skinless chicken breast"], [1, "cup", "cabbage"], [0.5, "cup", "carrot"], [0.5, "cup", "bell pepper"], [0.5, "cup", "snap peas"], [1, "tsp", "olive oil"], [1, "clove", "garlic"], [1, "tbsp", "low-sodium soy sauce"], [1, "cup", "unsalted chicken broth"], [1, "tbsp", "calamansi juice"]],
-      ["Soak the bihon noodles according to package directions, then drain.", "Slice the chicken and vegetables thinly so they cook quickly and evenly.", "Heat olive oil in a wide pan. Sauté garlic and chicken until the chicken is fully cooked.", "Add cabbage, carrot, bell pepper and snap peas. Stir-fry for three to four minutes so the vegetables stay crisp.", "Pour in the unsalted broth and low-sodium soy sauce, then add the noodles.", "Toss until the noodles absorb the liquid. Finish with calamansi juice and serve hot."]),
+      [[60, "g", "bihon noodles"], [80, "g", "skinless chicken breast"], [1, "cup", "cabbage"], [0.5, "cup", "carrot"], [0.5, "cup", "bell pepper"], [0.5, "cup", "snap peas"], [1, "tsp", "olive oil"], [1, "clove", "garlic"], [1, "tbsp", "low-sodium soy sauce"], [1, "cup", "unsalted chicken broth"], [1, "tbsp", "rice vinegar"]],
+      ["Soak the bihon noodles according to package directions, then drain.", "Slice the chicken and vegetables thinly so they cook quickly and evenly.", "Heat olive oil in a wide pan. Sauté garlic and chicken until the chicken is fully cooked.", "Add cabbage, carrot, bell pepper and snap peas. Stir-fry for three to four minutes so the vegetables stay crisp.", "Pour in the unsalted broth and low-sodium soy sauce, then add the noodles.", "Toss until the noodles absorb the liquid. Finish with rice vinegar and serve hot."]),
     recipe("Healthy Rice Cake", "snack", 290, 40, ["Filipino", "gluten-free", "no-refined-sugar", "baked"], PHOTOS.riceCake,
       [[1, "cup", "brown rice flour"], [1, "tsp", "baking powder"], [1, "", "egg"], [0.75, "cup", "unsweetened light coconut milk"], [1, "tbsp", "honey"], [1, "tsp", "coconut oil"], [0.25, "cup", "fresh buko meat"], [0.25, "tsp", "cinnamon"]],
       ["Heat the oven to 180°C and lightly grease a small baking dish or four muffin cups with coconut oil.", "Whisk the brown rice flour, baking powder and cinnamon together in a bowl.", "In a separate bowl, whisk the egg, light coconut milk and honey until smooth.", "Fold the wet mixture into the dry ingredients just until combined, then stir in the sliced fresh buko meat.", "Pour into the prepared dish and bake for 24 to 28 minutes, until the center is set and the top is lightly golden.", "Cool for 10 minutes before slicing. Serve warm without additional syrup."]),
@@ -538,14 +539,14 @@ function healthGoalRecipes() {
       [[120, "g", "firm tofu"], [1, "cup", "eggplant"], [0.75, "cup", "okra"], [0.75, "cup", "squash"], [0.5, "cup", "sitaw"], [0.5, "cup", "tomato"], [0.25, "cup", "onion"], [1, "tsp", "canola oil"], [1, "tsp", "low-sodium soy sauce"], [0.5, "cup", "cooked adlai"]],
       ["Pat the tofu dry, cube it, and brown it in half of the canola oil. Set aside.", "Add the remaining oil, onion and tomato to the pan and cook until softened.", "Add the squash with a splash of water, cover, and cook for four minutes.", "Add the eggplant, okra and sitaw. Cook until tender-crisp, then return the tofu.", "Season with one teaspoon low-sodium soy sauce and serve over the measured adlai. This version intentionally omits bagoong."]),
     recipe("Lean Chicken Tinola Bowl", "lunch", 340, 40, [...FOUR_GOAL_TAGS, "lean-protein", "vegetable-rich", "lower-sodium", "Filipino"], PHOTOS.soup,
-      [[100, "g", "skinless chicken breast"], [1, "cup", "sayote"], [1, "cup", "malunggay leaves"], [1, "tsp", "ginger"], [0.25, "cup", "onion"], [1, "clove", "garlic"], [1.5, "cup", "unsalted chicken broth"], [1, "tsp", "olive oil"], [0.33, "cup", "brown rice"], [1, "tbsp", "calamansi juice"]],
-      ["Heat the olive oil and sauté the ginger, onion and garlic until fragrant.", "Add the chicken breast and cook until the outside is no longer pink.", "Pour in the unsalted broth and simmer gently for 12 minutes.", "Add the sayote and cook until tender, then fold in the malunggay leaves for two minutes.", "Check that the chicken reaches 74°C, finish with calamansi juice, and serve with one-third cup cooked brown rice."]),
-    recipe("Calamansi Salmon with Okra & Barley", "dinner", 460, 35, [...FOUR_GOAL_TAGS, "omega-3", "high-fiber", "moderate-fish-portion"], PHOTOS.salmon,
-      [[120, "g", "salmon fillet"], [0.5, "cup", "cooked pearl barley"], [1, "cup", "okra"], [1, "cup", "broccoli"], [1, "tsp", "olive oil"], [1, "tbsp", "calamansi juice"], [1, "tsp", "ginger"], [0.25, "tsp", "black pepper"]],
-      ["Heat the oven to 200°C and line a tray with parchment.", "Arrange the salmon, okra and broccoli on the tray. Brush with olive oil and season with ginger and black pepper.", "Bake for 12 to 15 minutes, until the salmon flakes and reaches 63°C.", "Warm the cooked barley with a splash of water.", "Finish the salmon and vegetables with calamansi juice and serve with the measured barley. Keep the fish portion to 120 grams."]),
+      [[100, "g", "skinless chicken breast"], [1, "cup", "sayote"], [1, "cup", "malunggay leaves"], [1, "tsp", "ginger"], [0.25, "cup", "onion"], [1, "clove", "garlic"], [1.5, "cup", "unsalted chicken broth"], [1, "tsp", "olive oil"], [0.33, "cup", "brown rice"], [1, "tbsp", "rice vinegar"]],
+      ["Heat the olive oil and sauté the ginger, onion and garlic until fragrant.", "Add the chicken breast and cook until the outside is no longer pink.", "Pour in the unsalted broth and simmer gently for 12 minutes.", "Add the sayote and cook until tender, then fold in the malunggay leaves for two minutes.", "Check that the chicken reaches 74°C, finish with rice vinegar, and serve with one-third cup cooked brown rice."]),
+    recipe("Ginger Salmon with Okra & Barley", "dinner", 460, 35, [...FOUR_GOAL_TAGS, "omega-3", "high-fiber", "moderate-fish-portion"], PHOTOS.salmon,
+      [[120, "g", "salmon fillet"], [0.5, "cup", "cooked pearl barley"], [1, "cup", "okra"], [1, "cup", "broccoli"], [1, "tsp", "olive oil"], [1, "tbsp", "rice vinegar"], [1, "tsp", "ginger"], [0.25, "tsp", "black pepper"]],
+      ["Heat the oven to 200°C and line a tray with parchment.", "Arrange the salmon, okra and broccoli on the tray. Brush with olive oil and season with ginger and black pepper.", "Bake for 12 to 15 minutes, until the salmon flakes and reaches 63°C.", "Warm the cooked barley with a splash of water.", "Finish the salmon and vegetables with rice vinegar and serve with the measured barley. Keep the fish portion to 120 grams."]),
     recipe("Tokwa Mushroom Sisig Lettuce Cups", "dinner", 310, 30, [...FOUR_GOAL_TAGS, "plant-protein", "lower-sodium", "Filipino"], PHOTOS.tofu,
-      [[150, "g", "firm tofu"], [1, "cup", "button mushrooms"], [0.5, "cup", "red bell pepper"], [0.25, "cup", "red onion"], [1, "tbsp", "calamansi juice"], [1, "tsp", "low-sodium soy sauce"], [1, "tsp", "olive oil"], [4, "pc", "lettuce leaves"], [0.33, "cup", "brown rice"], [0.25, "tsp", "black pepper"]],
-      ["Pat the tofu dry, crumble it, and brown it in a nonstick pan with half of the olive oil.", "Add the remaining oil and mushrooms, cooking until their moisture evaporates.", "Stir in the bell pepper and red onion and cook for two minutes so they retain some crunch.", "Remove from heat and mix in the calamansi juice, low-sodium soy sauce and black pepper.", "Spoon into lettuce leaves and serve with one-third cup cooked brown rice. Do not add mayonnaise or processed meat."]),
+      [[150, "g", "firm tofu"], [1, "cup", "button mushrooms"], [0.5, "cup", "red bell pepper"], [0.25, "cup", "red onion"], [1, "tbsp", "rice vinegar"], [1, "tsp", "low-sodium soy sauce"], [1, "tsp", "olive oil"], [4, "pc", "lettuce leaves"], [0.33, "cup", "brown rice"], [0.25, "tsp", "black pepper"]],
+      ["Pat the tofu dry, crumble it, and brown it in a nonstick pan with half of the olive oil.", "Add the remaining oil and mushrooms, cooking until their moisture evaporates.", "Stir in the bell pepper and red onion and cook for two minutes so they retain some crunch.", "Remove from heat and mix in the rice vinegar, low-sodium soy sauce and black pepper.", "Spoon into lettuce leaves and serve with one-third cup cooked brown rice. Do not add mayonnaise or processed meat."]),
     recipe("Vegetable Kare-Kare with Brown Rice", "dinner", 410, 45, [...FOUR_GOAL_TAGS, "plant-protein", "high-fiber", "lower-sodium", "Filipino"], PHOTOS.tofu,
       [[120, "g", "firm tofu"], [1, "cup", "eggplant"], [0.75, "cup", "sitaw"], [1, "cup", "pechay"], [0.75, "cup", "squash"], [1, "tbsp", "unsweetened peanut butter"], [1, "tbsp", "brown rice flour"], [1, "tsp", "canola oil"], [1, "clove", "garlic"], [0.25, "cup", "onion"], [1, "cup", "unsalted vegetable broth"], [0.33, "cup", "brown rice"]],
       ["Brown the cubed tofu in half of the canola oil and set aside.", "Sauté the garlic and onion in the remaining oil, then add the squash and unsalted broth.", "Whisk the peanut butter and brown rice flour with a little warm broth, then stir the mixture into the pot.", "Add the eggplant and sitaw and simmer until tender; return the tofu and fold in the pechay.", "Serve with one-third cup cooked brown rice. Skip bagoong to keep sodium lower."]),
@@ -553,8 +554,8 @@ function healthGoalRecipes() {
       [[0.5, "pc", "apple"], [0.75, "cup", "plain low-fat Greek yogurt"], [2, "tbsp", "oat bran"], [1, "tbsp", "ground flaxseed"], [0.25, "tsp", "cinnamon"]],
       ["Dice the apple, keeping the peel for added fiber.", "Spoon the plain low-fat Greek yogurt into a bowl.", "Stir in the oat bran and ground flaxseed.", "Top with the apple and cinnamon and serve immediately without honey or syrup."]),
     recipe("Green Papaya Cucumber Salad", "snack", 120, 10, [...FOUR_GOAL_TAGS, "vegetable-rich", "lower-sodium", "refreshing"], PHOTOS.salad,
-      [[1, "cup", "shredded green papaya"], [1, "cup", "cucumber"], [0.5, "cup", "tomato"], [1, "tbsp", "calamansi juice"], [1, "tbsp", "unsalted roasted peanuts"], [1, "tsp", "olive oil"], [0.25, "tsp", "black pepper"]],
-      ["Combine the shredded green papaya, cucumber and tomato in a bowl.", "Whisk the calamansi juice, olive oil and black pepper.", "Toss the vegetables with the dressing and let them stand for five minutes.", "Top with unsalted roasted peanuts and serve chilled. Do not add sugar, fish sauce or bagoong."]),
+      [[1, "cup", "shredded green papaya"], [1, "cup", "cucumber"], [0.5, "cup", "tomato"], [1, "tbsp", "rice vinegar"], [1, "tbsp", "unsalted roasted peanuts"], [1, "tsp", "olive oil"], [0.25, "tsp", "black pepper"]],
+      ["Combine the shredded green papaya, cucumber and tomato in a bowl.", "Whisk the rice vinegar, olive oil and black pepper.", "Toss the vegetables with the dressing and let them stand for five minutes.", "Top with unsalted roasted peanuts and serve chilled. Do not add sugar, fish sauce or bagoong."]),
     recipe("Soy Cacao Chia Pudding", "snack", 230, 5, [...FOUR_GOAL_TAGS, "plant-protein", "high-fiber", "make-ahead"], PHOTOS.yogurt,
       [[1, "cup", "unsweetened soy milk"], [2, "tbsp", "chia seeds"], [1, "tbsp", "unsweetened cocoa powder"], [0.25, "cup", "mixed berries"], [0.25, "tsp", "cinnamon"], [0.5, "tsp", "vanilla extract"]],
       ["Whisk the soy milk, chia seeds, cocoa powder, cinnamon and vanilla until no cocoa lumps remain.", "Rest for five minutes, whisk again, then cover.", "Refrigerate for at least four hours or overnight.", "Stir before serving and top with the mixed berries. Keep it unsweetened; do not add syrup or condensed milk."])
@@ -563,27 +564,27 @@ function healthGoalRecipes() {
 
 function requestedBowlRecipes() {
   return [
-    recipe("Citrus-Herb Grilled Chicken Bowl", "lunch", 510, 35, [...FOUR_GOAL_TAGS, "high-protein", "whole-grain", "vegetable-rich", "meal-prep"], PHOTOS.citrusChickenBowl,
-      [[150, "g", "skinless chicken breast"], [0.5, "cup", "cooked tri-color quinoa"], [1, "cup", "broccoli"], [0.5, "cup", "cherry tomatoes"], [0.25, "cup", "red onion"], [2, "tbsp", "lemon juice"], [1, "tbsp", "apple cider vinegar"], [2, "tsp", "olive oil"], [1, "clove", "garlic"], [1, "tbsp", "fresh parsley"], [0.5, "tsp", "dried oregano"], [0.25, "tsp", "black pepper"]],
-      ["Combine the sliced red onion with the apple cider vinegar and one tablespoon of water. Set aside for at least 15 minutes to quick-pickle without added sugar.", "Coat the chicken with one tablespoon lemon juice, half of the olive oil, oregano and black pepper. Grill over medium-high heat for five to six minutes per side, until the center reaches 74°C, then rest and slice.", "Roast the broccoli and cherry tomatoes at 210°C with a light coating of the remaining oil for 12 to 15 minutes.", "Whisk the remaining lemon juice with the minced garlic, parsley and any remaining olive oil to make the garlic-herb vinaigrette.", "Add the cooked tri-color quinoa to a bowl, then arrange the roasted vegetables, drained pickled onion and sliced charred chicken on top.", "Drizzle with the garlic-herb vinaigrette. Brown rice may replace the quinoa in the same measured portion."]),
+    recipe("Garlic-Herb Grilled Chicken Bowl", "lunch", 510, 35, [...FOUR_GOAL_TAGS, "high-protein", "whole-grain", "vegetable-rich", "meal-prep"], PHOTOS.herbChickenBowl,
+      [[150, "g", "skinless chicken breast"], [0.5, "cup", "cooked tri-color quinoa"], [1, "cup", "broccoli"], [0.5, "cup", "cherry tomatoes"], [0.25, "cup", "red onion"], [2, "tbsp", "rice vinegar"], [1, "tbsp", "apple cider vinegar"], [2, "tsp", "olive oil"], [1, "clove", "garlic"], [1, "tbsp", "fresh parsley"], [0.5, "tsp", "dried oregano"], [0.25, "tsp", "black pepper"]],
+      ["Combine the sliced red onion with the apple cider vinegar and one tablespoon of water. Set aside for at least 15 minutes to quick-pickle without added sugar.", "Coat the chicken with one tablespoon rice vinegar, half of the olive oil, oregano and black pepper. Grill over medium-high heat for five to six minutes per side, until the center reaches 74°C, then rest and slice.", "Roast the broccoli and cherry tomatoes at 210°C with a light coating of the remaining oil for 12 to 15 minutes.", "Whisk the remaining rice vinegar with the minced garlic, parsley and any remaining olive oil to make the garlic-herb vinaigrette.", "Add the cooked tri-color quinoa to a bowl, then arrange the roasted vegetables, drained pickled onion and sliced charred chicken on top.", "Drizzle with the garlic-herb vinaigrette. Brown rice may replace the quinoa in the same measured portion."]),
     recipe("Miso Glazed Salmon Fillet", "dinner", 560, 30, [...FOUR_GOAL_TAGS, "omega-3", "high-protein", "vegetable-rich", "lower-sodium"], PHOTOS.misoSalmonBowl,
       [[120, "g", "salmon fillet"], [0.5, "cup", "cooked brown rice"], [0.5, "cup", "shelled edamame"], [1, "cup", "shredded purple cabbage"], [0.5, "cup", "cucumber"], [1, "tbsp", "white miso paste"], [1, "tsp", "low-sodium soy sauce"], [1, "tsp", "rice vinegar"], [1, "tsp", "sesame oil"], [1, "tsp", "grated ginger"], [1, "tsp", "sesame seeds"]],
       ["Whisk the white miso, low-sodium soy sauce, half of the rice vinegar, sesame oil and grated ginger into a smooth sesame-ginger glaze.", "Pat the salmon dry and brush it with half of the glaze.", "Heat a nonstick skillet over medium-high heat. Cook the salmon skin-side down for four to five minutes, turn, add the remaining glaze, and cook until the center reaches 63°C.", "Steam the shelled edamame until hot. Use a vegetable peeler to cut the cucumber into ribbons.", "Season the warm brown rice with the remaining rice vinegar, add it to a bowl, and arrange the edamame, shredded purple cabbage and cucumber ribbons around it.", "Place the pan-roasted salmon fillet on top, spoon over the warm glaze, and finish with sesame seeds."]),
     recipe("Mediterranean Falafel & Egg Bowl", "lunch", 540, 40, [...FOUR_GOAL_TAGS, "vegetarian", "high-fiber", "plant-protein", "Mediterranean"], PHOTOS.falafelEggBowl,
-      [[0.75, "cup", "cooked chickpeas"], [0.25, "cup", "fresh parsley"], [1, "clove", "garlic"], [0.5, "tsp", "ground cumin"], [1, "tsp", "olive oil"], [2, "", "egg"], [2, "tbsp", "hummus"], [2, "cup", "mixed greens"], [4, "pc", "kalamata olives"], [0.5, "cup", "cucumber"], [1, "tbsp", "tahini"], [1, "tbsp", "lemon juice"], [0.25, "tsp", "black pepper"]],
-      ["Heat the oven to 200°C and line a small baking tray.", "Pulse the chickpeas, parsley, garlic, cumin and black pepper until crumbly. Shape into three small patties, brush with olive oil, and bake for 18 to 20 minutes, turning halfway.", "Lower the eggs into gently boiling water for seven minutes, then transfer them to ice water. Peel and halve once cool enough to handle.", "Finely grate half of the cucumber and whisk it with the tahini, lemon juice and one to two tablespoons of water until pourable. Slice the remaining cucumber.", "Fill a bowl with the mixed greens and sliced cucumber, then add the baked falafel patties, soft-boiled eggs, hummus and kalamata olives.", "Drizzle with the cucumber-tahini dressing and serve immediately."])
+      [[0.75, "cup", "cooked chickpeas"], [0.25, "cup", "fresh parsley"], [1, "clove", "garlic"], [0.5, "tsp", "ground cumin"], [1, "tsp", "olive oil"], [2, "", "egg"], [2, "tbsp", "homemade hummus (chickpeas, tahini, garlic, rice vinegar, water)"], [2, "cup", "mixed greens"], [4, "pc", "kalamata olives"], [0.5, "cup", "cucumber"], [1, "tbsp", "tahini"], [1, "tbsp", "rice vinegar"], [0.25, "tsp", "black pepper"]],
+      ["Heat the oven to 200°C and line a small baking tray.", "Pulse the chickpeas, parsley, garlic, cumin and black pepper until crumbly. Shape into three small patties, brush with olive oil, and bake for 18 to 20 minutes, turning halfway.", "Lower the eggs into gently boiling water for seven minutes, then transfer them to ice water. Peel and halve once cool enough to handle.", "Finely grate half of the cucumber and whisk it with the tahini, rice vinegar and one to two tablespoons of water until pourable. Slice the remaining cucumber.", "Fill a bowl with the mixed greens and sliced cucumber, then add the baked falafel patties, soft-boiled eggs, homemade hummus (blend chickpeas, tahini, garlic, rice vinegar and water) and kalamata olives.", "Drizzle with the cucumber-tahini dressing and serve immediately."])
   ];
 }
 
 function sariwaTableRecipes() {
   const entries = [
-    ["Calamansi chicken grain bowl", "lunch", 540, 25, PHOTOS.citrusChickenBowl,
-      [[120,"g","cooked grilled chicken"],[150,"g","cooked brown rice"],[0.5,"cup","cucumber"],[1,"cup","lettuce"],[0.25,"cup","carrots"],[1,"pc","calamansi"],[60,"g","plain yogurt"],[1,"clove","garlic"],[10,"g","Nutrilite All Plant Protein Powder"]],
-      ["Grill chicken to 74°C and rest before slicing.","Plate brown rice, washed vegetables and chicken.","Whisk 10 g plant protein into cold yogurt with garlic and calamansi; drizzle before serving."],
+    ["Garlic yogurt chicken grain bowl", "lunch", 540, 25, PHOTOS.herbChickenBowl,
+      [[120,"g","cooked grilled chicken"],[150,"g","cooked brown rice"],[0.5,"cup","cucumber"],[1,"cup","lettuce"],[0.25,"cup","carrots"],[1,"tsp","rice vinegar"],[60,"g","plain yogurt"],[1,"clove","garlic"],[10,"g","Nutrilite All Plant Protein Powder"]],
+      ["Grill chicken to 74°C and rest before slicing.","Plate brown rice, washed vegetables and chicken.","Whisk 10 g plant protein into cold yogurt with garlic and rice vinegar; drizzle before serving."],
       "Soy, wheat/gluten and milk."],
     ["Garden tofu rice bowl", "lunch", 490, 20, PHOTOS.tofu,
-      [[150,"g","firm tofu"],[150,"g","cooked brown rice"],[0.5,"cup","cucumber"],[0.25,"cup","carrots"],[1,"cup","leafy greens"],[1,"tbsp","tahini"],[1,"pc","calamansi"],[10,"g","Nutrilite All Plant Protein Powder"]],
-      ["Sear tofu until golden; cook rice and wash vegetables.","Whisk tahini, calamansi juice and a little water; mix in 10 g plant protein away from heat.","Arrange in a bowl and serve the dressing cold."],
+      [[150,"g","firm tofu"],[150,"g","cooked brown rice"],[0.5,"cup","cucumber"],[0.25,"cup","carrots"],[1,"cup","leafy greens"],[1,"tbsp","tahini"],[1,"tsp","rice vinegar"],[10,"g","Nutrilite All Plant Protein Powder"]],
+      ["Sear tofu until golden; cook rice and wash vegetables.","Whisk tahini, rice vinegar and a little water; mix in 10 g plant protein away from heat.","Arrange in a bowl and serve the dressing cold."],
       "Soy, wheat/gluten and sesame."],
     ["Chicken & greens pita", "lunch", 430, 20, PHOTOS.wrap,
       [[1,"pc","whole wheat pita"],[100,"g","cooked chicken"],[1,"cup","lettuce"],[0.25,"cup","tomato"],[0.25,"cup","cucumber"],[60,"g","plain yogurt"],[1,"tbsp","fresh herbs"],[10,"g","Nutrilite All Plant Protein Powder"]],
@@ -605,9 +606,9 @@ function sariwaTableRecipes() {
       [[3,"g","Santé Barley no-added-sweetener powder"],[100,"g","mango"],[220,"ml","chilled water"],[4,"cubes","ice"]],
       ["Blend mango and chilled water until smooth.","Mix in 3 g barley powder following the purchased pack directions; serve cold over ice."],
       "Check the exact product pack and kitchen cross-contact; barley grass alone is not gluten-free certification."],
-    ["Cucumber calamansi green tea", "snack", 15, 8, PHOTOS.tea,
-      [[3,"g","Santé Barley no-added-sweetener powder"],[200,"ml","brewed green tea"],[0.25,"cup","cucumber"],[1,"pc","calamansi"],[4,"cubes","ice"]],
-      ["Brew green tea, cool rapidly and refrigerate.","Stir in 3 g barley powder according to purchased pack directions.","Add cucumber and calamansi; pour over ice."],
+    ["Cucumber mint green tea", "snack", 15, 8, PHOTOS.tea,
+      [[3,"g","Santé Barley no-added-sweetener powder"],[200,"ml","brewed green tea"],[0.25,"cup","cucumber"],[4,"leaf","mint"],[4,"cubes","ice"]],
+      ["Brew green tea, cool rapidly and refrigerate.","Stir in 3 g barley powder according to purchased pack directions.","Add cucumber and mint; pour over ice."],
       "Check the exact product pack and kitchen cross-contact; contains caffeine from green tea."]
   ];
   return entries.map(([name, cat, cal, time, image, ingredients, steps, allergens]) => ({
@@ -622,59 +623,39 @@ function bangusSisigRecipe() {
   return recipe("Bangus Sisig", "dinner", 350, 30,
     ["Filipino", "high-protein", "vegetable-rich", "lower-sodium", "moderate-fish-portion", "no-added-sugar", "estimated-calories"],
     PHOTOS.bangusSisig,
-    [[120, "g", "boneless bangus fillet"], [0.33, "cup", "cooked brown rice"], [0.25, "cup", "red onion"], [0.5, "cup", "red bell pepper"], [1, "clove", "garlic"], [1, "pc", "green chili"], [1, "tbsp", "calamansi juice"], [1, "tsp", "olive oil"], [2, "pc", "lettuce leaves"], [0.25, "tsp", "black pepper"]],
-    ["Check the bangus fillet for pin bones, pat dry, and season with black pepper. Heat a nonstick pan over medium heat with half the olive oil.", "Cook the bangus for about five to seven minutes per side, until the thickest part reaches 63°C. Remove from the pan and flake into bite-sized pieces, checking again for bones.", "Add the remaining oil, garlic, red onion, bell pepper and sliced green chili to the pan. Cook for two to three minutes until fragrant but still crisp.", "Return the flaked bangus to the pan and toss briefly until the edges brown. Turn off the heat and stir in the calamansi juice.", "Serve the sisig on the lettuce leaves with one-third cup cooked brown rice. Skip mayonnaise and salty seasoning; add extra calamansi to taste."]);
+    [[120, "g", "boneless bangus fillet"], [0.33, "cup", "cooked brown rice"], [0.25, "cup", "red onion"], [0.5, "cup", "red bell pepper"], [1, "clove", "garlic"], [1, "pc", "green chili"], [1, "tbsp", "rice vinegar"], [1, "tsp", "olive oil"], [2, "pc", "lettuce leaves"], [0.25, "tsp", "black pepper"]],
+    ["Check the bangus fillet for pin bones, pat dry, and season with black pepper. Heat a nonstick pan over medium heat with half the olive oil.", "Cook the bangus for about five to seven minutes per side, until the thickest part reaches 63°C. Remove from the pan and flake into bite-sized pieces, checking again for bones.", "Add the remaining oil, garlic, red onion, bell pepper and sliced green chili to the pan. Cook for two to three minutes until fragrant but still crisp.", "Return the flaked bangus to the pan and toss briefly until the edges brown. Turn off the heat and stir in the rice vinegar.", "Serve the sisig on the lettuce leaves with one-third cup cooked brown rice. Skip mayonnaise and salty seasoning; add fresh herbs to taste."]);
 }
 
 const JUICE_RECIPE_SOURCE = "Screenshot 2026-09-07 at 5.23.15 AM.png";
 const JUICE_RECIPE_NOTE = "Adapted from the Diet Juice Recipes image. The original wellness labels are retained as search aliases, not medical claims. Blend without straining, keep portions small, and enjoy alongside a balanced meal or snack.";
 
 function juiceRecipes() {
-  const fromScreenshot = (item, alias, servings = 2) => ({
-    ...item,
-    aliases: [alias],
-    source: JUICE_RECIPE_SOURCE,
-    sourceNote: `${JUICE_RECIPE_NOTE} The listed batch makes ${servings === 1 ? "one small serving" : `${servings} small servings`}; calories are estimated per serving.`
+  const drink = (name, cal, image, ingredients, steps, alias, servings = 2) => ({
+    ...recipe(name, "snack", cal, 8, ["no-added-sugar", "pulp-retaining", "small-serving"], image, ingredients,
+      [...steps, "Pour into clean glasses and keep unused portions chilled.", "Keep the pulp and do not add sugar or syrup.", `Divide into ${servings} small serving${servings === 1 ? "" : "s"}; serve promptly and refrigerate any remainder.`]),
+    aliases: [alias], source: JUICE_RECIPE_SOURCE,
+    sourceNote: `${JUICE_RECIPE_NOTE} Makes ${servings} small serving${servings === 1 ? "" : "s"}; calories are estimated per serving.`
   });
-
   return [
-    fromScreenshot(
-      recipe("Green Apple Cucumber Juice", "snack", 75, 10, ["no-added-sugar", "pulp-retaining", "small-serving", "vegan"], PHOTOS.greenJuice,
-        [[1, "pc", "cucumber"], [1, "pc", "green apple"], [1, "pc", "celery stalk"], [1, "cup", "spinach"], [0.5, "pc", "lemon"], [0.5, "inch", "fresh ginger"]],
-        ["Wash the produce thoroughly and peel the lemon; keep the cucumber and apple skins when suitable.", "Core the apple and roughly chop the cucumber, apple and celery.", "Blend all ingredients until smooth, adding only a small splash of cold water if needed.", "Do not strain, so the drink retains more of the ingredients' fiber.", "Divide into two small servings and drink immediately; refrigerate the second serving promptly."]),
-      "Green Detox"
-    ),
-    fromScreenshot(
-      recipe("Beet Carrot Apple Juice", "snack", 85, 10, ["no-added-sugar", "pulp-retaining", "small-serving", "vitamin-a-foods"], PHOTOS.beetJuice,
-        [[1, "pc", "beetroot"], [1, "pc", "carrot"], [1, "pc", "apple"], [0.5, "pc", "lemon"], [0.5, "inch", "fresh ginger"]],
-        ["Wash the beetroot, carrot, apple, lemon and ginger thoroughly.", "Peel the lemon, core the apple, and roughly chop the remaining produce.", "Blend everything until smooth, adding a small splash of cold water only if the blender needs it.", "Keep the pulp rather than straining the drink.", "Divide into two small servings and drink immediately; refrigerate the second serving promptly."]),
-      "Beet Boost"
-    ),
-    fromScreenshot(
-      recipe("Grapefruit Orange Ginger Juice", "snack", 75, 8, ["no-added-sugar", "pulp-retaining", "small-serving", "citrus"], PHOTOS.citrusJuice,
-        [[1, "pc", "grapefruit"], [1, "pc", "orange"], [0.5, "pc", "lemon"], [0.5, "inch", "fresh ginger"]],
-        ["Before preparing this drink, confirm with a pharmacist that grapefruit is safe with your medicines.", "Peel the grapefruit, orange and lemon and remove any seeds.", "Blend the citrus fruit and ginger until smooth.", "Keep the pulp instead of straining, and do not add sugar or syrup.", "Divide into two small servings and drink immediately; refrigerate the second serving promptly."]),
-      "Fat Burner"
-    ),
-    fromScreenshot(
-      recipe("Pineapple Cucumber Mint Juice", "snack", 45, 8, ["no-added-sugar", "pulp-retaining", "small-serving", "refreshing"], PHOTOS.pineappleJuice,
-        [[1, "slice", "pineapple"], [1, "pc", "cucumber"], [0.5, "pc", "lemon"], [8, "pc", "mint leaves"], [0.5, "inch", "fresh ginger"]],
-        ["Wash the cucumber, lemon, mint and ginger thoroughly.", "Peel the lemon and roughly chop the pineapple and cucumber.", "Blend all ingredients until smooth, adding a little cold water only if needed.", "Do not strain, and do not add sweetener.", "Divide into two small servings and drink immediately; refrigerate the second serving promptly."]),
-      "Tummy Cleanse"
-    ),
-    fromScreenshot(
-      recipe("Watermelon Cucumber Mint Juice", "snack", 60, 8, ["no-added-sugar", "pulp-retaining", "small-serving", "hydrating-foods"], PHOTOS.watermelonJuice,
-        [[2, "cup", "watermelon"], [0.5, "pc", "cucumber"], [0.5, "pc", "lemon"], [8, "pc", "mint leaves"]],
-        ["Wash the cucumber, lemon and mint thoroughly and remove watermelon seeds.", "Peel the lemon and roughly chop the watermelon and cucumber.", "Blend all ingredients until smooth; the watermelon should provide enough liquid.", "Keep the pulp and skip sugar, syrup and sweetened juice.", "Divide into two small servings and drink immediately; refrigerate the second serving promptly."]),
-      "Hydration Boost"
-    ),
-    fromScreenshot(
-      recipe("Orange Turmeric Ginger Juice", "snack", 75, 8, ["no-added-sugar", "pulp-retaining", "small-serving", "citrus"], PHOTOS.turmericJuice,
-        [[1, "pc", "orange"], [0.5, "pc", "lemon"], [0.5, "inch", "fresh turmeric"], [0.5, "inch", "fresh ginger"], [1, "pinch", "black pepper"]],
-        ["Wash the produce thoroughly; turmeric can stain, so protect pale surfaces and clothing.", "Peel the orange and lemon and remove any seeds. Use one-half teaspoon ground turmeric if fresh turmeric is unavailable.", "Blend the citrus fruit, turmeric, ginger and black pepper until smooth.", "Keep the pulp and do not add sugar or syrup.", "Serve one small portion immediately as part of a balanced meal or snack."]),
-      "Immunity Boost",
-      1
-    )
+    drink("Green Apple Cucumber Juice", 65, PHOTOS.greenJuice,
+      [[1, "pc", "cucumber"], [1, "pc", "green apple"], [1, "pc", "celery stalk"], [1, "cup", "spinach"], [0.5, "inch", "fresh ginger"]],
+      ["Wash all produce, core the apple and chop the cucumber and celery.", "Blend with the spinach and ginger, adding a splash of cold water as needed."], "Green Detox"),
+    drink("Beet Carrot Apple Juice", 75, PHOTOS.beetJuice,
+      [[1, "pc", "beetroot"], [1, "pc", "carrot"], [1, "pc", "apple"], [0.5, "inch", "fresh ginger"]],
+      ["Wash and chop the beetroot, carrot and ginger; core the apple.", "Blend until smooth with a splash of cold water as needed."], "Beet Boost"),
+    drink("Apple Pear Ginger Juice", 100, PHOTOS.applePearJuice,
+      [[1, "pc", "apple"], [1, "pc", "pear"], [0.5, "inch", "fresh ginger"], [0.5, "cup", "cold water"]],
+      ["Wash and core the apple and pear, then chop with the ginger.", "Blend the fruit, ginger and cold water until smooth."], "Fat Burner"),
+    drink("Pineapple Cucumber Mint Juice", 35, PHOTOS.pineappleJuice,
+      [[1, "slice", "pineapple"], [1, "pc", "cucumber"], [8, "pc", "mint leaves"], [0.5, "inch", "fresh ginger"]],
+      ["Wash the cucumber, mint and ginger; chop the pineapple and cucumber.", "Blend all ingredients with a splash of cold water as needed."], "Tummy Cleanse"),
+    drink("Watermelon Cucumber Mint Juice", 50, PHOTOS.watermelonJuice,
+      [[2, "cup", "watermelon"], [0.5, "pc", "cucumber"], [8, "pc", "mint leaves"]],
+      ["Wash the cucumber and mint and remove watermelon seeds.", "Chop and blend until smooth; the watermelon supplies the liquid."], "Hydration Boost"),
+    drink("Carrot Turmeric Ginger Juice", 70, PHOTOS.turmericJuice,
+      [[1, "pc", "carrot"], [0.5, "pc", "apple"], [0.5, "inch", "fresh turmeric"], [0.5, "inch", "fresh ginger"], [1, "pinch", "black pepper"], [0.5, "cup", "cold water"]],
+      ["Wash and chop the carrot, turmeric and ginger; core the apple. Protect pale surfaces from turmeric stains.", "Blend all ingredients until smooth. One-half teaspoon ground turmeric can replace fresh turmeric."], "Immunity Boost", 1)
   ];
 }
 
@@ -690,8 +671,8 @@ function seed() {
       [[1, "cup", "greek yogurt"], [0.25, "cup", "granola"], [0.5, "cup", "mixed berries"], [1, "tsp", "honey"]],
       ["Layer yogurt, granola and berries in a glass.", "Drizzle with honey."]),
     recipe("Quinoa Chickpea Salad", "lunch", 420, 20, ["vegetarian", "meal-prep"], PHOTOS.salad,
-      [[0.75, "cup", "quinoa"], [1, "can", "chickpeas"], [1, "cup", "cucumber"], [1, "cup", "cherry tomatoes"], [2, "tbsp", "olive oil"], [1, "tbsp", "lemon juice"], [0.25, "cup", "feta cheese"]],
-      ["Cook quinoa and let it cool.", "Chop cucumber and halve tomatoes.", "Toss everything with olive oil and lemon juice."]),
+      [[0.75, "cup", "quinoa"], [1, "can", "chickpeas"], [1, "cup", "cucumber"], [1, "cup", "cherry tomatoes"], [2, "tbsp", "olive oil"], [1, "tbsp", "rice vinegar"], [0.25, "cup", "feta cheese"]],
+      ["Cook quinoa and let it cool.", "Chop cucumber and halve tomatoes.", "Toss everything with olive oil and rice vinegar."]),
     recipe("Grilled Chicken Wrap", "lunch", 450, 20, ["high-protein"], PHOTOS.wrap,
       [[150, "g", "chicken breast"], [1, "pc", "whole-wheat tortilla"], [0.5, "cup", "lettuce"], [0.25, "cup", "tomato"], [2, "tbsp", "greek yogurt"], [1, "tsp", "olive oil"]],
       ["Season and grill chicken for five to six minutes per side, then slice.", "Spread yogurt on the tortilla and add lettuce, tomato and chicken.", "Roll tightly and halve."]),
@@ -699,8 +680,8 @@ function seed() {
       [[1, "cup", "red lentils"], [1, "pc", "carrot"], [1, "pc", "celery stalk"], [0.5, "cup", "onion"], [2, "clove", "garlic"], [4, "cup", "vegetable broth"], [1, "tbsp", "olive oil"], [1, "tsp", "cumin"]],
       ["Sauté onion, carrot, celery and garlic in oil.", "Add lentils, cumin and broth, then simmer for 25 minutes.", "Season and serve."]),
     recipe("Baked Salmon & Roasted Veggies", "dinner", 520, 30, ["omega-3", "high-protein"], PHOTOS.salmon,
-      [[180, "g", "salmon fillet"], [1, "cup", "broccoli"], [1, "pc", "zucchini"], [1, "cup", "sweet potato"], [2, "tbsp", "olive oil"], [1, "pc", "lemon"]],
-      ["Toss vegetables with oil and roast at 200°C for 15 minutes.", "Add salmon, squeeze lemon over it, and bake for 12 to 14 minutes more."]),
+      [[180, "g", "salmon fillet"], [1, "cup", "broccoli"], [1, "pc", "zucchini"], [1, "cup", "sweet potato"], [2, "tbsp", "olive oil"], [1, "tbsp", "rice vinegar"]],
+      ["Toss vegetables with oil and roast at 200°C for 15 minutes.", "Add salmon, drizzle rice vinegar over it, and bake for 12 to 14 minutes more."]),
     recipe("Tofu Stir-Fry with Brown Rice", "dinner", 470, 25, ["vegan", "high-protein"], PHOTOS.tofu,
       [[200, "g", "firm tofu"], [0.75, "cup", "brown rice"], [1, "cup", "broccoli"], [0.5, "cup", "bell pepper"], [2, "tbsp", "soy sauce"], [1, "tbsp", "sesame oil"], [1, "clove", "garlic"], [1, "tsp", "ginger"]],
       ["Cook brown rice.", "Pan-fry cubed tofu until golden.", "Stir-fry vegetables with garlic and ginger, then add tofu and soy sauce.", "Serve over rice."]),
@@ -711,8 +692,8 @@ function seed() {
       [[2, "pc", "zucchini"], [3, "tbsp", "pesto"], [1, "cup", "cherry tomatoes"], [2, "tbsp", "parmesan"], [1, "tbsp", "pine nuts"], [1, "tsp", "olive oil"]],
       ["Spiralize zucchini into noodles.", "Sauté for two minutes in olive oil.", "Toss with pesto and tomatoes, then top with parmesan and pine nuts."]),
     recipe("Hummus & Veggie Sticks", "snack", 180, 5, ["vegan", "quick"], PHOTOS.hummus,
-      [[0.33, "cup", "hummus"], [1, "pc", "carrot"], [1, "pc", "celery stalk"], [0.5, "cup", "bell pepper"]],
-      ["Cut vegetables into sticks.", "Serve with hummus."]),
+      [[0.33, "cup", "homemade hummus (chickpeas, tahini, garlic, rice vinegar, water)"], [1, "pc", "carrot"], [1, "pc", "celery stalk"], [0.5, "cup", "bell pepper"]],
+      ["Cut vegetables into sticks.", "Blend cooked chickpeas, tahini, garlic, rice vinegar and water into a plain hummus; serve with the vegetables."]),
     recipe("Apple with Peanut Butter", "snack", 210, 2, ["quick"], PHOTOS.apple,
       [[1, "pc", "apple"], [2, "tbsp", "peanut butter"]],
       ["Slice the apple.", "Serve with peanut butter for dipping."]),
@@ -779,6 +760,8 @@ function normalize(data) {
   normalized.extras = Array.isArray(normalized.extras) ? normalized.extras : [];
   normalized.plan = normalized.plan && typeof normalized.plan === "object" ? normalized.plan : {};
   normalized.checked = normalized.checked && typeof normalized.checked === "object" ? normalized.checked : {};
+  replaceCitrusInState(normalized, seed().recipes);
+  if (!normalized.recipes.length) normalized.recipes = seed().recipes;
   const previousContentVersion = Number(normalized.contentVersion) || 0;
   if (previousContentVersion < 6) {
     const existingNames = new Set(normalized.recipes.map((item) => String(item.name || "").trim().toLowerCase()));
@@ -1009,7 +992,7 @@ const STORES = [
     lng: 121.0512,
     hours: "9:00 AM–10:00 PM",
     source: STORE_SOURCES.marketplace,
-    items: ["rolled oats", "almond milk", "chia seeds", "mixed berries", "honey", "greek yogurt", "granola", "quinoa", "chickpeas", "cucumber", "cherry tomatoes", "olive oil", "lemon juice", "feta cheese", "red lentils", "carrot", "celery stalk", "onion", "garlic", "vegetable broth", "cumin", "salmon fillet", "broccoli", "zucchini", "sweet potato", "lemon", "firm tofu", "brown rice", "bell pepper", "soy sauce", "sesame oil", "ginger", "apple", "peanut butter", "hummus"]
+    items: ["rolled oats", "almond milk", "chia seeds", "mixed berries", "honey", "greek yogurt", "granola", "quinoa", "chickpeas", "cucumber", "cherry tomatoes", "olive oil", "rice vinegar", "feta cheese", "red lentils", "carrot", "celery stalk", "onion", "garlic", "vegetable broth", "cumin", "salmon fillet", "broccoli", "zucchini", "sweet potato", "fresh parsley", "firm tofu", "brown rice", "bell pepper", "soy sauce", "sesame oil", "ginger", "apple", "peanut butter", "hummus"]
   },
   {
     id: "sm-supermarket-aura",
@@ -1019,7 +1002,7 @@ const STORES = [
     lng: 121.0548,
     hours: "9:00 AM–9:00 PM",
     source: STORE_SOURCES.sm,
-    items: ["rolled oats", "almond milk", "chia seeds", "mixed berries", "honey", "egg", "spinach", "bell pepper", "onion", "olive oil", "greek yogurt", "granola", "quinoa", "chickpeas", "cucumber", "cherry tomatoes", "lemon juice", "feta cheese", "chicken breast", "whole-wheat tortilla", "lettuce", "tomato", "red lentils", "carrot", "celery stalk", "garlic", "vegetable broth", "cumin", "salmon fillet", "broccoli", "zucchini", "sweet potato", "lemon", "firm tofu", "brown rice", "soy sauce", "ginger", "apple", "peanut butter", "hummus"]
+    items: ["rolled oats", "almond milk", "chia seeds", "mixed berries", "honey", "egg", "spinach", "bell pepper", "onion", "olive oil", "greek yogurt", "granola", "quinoa", "chickpeas", "cucumber", "cherry tomatoes", "rice vinegar", "feta cheese", "chicken breast", "whole-wheat tortilla", "lettuce", "tomato", "red lentils", "carrot", "celery stalk", "garlic", "vegetable broth", "cumin", "salmon fillet", "broccoli", "zucchini", "sweet potato", "fresh parsley", "firm tofu", "brown rice", "soy sauce", "ginger", "apple", "peanut butter", "hummus"]
   },
   {
     id: "marketplace-uptown",
@@ -1029,7 +1012,7 @@ const STORES = [
     lng: 121.0535,
     hours: "10:00 AM–10:00 PM weekdays",
     source: STORE_SOURCES.marketplace,
-    items: ["rolled oats", "almond milk", "chia seeds", "mixed berries", "honey", "greek yogurt", "granola", "quinoa", "chickpeas", "cucumber", "cherry tomatoes", "olive oil", "lemon juice", "feta cheese", "chicken breast", "whole-wheat tortilla", "lettuce", "tomato", "red lentils", "carrot", "celery stalk", "onion", "garlic", "vegetable broth", "cumin", "salmon fillet", "broccoli", "zucchini", "sweet potato", "lemon", "firm tofu", "brown rice", "bell pepper", "soy sauce", "sesame oil", "ginger", "apple", "peanut butter", "hummus"]
+    items: ["rolled oats", "almond milk", "chia seeds", "mixed berries", "honey", "greek yogurt", "granola", "quinoa", "chickpeas", "cucumber", "cherry tomatoes", "olive oil", "rice vinegar", "feta cheese", "chicken breast", "whole-wheat tortilla", "lettuce", "tomato", "red lentils", "carrot", "celery stalk", "onion", "garlic", "vegetable broth", "cumin", "salmon fillet", "broccoli", "zucchini", "sweet potato", "fresh parsley", "firm tofu", "brown rice", "bell pepper", "soy sauce", "sesame oil", "ginger", "apple", "peanut butter", "hummus"]
   },
   {
     id: "landers-bgc",
@@ -1039,7 +1022,7 @@ const STORES = [
     lng: 121.0542,
     hours: "9:00 AM–9:00 PM",
     source: STORE_SOURCES.landers,
-    items: ["rolled oats", "almond milk", "chia seeds", "mixed berries", "honey", "egg", "spinach", "bell pepper", "onion", "olive oil", "greek yogurt", "granola", "quinoa", "chickpeas", "cucumber", "cherry tomatoes", "lemon juice", "feta cheese", "chicken breast", "whole-wheat tortilla", "lettuce", "tomato", "red lentils", "carrot", "celery stalk", "garlic", "vegetable broth", "cumin", "salmon fillet", "broccoli", "zucchini", "sweet potato", "lemon", "firm tofu", "brown rice", "soy sauce", "sesame oil", "ginger", "apple", "peanut butter", "hummus", "pine nuts", "parmesan", "pesto"]
+    items: ["rolled oats", "almond milk", "chia seeds", "mixed berries", "honey", "egg", "spinach", "bell pepper", "onion", "olive oil", "greek yogurt", "granola", "quinoa", "chickpeas", "cucumber", "cherry tomatoes", "rice vinegar", "feta cheese", "chicken breast", "whole-wheat tortilla", "lettuce", "tomato", "red lentils", "carrot", "celery stalk", "garlic", "vegetable broth", "cumin", "salmon fillet", "broccoli", "zucchini", "sweet potato", "fresh parsley", "firm tofu", "brown rice", "soy sauce", "sesame oil", "ginger", "apple", "peanut butter", "hummus", "pine nuts", "parmesan", "pesto"]
   },
   {
     id: "marketplace-venice",
@@ -1049,7 +1032,7 @@ const STORES = [
     lng: 121.0501,
     hours: "8:00 AM–10:00 PM Mon–Thu",
     source: STORE_SOURCES.marketplace,
-    items: ["rolled oats", "almond milk", "honey", "egg", "spinach", "bell pepper", "onion", "olive oil", "greek yogurt", "granola", "quinoa", "chickpeas", "cucumber", "cherry tomatoes", "lemon juice", "chicken breast", "whole-wheat tortilla", "lettuce", "tomato", "red lentils", "carrot", "celery stalk", "garlic", "vegetable broth", "cumin", "salmon fillet", "broccoli", "zucchini", "sweet potato", "lemon", "firm tofu", "brown rice", "soy sauce", "ginger", "apple", "peanut butter", "hummus"]
+    items: ["rolled oats", "almond milk", "honey", "egg", "spinach", "bell pepper", "onion", "olive oil", "greek yogurt", "granola", "quinoa", "chickpeas", "cucumber", "cherry tomatoes", "rice vinegar", "chicken breast", "whole-wheat tortilla", "lettuce", "tomato", "red lentils", "carrot", "celery stalk", "garlic", "vegetable broth", "cumin", "salmon fillet", "broccoli", "zucchini", "sweet potato", "fresh parsley", "firm tofu", "brown rice", "soy sauce", "ginger", "apple", "peanut butter", "hummus"]
   },
   {
     id: "robinsons-easymart-mckinley",
@@ -1059,7 +1042,7 @@ const STORES = [
     lng: 121.0483,
     hours: "Store hours vary",
     source: STORE_SOURCES.robinsons,
-    items: ["rolled oats", "almond milk", "honey", "egg", "spinach", "bell pepper", "onion", "olive oil", "greek yogurt", "granola", "quinoa", "chickpeas", "cucumber", "cherry tomatoes", "lemon juice", "chicken breast", "lettuce", "tomato", "red lentils", "carrot", "celery stalk", "garlic", "vegetable broth", "cumin", "broccoli", "zucchini", "sweet potato", "lemon", "firm tofu", "brown rice", "soy sauce", "ginger", "apple", "peanut butter", "hummus"]
+    items: ["rolled oats", "almond milk", "honey", "egg", "spinach", "bell pepper", "onion", "olive oil", "greek yogurt", "granola", "quinoa", "chickpeas", "cucumber", "cherry tomatoes", "rice vinegar", "chicken breast", "lettuce", "tomato", "red lentils", "carrot", "celery stalk", "garlic", "vegetable broth", "cumin", "broccoli", "zucchini", "sweet potato", "fresh parsley", "firm tofu", "brown rice", "soy sauce", "ginger", "apple", "peanut butter", "hummus"]
   }
 ].map((store) => ({ ...store, itemKeys: new Set(store.items.map(normName)) }));
 
@@ -2330,6 +2313,10 @@ function recipeModal(existing = null) {
       ingredients: $("#recipeIngredients").value.split("\n").map(parseIngLine).filter(Boolean),
       steps: $("#recipeSteps").value.split("\n").map((step) => step.trim()).filter(Boolean)
     };
+    if (containsCitrus([data.name, data.ingredients, data.steps, data.tags])) {
+      toast("Choose ingredients and instructions without citrus");
+      return;
+    }
     if (existing) Object.assign(existing, data);
     else state.recipes.push({ id: uid(), ...data });
     state.inventory = mergeRecipeIngredientsIntoInventory(state.recipes, state.inventory);
@@ -2369,6 +2356,11 @@ function inventoryModal() {
     const name = $("#inventoryName").value.trim();
     if (!name) {
       toast("Item name is required");
+      $("#inventoryName").focus();
+      return;
+    }
+    if (containsCitrus(name)) {
+      toast("Choose an item without citrus");
       $("#inventoryName").focus();
       return;
     }
@@ -2445,6 +2437,11 @@ function extraModal() {
     const name = $("#extraName").value.trim();
     if (!name) {
       toast("Item name is required");
+      $("#extraName").focus();
+      return;
+    }
+    if (containsCitrus(name)) {
+      toast("Choose an item without citrus");
       $("#extraName").focus();
       return;
     }

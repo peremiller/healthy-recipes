@@ -10,7 +10,7 @@ const HEALTH_RECIPE_NAMES = [
   "Monggo Malunggay Bowl",
   "Tofu Pinakbet with Adlai",
   "Lean Chicken Tinola Bowl",
-  "Calamansi Salmon with Okra & Barley",
+  "Ginger Salmon with Okra & Barley",
   "Tokwa Mushroom Sisig Lettuce Cups",
   "Vegetable Kare-Kare with Brown Rice",
   "Apple Oat-Bran Yogurt Cup",
@@ -18,29 +18,29 @@ const HEALTH_RECIPE_NAMES = [
   "Soy Cacao Chia Pudding"
 ];
 const REQUESTED_BOWL_RECIPE_NAMES = [
-  "Citrus-Herb Grilled Chicken Bowl",
+  "Garlic-Herb Grilled Chicken Bowl",
   "Miso Glazed Salmon Fillet",
   "Mediterranean Falafel & Egg Bowl"
 ];
 const REQUESTED_BOWL_INGREDIENTS = {
-  "Citrus-Herb Grilled Chicken Bowl": ["skinless chicken breast", "cooked tri-color quinoa", "broccoli", "cherry tomatoes", "red onion", "lemon juice", "garlic", "fresh parsley"],
+  "Garlic-Herb Grilled Chicken Bowl": ["skinless chicken breast", "cooked tri-color quinoa", "broccoli", "cherry tomatoes", "red onion", "rice vinegar", "garlic", "fresh parsley"],
   "Miso Glazed Salmon Fillet": ["salmon fillet", "cooked brown rice", "shelled edamame", "shredded purple cabbage", "cucumber", "white miso paste", "grated ginger", "sesame seeds"],
-  "Mediterranean Falafel & Egg Bowl": ["cooked chickpeas", "egg", "hummus", "mixed greens", "kalamata olives", "cucumber", "tahini", "lemon juice"]
+  "Mediterranean Falafel & Egg Bowl": ["cooked chickpeas", "egg", "homemade hummus (chickpeas, tahini, garlic, rice vinegar, water)", "mixed greens", "kalamata olives", "cucumber", "tahini", "rice vinegar"]
 };
 const JUICE_RECIPE_NAMES = [
   "Green Apple Cucumber Juice",
   "Beet Carrot Apple Juice",
-  "Grapefruit Orange Ginger Juice",
+  "Apple Pear Ginger Juice",
   "Pineapple Cucumber Mint Juice",
   "Watermelon Cucumber Mint Juice",
-  "Orange Turmeric Ginger Juice"
+  "Carrot Turmeric Ginger Juice"
 ];
 const JUICE_RECIPE_ALIASES = ["Green Detox", "Beet Boost", "Fat Burner", "Tummy Cleanse", "Hydration Boost", "Immunity Boost"];
 const IMPORTED_RECIPE_NAMES = IMPORTED_RECIPE_DEFINITIONS.map((item) => item.name);
 const SARIWA_RECIPE_NAMES = [
-  "Calamansi chicken grain bowl", "Garden tofu rice bowl", "Chicken & greens pita",
+  "Garlic yogurt chicken grain bowl", "Garden tofu rice bowl", "Chicken & greens pita",
   "Mango vanilla overnight oats", "Berry yogurt breakfast cup", "Chocolate banana blend",
-  "Mango barley cooler", "Cucumber calamansi green tea"
+  "Mango barley cooler", "Cucumber mint green tea"
 ];
 const EXPECTED_RECIPE_COUNT = 77 + IMPORTED_RECIPE_DEFINITIONS.length;
 
@@ -60,7 +60,7 @@ globalThis.window = {
   confirm: () => true
 };
 globalThis.document = {
-  title: "",
+  title: "", addEventListener() {},
   body: { classList: { add() {}, remove() {} }, style: {} },
   querySelector: (selector) => selector === "#app" ? appElement : null,
   querySelectorAll: () => [],
@@ -124,7 +124,7 @@ function assertRecipeIntegrity(state, expectedCount) {
 
 const fresh = await loadState("fresh");
 const freshMarkup = appElement.innerHTML;
-assert.equal(fresh.contentVersion, 16);
+assert.equal(fresh.contentVersion, 17);
 assertRecipeIntegrity(fresh, EXPECTED_RECIPE_COUNT);
 assert.ok(Buffer.byteLength(JSON.stringify(fresh)) <= 2 * 1024 * 1024, "the complete app state must fit the cloud payload limit");
 assert.match(freshMarkup, /data-cloud-account/, "the application shell must expose cloud sync settings");
@@ -199,7 +199,7 @@ JUICE_RECIPE_NAMES.forEach((name, index) => {
   assert.deepEqual(item.aliases, [JUICE_RECIPE_ALIASES[index]], `${name} must retain its pictured label as a search alias`);
   assert.ok(item.tags.includes("no-added-sugar"), `${name} must remain free of added sugar`);
   assert.ok(item.tags.includes("pulp-retaining"), `${name} must retain the blended produce pulp`);
-  assert.ok(item.ingredients.length >= 4, `${name} needs the pictured ingredients`);
+  assert.ok(item.ingredients.length >= 3, `${name} needs measurable produce ingredients`);
   assert.ok(item.steps.length >= 5, `${name} needs a complete preparation method`);
   assert.equal(item.source, "Screenshot 2026-09-07 at 5.23.15 AM.png", `${name} must identify the source image`);
   assert.match(item.image, /^https:\/\/images\.unsplash\.com\//, `${name} must use a real drink photograph`);
@@ -218,7 +218,7 @@ EYE_SUPPORTIVE_RECIPES.forEach(({ name }) => {
     .forEach((tag) => assert.ok(item.tags.includes(tag), `${name} is missing ${tag}`));
 });
 assert.deepEqual(
-  fresh.recipes.find((item) => item.name === "Tuna Calamansi Yogurt Spread").aliases,
+  fresh.recipes.find((item) => item.name === "Tuna Cucumber Yogurt Spread").aliases,
   ["Tuna Yogurt Spread"],
   "equivalent spread names must be retained as aliases instead of duplicate cards"
 );

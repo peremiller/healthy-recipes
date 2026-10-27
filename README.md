@@ -14,6 +14,8 @@ A dependency-free, local-first web app for planning healthy meals and turning th
 
 Ingredient names and units are normalized (cups↔cup, tbsp, tsp, pc…) so the plan and inventory match correctly.
 
+The recipe collection excludes citrus. Savory dishes use rice vinegar and herbs; teas and fruit drinks use ginger, mint, apple, pear or carrot. Existing device, cloud and imported data receive matching replacements while recipe IDs and planner links are preserved. Citrus pantry items and grocery extras are removed rather than relabeled as substitute stock. Unrecognized custom recipes containing citrus are removed. Recipe, inventory and grocery forms prevent citrus from being added again.
+
 ## Other
 
 - Automatic **dark mode**, mobile-first layout.

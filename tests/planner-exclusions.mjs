@@ -38,7 +38,7 @@ globalThis.window = {
   confirm: () => true
 };
 globalThis.document = {
-  title: "",
+  title: "", addEventListener() {},
   body: { classList: { add() {}, remove() {} }, style: {} },
   querySelector: (selector) => selector === "#app" ? appElement : null,
   querySelectorAll: () => [],
