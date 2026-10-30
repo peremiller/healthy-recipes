@@ -2,3 +2,5 @@
 .DS_Store
 graphify-out/
 tmp/
+node_modules/
+dist/
