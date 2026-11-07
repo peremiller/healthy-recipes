@@ -62,6 +62,8 @@ const fishIdeas = similarDiningMeals({ name: "Miso Glazed Salmon Fillet", steps:
 assert.deepEqual(fishIdeas.map((food) => food.name), ["Baked salmon with vegetables", "Baked bangus with vegetables", "Baked tilapia with vegetables", "Baked lapu-lapu with vegetables"]);
 assert.ok(similarDiningMeals({ name: "Grilled bangus" }).some((food) => food.name === "Grilled lapu-lapu with vegetables"));
 assert.equal(similarDiningMeals({ name: "Steamed tilapia" })[0].name, "Steamed tilapia with vegetables");
+assert.equal(similarDiningMeals({ name: "Miso Glazed Salmon", steps: ["Roast salmon for 12 minutes.", "Steam edamame and serve on rice."] })[0].name, "Baked salmon with vegetables", "a steamed side must not determine the fish preparation");
+assert.equal(similarDiningMeals({ name: "Miso Glazed Salmon", steps: ["Steam edamame and serve with salmon.", "Bake salmon until cooked."] })[0].name, "Baked salmon with vegetables");
 assert.ok(fishIdeas.every((food) => !/chicken|pork|beef|poultry/i.test(food.name)));
 for (const name of ["Miso Glazed Salmon Fillet", "Tokwa Mushroom Sisig Lettuce Cups", "Tofu Pinakbet with Adlai", "Soy Cacao Chia Pudding", "Mediterranean Falafel & Egg Bowl"]) assert.equal(placesForMeal(meal(name), places).places.length, 0, "do not force a different main ingredient to fill a sparse directory");
 assert.equal(breakfast.chainCount, 1);
