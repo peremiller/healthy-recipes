@@ -1144,6 +1144,7 @@ function setPlannedMeal(date, meal, recipeId, successMessage = "Meal planned") {
   closeModal();
   render();
   toast(successMessage);
+  void nearbyDining.refreshForMeal();
   return true;
 }
 

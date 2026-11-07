@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "test:restaurant-menu-matches": "node tests/restaurant-menu-matches.mjs",
     "test:official-dining": "node tests/official-dining.mjs",
     "test:nearby-dining": "node tests/nearby-dining.mjs",
     "test:diabetic-alternatives": "node tests/diabetic-alternatives.mjs",

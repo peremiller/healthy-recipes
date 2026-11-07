@@ -29,15 +29,17 @@ const elements = [
   venue(8, "Test Café <img onerror=alert(1)>", "24/7", { amenity: "cafe", cuisine: "coffee_shop" })
 ];
 const result = restaurantsFromElements(elements, location, now);
+const menuItem = (key) => [{ name: `Synthetic menu ${key}`, mealKeys: [key], sourceUrl: "https://example.com/official-menu" }];
+result.places.forEach((place) => { place.menuItems = menuItem(place.name === "Test Open" ? "carbonara" : "chamomile-tea"); });
 assert.equal(result.places.length, 2, "exclude closed, unknown, private, distant and duplicate venues");
 assert.equal(result.closedCount, 2);
 assert.equal(result.unknownCount, 1);
 assert.equal(result.places[0].menuUrl, null);
 assert.ok(result.places.every((place) => place.openNow && place.distanceKm >= 0));
-assert.equal(placesForMeal({ name: "Tinola" }, result.places).places[0].name, "Test Open");
-assert.match(placesForMeal({ name: "Ginger Tea" }, result.places).places[0].name, /Test Café/);
+assert.equal(placesForMeal({ name: "Carbonara" }, result.places).places[0].name, "Test Open");
+assert.match(placesForMeal({ name: "Chamomile Tea" }, result.places).places[0].name, /Test Café/);
 assert.equal(placesForMeal({ name: "Anything" }, [{ name: "Closed", openNow: false, distanceKm: 0 }]).places.length, 0);
-assert.ok(!mealMapsUrl({ name: "Tinola" }, null).includes("14.55"), "no default or remembered BGC coordinates");
+assert.ok(!mealMapsUrl({ name: "Carbonara" }, null).includes("14.55"), "no default or remembered BGC coordinates");
 
 let calls = 0;
 const fakeUpstream = async (url, options) => {
@@ -79,17 +81,17 @@ const controller = createNearbyDining({
   }
 });
 assert.equal(locationRequests, 0, "wait for the user's location action");
-assert.match(controller.renderMeal({ name: "Tinola" }), /Use my location/);
+assert.match(controller.renderMeal({ name: "Carbonara" }), /Use my location/);
 await controller.locateAndSearch();
 assert.equal(controller.snapshot().status, "ready");
-assert.match(controller.renderMeal({ name: "Tinola" }), /Test Open/);
-assert.match(controller.renderMeal({ name: "Ginger Tea" }), /&lt;img onerror/);
-assert.doesNotMatch(controller.renderMeal({ name: "Ginger Tea" }), /<img onerror/);
-assert.match(controller.renderMeal({ name: "Tinola" }), /Exact dish availability is unconfirmed/);
+assert.match(controller.renderMeal({ name: "Carbonara" }), /Test Open/);
+assert.match(controller.renderMeal({ name: "Chamomile Tea" }), /&lt;img onerror/);
+assert.doesNotMatch(controller.renderMeal({ name: "Chamomile Tea" }), /<img onerror/);
+assert.match(controller.renderMeal({ name: "Carbonara" }), /Exact dish availability is unconfirmed/);
 await controller.refreshIfNeeded();
 assert.equal(diningRequests, 1);
 currentTime += 300001;
-assert.doesNotMatch(controller.renderMeal({ name: "Tinola" }), /Test Open/, "expired data must not be displayed as currently open");
+assert.doesNotMatch(controller.renderMeal({ name: "Carbonara" }), /Test Open/, "expired data must not be displayed as currently open");
 controller.handleOffline();
 assert.equal(controller.snapshot().places.length, 0, "offline data must not imply current opening status");
 controller.clear();
@@ -107,7 +109,7 @@ const googleController = createNearbyDining({
   fetchImpl: async () => { googleRequests += 1; return { ok: true, json: async () => ({ ...data, source: 'Google Maps', cacheable: false, places: [{ ...data.places[0], attributions: [{ provider: 'Test credit', providerUri: 'https://example.com/credit' }] }] }) }; }
 });
 await googleController.locateAndSearch();
-const googleMarkup = googleController.renderMeal({ name: 'Tinola' });
+const googleMarkup = googleController.renderMeal({ name: 'Carbonara' });
 assert.match(googleMarkup, /translate="no">Google Maps/);
 assert.match(googleMarkup, /https:\/\/example.com\/credit/);
 assert.doesNotMatch(googleMarkup, /OpenStreetMap/, 'provider attribution must not mix Google and OSM');
@@ -115,3 +117,36 @@ googleTime += 300001;
 await googleController.refreshIfNeeded();
 assert.equal(googleRequests, 1, 'expired Google content requires user action instead of automatic paid requests');
 assert.equal(googleController.snapshot().places.length, 0);
+
+// Explicit meal swaps refresh even a fresh response, without another GPS prompt.
+let refreshRequests = 0;
+const pending = [];
+const swapping = createNearbyDining({ clock: () => +now,
+  geolocation: () => { throw Error("a meal swap must not prompt for GPS"); },
+  fetchImpl: (_url, options) => {
+    refreshRequests++;
+    assert.deepEqual(JSON.parse(options.body), { lat: 14.5343064, lng: 121.0505976, radius: 5000 });
+    return new Promise((resolve) => pending.push({ resolve, signal: options.signal }));
+  }
+});
+await swapping.refreshForMeal();
+assert.equal(refreshRequests, 0, "changing a meal before location opt-in must not search or prompt");
+const previous = swapping.selectArea("mckinley");
+const latest = swapping.refreshForMeal();
+assert.equal(refreshRequests, 2);
+assert.equal(pending[0].signal.aborted, true, "supersede an in-flight previous selection");
+assert.match(swapping.renderMeal({ name: "Carbonara" }), /Updating restaurants for Carbonara/);
+pending[1].resolve({ ok: true, json: async () => ({ ...data, places: [
+  { name: "Synthetic Italian", cuisine: "italian", openNow: true, distanceKm: 0.3, menuItems: menuItem("carbonara") },
+  { name: "Synthetic Café", cuisine: "cafe", openNow: true, distanceKm: 0.1, menuItems: menuItem("chamomile-tea") },
+  { name: "Synthetic now closed", cuisine: "filipino", openNow: false, distanceKm: 0 }
+] }) });
+await latest;
+assert.match(swapping.renderMeal({ name: "Carbonara" }), /Synthetic Italian/);
+assert.doesNotMatch(swapping.renderMeal({ name: "Carbonara" }), /Synthetic Café|Synthetic now closed/);
+assert.match(swapping.renderMeal({ name: "Chamomile Tea" }), /Synthetic Café/);
+pending[0].resolve({ ok: true, json: async () => ({ ...data, places: [{ name: "Synthetic obsolete response", openNow: true, distanceKm: 0.01 }] }) });
+await previous;
+assert.doesNotMatch(swapping.renderMeal({ name: "Carbonara" }), /Synthetic obsolete response/);
+assert.match(swapping.renderMeal({ name: "Carbonara" }), /Selected meal: Carbonara/);
+console.log("Meal-change refresh passed: fresh lookup, existing area/radius, no GPS prompt, updated recipe matching and search link, closed-place exclusion, stale-response protection.");

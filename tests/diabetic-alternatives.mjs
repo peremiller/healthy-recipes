@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { diabeticAlternativeFor, isDiabeticFriendlyRecipe } from "../lib/diabetic-alternatives.mjs";
 import { containsCitrus } from "../lib/citrus-free.mjs";
+import { mealDiningKeys } from "../lib/restaurant-menu-matches.mjs";
+import { mealMapsUrl } from "../lib/nearby-dining.mjs";
 
 const currentItem = { id: "dessert", name: "Dessert", cat: "snack", tags: ["healthy", "no-added-sugar"], cal: 50 };
 const friendly = (id, cat = "snack") => ({ id, name: id, cat, tags: ["steady-blood-sugar"] });
@@ -27,6 +29,17 @@ const storage = new Map();
 const appElement = { innerHTML: "" };
 const handlers = new Map();
 let mobile = false;
+let diningRequests = 0;
+let fixtureMealKeys = [];
+globalThis.fetch = async (url, options) => {
+  assert.equal(url, "/api/restaurants");
+  assert.deepEqual(JSON.parse(options.body), { lat: 14.5343064, lng: 121.0505976, radius: 5000 });
+  const request = ++diningRequests;
+  return { ok: true, json: async () => ({
+    places: [{ name: `Synthetic refreshed restaurant ${request}`, lat: 14.535, lng: 121.05, distanceKm: 0.1, openNow: true, menuItems: [{ name: "Synthetic menu option", mealKeys: fixtureMealKeys, sourceUrl: "https://example.com/menu" }] }],
+    checkedAt: new Date().toISOString(), validUntil: new Date(Date.now() + 300000).toISOString(), source: "Official restaurant directories"
+  }) };
+};
 const element = () => ({ classList: { add() {}, remove() {} }, style: {}, remove() {}, appendChild() {} });
 const modal = { ...element(), innerHTML: "" };
 globalThis.localStorage = { getItem: (key) => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, String(value)), removeItem: (key) => storage.delete(key) };
@@ -37,6 +50,7 @@ globalThis.document = {
   title: "", addEventListener() {}, body: element(), createElement: element,
   querySelector: (selector) => selector === "#app" ? appElement : selector === "#modalRoot" ? modal : selector === "#toastRoot" ? element() : null,
   querySelectorAll: (selector) => {
+    if (selector === "[data-dining-area]") return [{ value: "mckinley", addEventListener: (_event, callback) => handlers.set("dining-area", callback) }];
     const attribute = selector === "[data-use-meal-alternative]" ? "use-meal-alternative" : selector === "[data-planner-mode]" ? "planner-mode" : null;
     if (!attribute) return [];
     const key = attribute.replace(/-([a-z])/g, (_, character) => character.toUpperCase());
@@ -81,10 +95,23 @@ assert.match(appElement.innerHTML, /day-timeline/);
 const choice = [...appElement.innerHTML.matchAll(/data-use-meal-alternative="([^|"]+\|[^|"]+\|[^|"]+\|diabetes)"/g)][0]?.[1];
 assert.ok(choice, "day view must include the same feature");
 const [date, meal, id] = choice.split("|");
+fixtureMealKeys = [...mealDiningKeys(state.recipes.find((r) => r.id === id)), ...mealDiningKeys(state.recipes.find((r) => r.id === state.plan[date][meal]))];
+await handlers.get("dining-area")();
+assert.equal(diningRequests, 1);
+if (mealDiningKeys(state.recipes.find((r) => r.id === state.plan[date][meal])).length) assert.match(appElement.innerHTML, /Synthetic refreshed restaurant 1/);
 handlers.get(choice)();
+assert.equal(diningRequests, 2, "a successful alternative selection must start a fresh restaurant lookup");
+assert.doesNotMatch(appElement.innerHTML, /Synthetic refreshed restaurant 1/, "clear the previous results while refreshing");
+assert.match(appElement.innerHTML, /Updating restaurants for/);
+await new Promise((resolve) => setImmediate(resolve));
 const saved = readState();
 assert.equal(saved.plan[date][meal], id, "one click must save the chosen alternative");
 assert.equal(isDiabeticFriendlyRecipe(saved.recipes.find((recipe) => recipe.id === id)), true);
+if (mealDiningKeys(saved.recipes.find((recipe) => recipe.id === id)).length) assert.match(appElement.innerHTML, /Synthetic refreshed restaurant 2/);
+else assert.match(appElement.innerHTML, /No open restaurant with a verified menu match/);
+assert.doesNotMatch(appElement.innerHTML, /Synthetic refreshed restaurant 1/);
+const selectedMeal = saved.recipes.find((recipe) => recipe.id === id);
+assert.ok(appElement.innerHTML.includes(mealMapsUrl(selectedMeal, { lat: 14.5343064, lng: 121.0505976 }).replaceAll("&", "&amp;")), "the restaurant search must use the selected alternative");
 assert.ok(!appElement.innerHTML.includes(`data-use-meal-alternative="${date}|${meal}|`), "swapped friendly meal must no longer need an alternative");
 for (const [day, meals] of Object.entries(beforePlan)) for (const [slot, recipeId] of Object.entries(meals)) {
   if (day !== date || slot !== meal) assert.equal(saved.plan[day][slot], recipeId, "swap must affect only the chosen slot");
