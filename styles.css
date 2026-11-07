@@ -909,6 +909,48 @@ img {
   background: #fff5d8;
 }
 
+.diabetes-alternative {
+  border-color: #b5d9c7;
+  background: #eff9f3;
+}
+
+.diabetes-alternative:hover {
+  border-color: #398561;
+  background: #e1f3e9;
+}
+
+.meal-alternative.diabetes-alternative small {
+  color: #215d43;
+}
+
+.meal-alternative.diabetes-alternative strong {
+  white-space: normal;
+}
+
+.alternative-nutrition {
+  display: block;
+  margin-top: 3px;
+  color: #385849;
+  font-size: 9px;
+  line-height: 1.4;
+}
+
+.diabetes-planner-note,
+.diabetes-alternative-unavailable {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.diabetes-planner-note {
+  max-width: 900px;
+  margin: 0 0 16px;
+}
+
+.diabetes-planner-note a {
+  text-decoration: underline;
+}
+
 .meal-alternative img {
   width: 34px;
   height: 34px;

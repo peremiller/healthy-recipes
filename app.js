@@ -3,6 +3,7 @@
 import { containsCitrus, replaceCitrusInState } from "./lib/citrus-free.mjs";
 import { haversineKm } from "./lib/geo.mjs";
 import { fillRollingMealPlan, isPlannerRecipeAllowed, MEAL_TYPES } from "./lib/meal-plan.mjs";
+import { diabeticAlternativeFor, isDiabeticFriendlyRecipe } from "./lib/diabetic-alternatives.mjs";
 import { IMPORTED_RECIPE_DEFINITIONS } from "./lib/imported-recipes.mjs";
 import { createCloudSync } from "./lib/cloud-sync.mjs";
 import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "./lib/cloud-config.mjs";
@@ -1138,6 +1139,7 @@ function setPlannedMeal(date, meal, recipeId, successMessage = "Meal planned") {
 }
 
 const MEAL_ALTERNATIVE_RULES = [
+  { key: "diabetes", label: "Diabetic-friendly alternative" },
   { key: "hummus", term: "hummus", label: "Hummus-free alternative" },
   { key: "turkey", term: "turkey", label: "Turkey-free alternative" }
 ];
@@ -1167,10 +1169,15 @@ function mealAlternativeFor(date, meal, currentItem, term) {
 
 function renderMealAlternatives(date, meal, currentItem) {
   return MEAL_ALTERNATIVE_RULES.map((rule) => {
-    const alternative = mealAlternativeFor(date, meal, currentItem, rule.term);
+    const alternative = rule.key === "diabetes"
+      ? diabeticAlternativeFor({ date, meal, currentItem, recipes: state.recipes, plan: state.plan })
+      : mealAlternativeFor(date, meal, currentItem, rule.term);
+    if (rule.key === "diabetes" && currentItem && !isDiabeticFriendlyRecipe(currentItem) && !alternative) {
+      return `<p class="diabetes-alternative-unavailable" role="status">No diabetic-friendly ${MEAL_LABEL[meal].toLowerCase()} alternative is available without repeating a nearby meal.</p>`;
+    }
     if (!alternative) return "";
     return `<button class="meal-alternative ${rule.key}-alternative" type="button" data-use-meal-alternative="${date}|${meal}|${alternative.id}|${rule.key}" data-alternative-kind="${rule.key}" aria-label="Use ${rule.label.toLowerCase()} ${esc(alternative.name)}">
-      <img src="${esc(recipeImage(alternative))}" alt="" loading="lazy" /><span><small>${rule.label}</small><strong>${esc(alternative.name)}</strong></span>${icon("ph-swap")}
+      <img src="${esc(recipeImage(alternative))}" alt="" loading="lazy" /><span><small>${rule.label}</small><strong>${esc(alternative.name)}</strong>${rule.key === "diabetes" ? `<span class="alternative-nutrition">${alternative.cal} kcal · ${fmtPeso(mealCostPeso(alternative))} est. · Swap meal</span>` : ""}</span>${icon("ph-swap")}
     </button>`;
   }).join("");
 }
@@ -1571,7 +1578,7 @@ function renderDailyWellness() {
 
 function renderPlanner() {
   const actions = `<a class="button secondary" href="/planner/visualization" data-route>${icon("ph-cube")} Explore 3D map</a>`;
-  return `${heading("Planner", "Plan your week. Meal prices are estimated ingredient costs per serving in Philippine pesos and may vary by store.", actions)}<p style="margin:0 0 1rem"><a class="button secondary" href="/daily-wellness" data-route>🏃 View meals and exercises together →</a></p><p style="margin:12px 0"><button class="button secondary" id="exportPulseFitMeals" type="button">⬇ Export meals to PulseFit</button></p>${plannerSyncBanner()}${plannerToolbar()}${plannerMode === "week" ? renderWeekPlanner() : renderDayPlanner()}`;
+  return `${heading("Planner", "Plan your week. Meal prices are estimated ingredient costs per serving in Philippine pesos and may vary by store.", actions)}<p class="diabetes-planner-note">Meals without a blood-sugar-friendly tag show a diabetic-friendly alternative in the same slot. Tap the alternative to swap; only your chosen meal counts toward totals and groceries. Follow the recipe portions and your personal carbohydrate plan. <a href="https://diabetes.org/food-nutrition/meal-planning" target="_blank" rel="noopener noreferrer">Meal-planning guidance</a></p><p style="margin:0 0 1rem"><a class="button secondary" href="/daily-wellness" data-route>🏃 View meals and exercises together →</a></p><p style="margin:12px 0"><button class="button secondary" id="exportPulseFitMeals" type="button">⬇ Export meals to PulseFit</button></p>${plannerSyncBanner()}${plannerToolbar()}${plannerMode === "week" ? renderWeekPlanner() : renderDayPlanner()}`;
 }
 
 function mealVisualizationData() {
