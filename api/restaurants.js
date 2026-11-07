@@ -9,12 +9,12 @@ export async function searchConfiguredProvider(input, {
   if (apiKey) {
     try {
       const live = await google(input, { apiKey });
-      if (live.places.length) return live;
+      if (live.places.length) return { ...live, liveDiscoveryAvailable: true };
       const fallback = await official(input);
-      return fallback.places.length || fallback.nearbyPlaces.length ? fallback : live;
+      return fallback.places.length || fallback.nearbyPlaces.length ? { ...fallback, liveDiscoveryAvailable: true } : { ...live, liveDiscoveryAvailable: true };
     } catch { /* Official directory remains usable during provider outages. */ }
   }
-  return official(input);
+  return { ...await official(input), liveDiscoveryAvailable: false };
 }
 
 const json = (body, status = 200, extra = {}) => Response.json(body, {

@@ -22,6 +22,7 @@ export function searchOfficialRestaurants(input, { now = new Date(), directory =
     closedCount: nearby.filter((place) => place.openNow === false).length,
     checkedAt: now.toISOString(), validUntil: new Date(+now + 300000).toISOString(),
     radiusMeters: location.radius, source: "Official restaurant directories",
+    dataMode: "saved-directory", hoursVerification: "published-schedule",
     directoryCheckedAt: OFFICIAL_DIRECTORY_META.checkedAt,
     coverageNote: OFFICIAL_DIRECTORY_META.coverage, cacheable: true
   };

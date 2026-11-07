@@ -32,11 +32,6 @@ assert.equal(breakfast.similar, false, "a primary meal match always wins before 
 const cases = [
   ["Lean Chicken Tinola Bowl", "Chicken arroz caldo", /Arroz Caldo/],
   ["Apple Oat-Bran Yogurt Cup", "Yogurt, berries and granola bowl", /Berry Good Yogurt/],
-  ["Soy Cacao Chia Pudding", "Yogurt, berries and granola bowl", /Berry Good Yogurt/],
-  ["Tofu Pinakbet with Adlai", "Eggplant omelette with rice", /Eggplant Tortalette/],
-  ["Mediterranean Falafel & Egg Bowl", "Eggplant omelette with rice", /Eggplant Tortalette/],
-  ["Tokwa Mushroom Sisig Lettuce Cups", "Mushroom omelette", /Shroom/],
-  ["Miso Glazed Salmon Fillet", "Grilled chicken, rice and vegetable plate", /Chicken Teriyaki/],
   ["Garlic-Herb Grilled Chicken Bowl", "Grilled chicken with rice and vegetables", /Chicken Teriyaki/],
   ["Green Papaya Cucumber Salad", "Romaine Caesar salad", /Caesar Salad/]
 ];
@@ -59,15 +54,23 @@ assert.equal(pastaFallback.places[0].name, "McDonald's open");
 assert.equal(placesForMeal(meal("Tinola"), [{ ...places[0], openNow: false }]).places.length, 0);
 assert.equal(placesForMeal(meal("Tinola"), []).places.length, 0);
 assert.deepEqual(similarDiningMeals({ name: "Soy Cacao Chia Pudding", tags: ["vegan"] }), [], "do not suggest dairy yogurt against an explicit vegan diet");
-assert.deepEqual(similarDiningMeals({ name: "Tofu Pinakbet", tags: ["plant-based"] }), []);
-assert.deepEqual(similarDiningMeals({ name: "Miso Salmon Fillet", tags: ["pescatarian"] }), []);
+assert.equal(similarDiningMeals({ name: "Tofu Pinakbet", tags: ["plant-based"] })[0].key, "vegetable-tofu-rice");
+assert.ok(similarDiningMeals({ name: "Miso Salmon Fillet", tags: ["pescatarian"] }).every((food) => food.key.startsWith("fish-")));
 assert.deepEqual(similarDiningMeals({ name: "Oat Yogurt Cup", tags: ["gluten-free"] }), []);
 assert.ok(similarDiningMeals({ name: "Lunch: V-Taper Foundation Day", ingredients: [{ name: "chicken breast" }, { name: "brown rice" }], steps: ["Grill chicken and serve with rice."] }).length > 0, "program names use actual ingredients and preparation");
-assert.ok(similarDiningMeals({ name: "Ginger Salmon with Okra & Barley" })[0].differences.includes("Chicken replaces fish"));
+const fishIdeas = similarDiningMeals({ name: "Miso Glazed Salmon Fillet", steps: ["Bake salmon until cooked."] });
+assert.deepEqual(fishIdeas.map((food) => food.name), ["Baked salmon with vegetables", "Baked bangus with vegetables", "Baked tilapia with vegetables", "Baked lapu-lapu with vegetables"]);
+assert.ok(similarDiningMeals({ name: "Grilled bangus" }).some((food) => food.name === "Grilled lapu-lapu with vegetables"));
+assert.equal(similarDiningMeals({ name: "Steamed tilapia" })[0].name, "Steamed tilapia with vegetables");
+assert.ok(fishIdeas.every((food) => !/chicken|pork|beef|poultry/i.test(food.name)));
+for (const name of ["Miso Glazed Salmon Fillet", "Tokwa Mushroom Sisig Lettuce Cups", "Tofu Pinakbet with Adlai", "Soy Cacao Chia Pudding", "Mediterranean Falafel & Egg Bowl"]) assert.equal(placesForMeal(meal(name), places).places.length, 0, "do not force a different main ingredient to fill a sparse directory");
+assert.equal(breakfast.chainCount, 1);
+assert.equal(breakfast.places.length, 1, "show one nearest branch per chain");
+assert.ok(breakfast.places[0].additionalBranches.length > 0);
 const dining = createNearbyDining({ clock: () => Date.parse(fixture.checkedAt), fetchImpl: async () => ({ ok: true, json: async () => fixture }) });
 await dining.selectArea("mckinley");
 const rendered = dining.renderMeal(meal("Lean Chicken Tinola Bowl"));
-assert.match(rendered, /Open nearby · similar meals/);
+assert.match(rendered, /Similar meals · limited directory/);
 assert.match(rendered, /Selected meal: Lean Chicken Tinola Bowl/);
 assert.match(rendered, /Suggested meal: Chicken arroz caldo/);
 assert.match(rendered, /Why similar:/);
@@ -75,7 +78,20 @@ assert.match(rendered, /What changes:/);
 assert.match(rendered, /Arroz Caldo with Grilled Chicken Breast add-on/);
 assert.ok(rendered.includes(mealMapsUrl(meal("Chicken arroz caldo"), { lat: 14.5343064, lng: 121.0505976 }).replaceAll("&", "&amp;")));
 assert.ok(rendered.includes(mealMapsUrl(meal("Lean Chicken Tinola Bowl"), { lat: 14.5343064, lng: 121.0505976 }).replaceAll("&", "&amp;")), "retain the original meal search as well");
-assert.doesNotMatch(dining.renderMeal(meal("Egg & Cheese Breakfast Plate")), /Suggested meal:|No match for your selected meal/);
+assert.doesNotMatch(dining.renderMeal(meal("Egg & Cheese Breakfast Plate")), /Suggested meal:|No supported match/);
+assert.match(dining.renderControls(), /Limited menu coverage:.*Denny.*McDonald/);
+assert.match(dining.renderControls(), /not a comprehensive restaurant search/);
+assert.match(rendered, /not live-confirmed/);
+assert.match(rendered, /Schedule page checked/);
+assert.match(rendered, /Chain menu; branch availability unconfirmed/);
+assert.match(rendered, /more branches of this same chain/);
+assert.equal((rendered.match(/<li>/g) || []).length, 1);
+const fishMarkup = dining.renderMeal({ name: "Miso Glazed Salmon Fillet" });
+assert.match(fishMarkup, /Search Grilled bangus with vegetables on Maps/);
+assert.match(fishMarkup, /Search Grilled tilapia with vegetables on Maps/);
+assert.match(fishMarkup, /Search Grilled lapu-lapu with vegetables on Maps/);
+assert.doesNotMatch(fishMarkup, /Chicken Teriyaki|Denny|McDonald/);
+assert.match(fishMarkup, /Other nearby restaurants may serve it/);
 dining.handleOffline();
 assert.doesNotMatch(dining.renderMeal(meal("Lean Chicken Tinola Bowl")), /Denny|Suggested meal:/, "do not show fallback venues as open from an expired/offline check");
 console.log("Per-meal menu checks passed: primary-first ranking, explained similar-meal fallback, verified menu provenance, open-only results, program meals, dietary exclusions and unchanged plans.");

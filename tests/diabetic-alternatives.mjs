@@ -108,7 +108,7 @@ const saved = readState();
 assert.equal(saved.plan[date][meal], id, "one click must save the chosen alternative");
 assert.equal(isDiabeticFriendlyRecipe(saved.recipes.find((recipe) => recipe.id === id)), true);
 if (mealDiningKeys(saved.recipes.find((recipe) => recipe.id === id)).length) assert.match(appElement.innerHTML, /Synthetic refreshed restaurant 2/);
-else assert.match(appElement.innerHTML, /No open restaurant with a verified menu match/);
+else assert.match(appElement.innerHTML, /No supported menu match/);
 assert.doesNotMatch(appElement.innerHTML, /Synthetic refreshed restaurant 1/);
 const selectedMeal = saved.recipes.find((recipe) => recipe.id === id);
 assert.ok(appElement.innerHTML.includes(mealMapsUrl(selectedMeal, { lat: 14.5343064, lng: 121.0505976 }).replaceAll("&", "&amp;")), "the restaurant search must use the selected alternative");

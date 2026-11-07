@@ -64,7 +64,7 @@ const areaController = createNearbyDining({ clock: () => +now, geolocation: () =
 } });
 await areaController.selectArea("mckinley");
 assert.equal(areaRequests, 1);
-assert.match(areaController.renderMeal({ name: "Any meal" }), /No open restaurant with a verified menu match/);
+assert.match(areaController.renderMeal({ name: "Any meal" }), /No supported menu match/);
 assert.doesNotMatch(areaController.renderMeal({ name: "Any meal" }), /Synthetic unknown|Synthetic closed/);
 assert.doesNotMatch(areaController.renderMeal({ name: "Any meal" }), /dining-open/);
 areaController.handleOffline();
