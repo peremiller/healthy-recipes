@@ -1,8 +1,21 @@
-import { searchOpenRestaurants, validateRestaurantLocation } from "../server/restaurants.mjs";
+import { validateRestaurantLocation } from "../server/restaurants.mjs";
 import { searchGoogleOpenRestaurants } from "../server/google-restaurants.mjs";
+import { searchOfficialRestaurants } from "../server/official-dining.mjs";
 
-const searchConfiguredProvider = (input) => process.env.GOOGLE_PLACES_API_KEY || process.env.GOOGLE_MAPS_API_KEY
-  ? searchGoogleOpenRestaurants(input) : searchOpenRestaurants(input);
+export async function searchConfiguredProvider(input, {
+  apiKey = process.env.GOOGLE_PLACES_API_KEY || process.env.GOOGLE_MAPS_API_KEY,
+  google = searchGoogleOpenRestaurants, official = searchOfficialRestaurants
+} = {}) {
+  if (apiKey) {
+    try {
+      const live = await google(input, { apiKey });
+      if (live.places.length) return live;
+      const fallback = await official(input);
+      return fallback.places.length || fallback.nearbyPlaces.length ? fallback : live;
+    } catch { /* Official directory remains usable during provider outages. */ }
+  }
+  return official(input);
+}
 
 const json = (body, status = 200, extra = {}) => Response.json(body, {
   status, headers: { "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff", ...extra }

@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "test:official-dining": "node tests/official-dining.mjs",
     "test:nearby-dining": "node tests/nearby-dining.mjs",
     "test:diabetic-alternatives": "node tests/diabetic-alternatives.mjs",
     "build": "node scripts/prepare-offline-static.mjs && node scripts/offline/build.mjs --dir dist --name \"NourishPlan\" --spa --limits \"Local recipes, meal plans and saved data remain available. Cloud sign-in/sync, nearby restaurant checks, external videos and unbundled photographs require internet.\"",

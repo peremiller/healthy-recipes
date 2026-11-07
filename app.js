@@ -1187,7 +1187,7 @@ function renderMealAlternatives(date, meal, currentItem) {
     if (!alternative) return "";
     return `<button class="meal-alternative ${rule.key}-alternative" type="button" data-use-meal-alternative="${date}|${meal}|${alternative.id}|${rule.key}" data-alternative-kind="${rule.key}" aria-label="Use ${rule.label.toLowerCase()} ${esc(alternative.name)}">
       ${recipeVisualMarkup(alternative, "", { mini: true })}<span><small>${rule.label}</small><strong>${esc(alternative.name)}</strong>${rule.key === "diabetes" ? `<span class="alternative-nutrition">${alternative.cal} kcal · ${fmtPeso(mealCostPeso(alternative))} est. · Swap meal</span>` : ""}</span>${icon("ph-swap")}
-    </button>${nearbyDining.renderMeal(alternative, { compact: true })}`;
+    </button>`;
   }).join("");
 }
 
@@ -2983,6 +2983,7 @@ if (typeof document.addEventListener === "function") {
 
 render();
 cloudSync.initialize();
+nearbyDining.initialize();
 if (typeof window.setInterval === "function") {
   window.setInterval(() => {
     if (!document.visibilityState || document.visibilityState === "visible") { cloudSync.pullNow(); nearbyDining.refreshIfNeeded(); }
