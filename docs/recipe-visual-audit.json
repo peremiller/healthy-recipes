@@ -2177,5 +2177,7 @@
       ],
       "limitations": "AI-generated recipe illustration, not a photograph of a cooked recipe. Quantities, nut counts and exact portions follow the written recipe."
     }
-  ]
+  ],
+  "reviewedLegacyMethodVariants": 8,
+  "legacyMethodReview": "Eight older saved recipe methods were read from the live recipe detail UI and reviewed against the same ingredients and preparation. Only their exact normalized method signatures are accepted; changing ingredients still invalidates the illustration."
 }

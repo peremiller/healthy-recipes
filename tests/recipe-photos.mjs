@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFile, stat } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import { RECIPE_VISUAL_MANIFEST, recipeVisualSignature, resolveRecipeVisual } from "../lib/recipe-photos.mjs";
+import { REVIEWED_VISUAL_METHOD_VARIANTS } from "../lib/recipe-visual-variants.mjs";
 
 const storage = new Map();
 const appElement = { innerHTML: "" };
@@ -52,6 +53,12 @@ assert.equal(resolveRecipeVisual({ ...custom, steps: ["Use a different preparati
 assert.equal(resolveRecipeVisual({ ...custom, photoConfirmed: false }).src, null);
 for (const image of ["javascript:alert(1)", "data:image/svg+xml,anything", "file:///private.png", "http://example.com/photo.jpg", "https://secret@example.com/a.png"]) {
   assert.equal(resolveRecipeVisual({ ...custom, image, photoReview: { ...custom.photoReview, url: image } }).src, null, "unsafe custom URLs must not render");
+}
+for (const variant of REVIEWED_VISUAL_METHOD_VARIANTS) {
+  const original = recipes.find((recipe) => recipe.name === variant.name);
+  assert.ok(original, variant.name);
+  assert.equal(resolveRecipeVisual({ ...original, steps: variant.steps }).status, "reviewed", `${variant.name} older saved method has a reviewed matching illustration`);
+  assert.equal(resolveRecipeVisual({ ...original, steps: variant.steps, ingredients: [...original.ingredients, { name: "unreviewed addition" }] }).src, null);
 }
 let bytes = 0;
 const audit = JSON.parse(await readFile(new URL("../docs/recipe-visual-audit.json", import.meta.url), "utf8"));
