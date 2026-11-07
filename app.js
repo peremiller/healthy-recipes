@@ -4,6 +4,7 @@ import { containsCitrus, replaceCitrusInState } from "./lib/citrus-free.mjs";
 import { haversineKm } from "./lib/geo.mjs";
 import { fillRollingMealPlan, isPlannerRecipeAllowed, MEAL_TYPES } from "./lib/meal-plan.mjs";
 import { diabeticAlternativeFor, isDiabeticFriendlyRecipe } from "./lib/diabetic-alternatives.mjs";
+import { createNearbyDining } from "./lib/nearby-dining.mjs";
 import { IMPORTED_RECIPE_DEFINITIONS } from "./lib/imported-recipes.mjs";
 import { createCloudSync } from "./lib/cloud-sync.mjs";
 import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "./lib/cloud-config.mjs";
@@ -15,6 +16,7 @@ import {
 
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
+const nearbyDining = createNearbyDining({ onChange: () => render() });
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 const esc = (value) => String(value == null ? "" : value).replace(/[&<>"']/g, (char) => ({
   "&": "&amp;",
@@ -1178,7 +1180,7 @@ function renderMealAlternatives(date, meal, currentItem) {
     if (!alternative) return "";
     return `<button class="meal-alternative ${rule.key}-alternative" type="button" data-use-meal-alternative="${date}|${meal}|${alternative.id}|${rule.key}" data-alternative-kind="${rule.key}" aria-label="Use ${rule.label.toLowerCase()} ${esc(alternative.name)}">
       <img src="${esc(recipeImage(alternative))}" alt="" loading="lazy" /><span><small>${rule.label}</small><strong>${esc(alternative.name)}</strong>${rule.key === "diabetes" ? `<span class="alternative-nutrition">${alternative.cal} kcal · ${fmtPeso(mealCostPeso(alternative))} est. · Swap meal</span>` : ""}</span>${icon("ph-swap")}
-    </button>`;
+    </button>${nearbyDining.renderMeal(alternative, { compact: true })}`;
   }).join("");
 }
 
@@ -1433,7 +1435,7 @@ function shell(route, body) {
           <label class="global-search">${icon("ph-magnifying-glass")}<input id="globalSearch" type="search" placeholder="Search recipes, ingredients, meals…" /><span class="search-key">⌘ K</span></label>
           ${route.section === "planner" || route.section === "meal-map" ? `<div class="topbar-actions"><button class="icon-button" type="button" aria-label="Notifications">${icon("ph-bell")}</button><span class="today-date">${fmtDateWithYear()}</span></div>` : ""}
         </header>
-        <main class="content" id="mainContent">${body}</main>
+        <main class="content" id="mainContent">${["planner", "daily-wellness", "meal-map", "recipes"].includes(route.section) || route.detail === "recipe" ? nearbyDining.renderControls() : ""}${body}</main>
       </section>
     </div>`;
 }
@@ -1572,7 +1574,7 @@ function renderDailyWellness() {
   const dates = Array.from({length:7},(_,i)=>{const d=new Date(start);d.setDate(start.getDate()+i);return isoOf(d)});
   return `${heading("Daily meals & exercises", "Your NourishPlan meals with an automatically assigned PulseFit exercise plan for every day.")}<p class="muted">Workouts are assigned automatically: Monday Upper A, Tuesday Lower A, Thursday Upper B, Saturday Spartan Circuit. Wednesday, Friday and Sunday are rest or recovery days. This is a suggested recurring schedule based on PulseFit routines, not a live sync of its calendar.</p><div style="display:grid;gap:1rem;margin-top:1rem">${dates.map(date=>{
     const workout=PULSEFIT_SESSIONS[dailyExerciseFor(date)];
-    return `<section class="surface" style="padding:1.1rem;border-radius:16px"><h2 style="margin:0 0 .8rem">${esc(fmtLong(date))}${date===todayISO()?" · Today":""}</h2><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1rem"><div><h3>🥗 Meals</h3>${MEALS.map(meal=>{const item=recipeById(planFor(date)[meal]);return `<p style="margin:.55rem 0"><strong>${esc(MEAL_LABEL[meal]||meal)}:</strong> ${item?`<a href="${recipePath(item)}" data-route>${esc(item.name)}</a>`:"Not planned"}</p>`}).join("")}<a href="/planner" data-route>Manage meals →</a></div><div><h3>🏃 Exercise</h3>${workout?`<p><strong>${esc(workout.name)}</strong> · ${esc(workout.duration)}</p><p>${esc(workout.focus)}</p><ul style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:.65rem;padding:0;margin:1rem 0">${workout.exercises.map(([name,sets])=>exerciseMedia(name,sets)).join("")}</ul>`:"<p><strong>Rest / recovery day</strong></p><p class='muted'>Take it easy today. Optional gentle walking or mobility, based on comfort.</p>"}<a href="https://pulsefit-exercise-app.vercel.app/#plan" target="_blank" rel="noopener noreferrer">Open PulseFit ↗</a></div></div></section>`;
+    return `<section class="surface" style="padding:1.1rem;border-radius:16px"><h2 style="margin:0 0 .8rem">${esc(fmtLong(date))}${date===todayISO()?" · Today":""}</h2><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1rem"><div><h3>🥗 Meals</h3>${MEALS.map(meal=>{const item=recipeById(planFor(date)[meal]);return `<div style="margin:.55rem 0"><p><strong>${esc(MEAL_LABEL[meal]||meal)}:</strong> ${item?`<a href="${recipePath(item)}" data-route>${esc(item.name)}</a>`:"Not planned"}</p>${nearbyDining.renderMeal(item, { compact: true })}</div>`}).join("")}<a href="/planner" data-route>Manage meals →</a></div><div><h3>🏃 Exercise</h3>${workout?`<p><strong>${esc(workout.name)}</strong> · ${esc(workout.duration)}</p><p>${esc(workout.focus)}</p><ul style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:.65rem;padding:0;margin:1rem 0">${workout.exercises.map(([name,sets])=>exerciseMedia(name,sets)).join("")}</ul>`:"<p><strong>Rest / recovery day</strong></p><p class='muted'>Take it easy today. Optional gentle walking or mobility, based on comfort.</p>"}<a href="https://pulsefit-exercise-app.vercel.app/#plan" target="_blank" rel="noopener noreferrer">Open PulseFit ↗</a></div></div></section>`;
   }).join("")}</div>`;
 }
 
@@ -1634,6 +1636,7 @@ function mealVizDetails(node, data) {
       <h2>${esc(item.name)}</h2>
       <div class="meal-viz-nutrition"><span><strong>${item.cal}</strong> kcal</span><span><strong>${fmtPeso(mealCostPeso(item))}</strong> estimated</span><span><strong>${item.time}</strong> min</span><span><strong>${item.ingredients.length}</strong> ingredients</span></div>
       <div class="tags">${item.tags.slice(0, 4).map((tag) => `<span class="tag">${esc(tag)}</span>`).join("")}</div>
+      ${nearbyDining.renderMeal(item)}
       <a class="button meal-viz-recipe-link" href="${recipePath(item)}" data-route>View recipe ${icon("ph-arrow-right")}</a>`;
   }
 
@@ -1998,6 +2001,7 @@ function renderWeekPlanner() {
         </button>` : `<button class="empty-meal-button" type="button" data-pick="${date}|${meal}">${icon("ph-plus")}<span>Add meal</span></button>`}</div>
         ${renderCalendarMealOptions(date, meal, item?.id)}
         ${renderMealAlternatives(date, meal, item)}
+        ${nearbyDining.renderMeal(item, { compact: true })}
       </div>`;
     }).join("")}`).join("");
   return `
@@ -2057,7 +2061,7 @@ function renderDayPlanner() {
           const primary = item ? `<div class="timeline-row">
             <span class="meal-type-icon">${icon(MEAL_ICON[meal])}</span><span class="meal-time">${times[index]}</span><img src="${esc(recipeImage(item))}" alt="${esc(item.name)}" /><div class="timeline-copy"><strong>${esc(item.name)}</strong><span>${MEAL_LABEL[meal]} · ${item.cal} kcal · <span class="meal-cost" data-meal-cost="${mealCostPeso(item)}">${fmtPeso(mealCostPeso(item))} est.</span></span></div><button class="icon-button" type="button" data-pick="${dayDate}|${meal}" aria-label="Change meal">${icon("ph-dots-three-vertical")}</button>
           </div>` : `<button class="timeline-row empty-day-row" type="button" data-pick="${dayDate}|${meal}"><span class="meal-type-icon">${icon(MEAL_ICON[meal])}</span><span class="meal-time">${times[index]}</span><span></span><span>Add ${MEAL_LABEL[meal].toLowerCase()}</span>${icon("ph-plus")}</button>`;
-          return `<div class="timeline-meal-group">${primary}${renderCalendarMealOptions(dayDate, meal, item?.id)}${renderMealAlternatives(dayDate, meal, item)}</div>`;
+          return `<div class="timeline-meal-group">${primary}${renderCalendarMealOptions(dayDate, meal, item?.id)}${renderMealAlternatives(dayDate, meal, item)}${nearbyDining.renderMeal(item)}</div>`;
         }).join("")}
       </section>
       <aside class="surface day-summary"><div class="panel-title"><span>Daily overview</span>${icon("ph-info")}</div><div class="nutrition-total">${icon("ph-chart-donut")}<div><strong>${calories.toLocaleString()}</strong><span>kcal planned today</span></div></div><div class="nutrition-total daily-cost-total" data-day-cost="${cost}">${icon("ph-wallet")}<div><strong>${fmtPeso(cost)}</strong><span>estimated total for all meals today</span></div></div><div class="macro-list">${macroRow("Meals", `${itemCount} of 4`, itemCount * 25, "carbs")}${macroRow("Calorie target", "1,700 kcal", Math.min(100, calories / 17), "fat")}</div><p class="cost-estimate-note">Ingredient-cost estimate per serving; actual prices vary by store and season.</p></aside>
@@ -2081,10 +2085,10 @@ function renderRecipes() {
       <input class="search-input" id="recipeSearch" type="search" placeholder="Search recipes or ingredients" value="${esc(recipeQuery)}" />
     </div>
     ${list.length ? `<div class="recipe-grid">${list.map((item) => `
-      <a class="recipe-card" href="${recipePath(item)}" data-route>
+      <article class="recipe-entry"><a class="recipe-card" href="${recipePath(item)}" data-route>
         <img src="${esc(recipeImage(item))}" alt="${esc(item.name)}" loading="lazy" />
         <div class="recipe-card-body"><h2>${esc(item.name)}</h2><div class="recipe-meta"><span>${MEAL_LABEL[item.cat]}</span><span>${item.cal} kcal</span><span>${item.time} min</span></div><div class="tags">${item.tags.slice(0, 3).map((tag) => `<span class="tag">${esc(tag)}</span>`).join("")}</div></div>
-      </a>`).join("")}</div>` : `<div class="surface empty-state">${icon("ph-bowl-food")}No recipes match those filters.</div>`}`;
+      </a>${nearbyDining.renderMeal(item, { limit: 2 })}</article>`).join("")}</div>` : `<div class="surface empty-state">${icon("ph-bowl-food")}No recipes match those filters.</div>`}`;
 }
 
 function renderRecipeDetail(item) {
@@ -2107,7 +2111,7 @@ function renderRecipeDetail(item) {
     <div class="detail-grid">
       ${sourceNote}
       <section class="surface detail-section"><h2>Ingredients</h2>${item.ingredients.map((ingredient) => `<div class="ingredient-row"><span>${esc(ingredient.name)}</span><strong>${ingredient.qty} ${esc(ingredient.unit)}</strong></div>`).join("") || '<div class="empty-state">No ingredients listed.</div>'}</section>
-      <aside class="surface detail-section"><h2>Meal overview</h2><img src="${esc(recipeImage(item))}" alt="${esc(item.name)}" style="width:100%;height:190px;object-fit:cover;border-radius:10px;margin-bottom:16px" /><div class="grocery-bridge" style="grid-template-columns:1fr"><a href="/grocery" data-route>${icon("ph-basket")}<div><strong>Check your grocery list</strong><span>See what you already have and what to buy</span></div>${icon("ph-caret-right")}</a></div></aside>
+      <aside class="surface detail-section"><h2>Meal overview</h2><img src="${esc(recipeImage(item))}" alt="${esc(item.name)}" style="width:100%;height:190px;object-fit:cover;border-radius:10px;margin-bottom:16px" />${nearbyDining.renderMeal(item, { limit: 6 })}<div class="grocery-bridge" style="grid-template-columns:1fr"><a href="/grocery" data-route>${icon("ph-basket")}<div><strong>Check your grocery list</strong><span>See what you already have and what to buy</span></div>${icon("ph-caret-right")}</a></div></aside>
       <section class="surface detail-section" style="grid-column:1/-1"><h2>Method</h2>${item.steps.map((step, index) => `<div class="step-row"><span class="step-number">${index + 1}</span><span>${esc(step)}</span></div>`).join("") || '<div class="empty-state">No steps listed.</div>'}</section>
     </div>`;
 }
@@ -2751,6 +2755,7 @@ function movePurchasedToInventory() {
 }
 
 function wire(route) {
+  nearbyDining.wire();
   $$('[data-route]').forEach((link) => {
     link.addEventListener("click", (event) => {
       if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
@@ -2941,10 +2946,11 @@ if (window.opener && new URLSearchParams(location.search).get("pulsefit-sync") =
   // App startup and any cloud hydration can finish after window load.
   setTimeout(() => window.opener?.postMessage({type:"pulsefit:ready",version:1}, PULSEFIT_ORIGIN), 1600);
 }
-window.addEventListener("online", () => cloudSync.pullNow({ announce: true }));
+window.addEventListener("online", () => { cloudSync.pullNow({ announce: true }); nearbyDining.refreshIfNeeded(); });
+window.addEventListener("offline", () => nearbyDining.handleOffline());
 if (typeof document.addEventListener === "function") {
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible") cloudSync.pullNow();
+    if (document.visibilityState === "visible") { cloudSync.pullNow(); nearbyDining.refreshIfNeeded(); }
   });
 }
 
@@ -2952,6 +2958,6 @@ render();
 cloudSync.initialize();
 if (typeof window.setInterval === "function") {
   window.setInterval(() => {
-    if (!document.visibilityState || document.visibilityState === "visible") cloudSync.pullNow();
+    if (!document.visibilityState || document.visibilityState === "visible") { cloudSync.pullNow(); nearbyDining.refreshIfNeeded(); }
   }, 30000);
 }

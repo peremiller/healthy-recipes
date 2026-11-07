@@ -951,6 +951,56 @@ img {
   text-decoration: underline;
 }
 
+.dining-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  border: 1px solid var(--border, #dce6df);
+  border-radius: 14px;
+}
+
+.dining-controls > div:first-child { flex: 1 1 380px; }
+.dining-controls strong { color: var(--forest-950); }
+.dining-controls p { margin: 4px 0; font-size: 13px; }
+.dining-controls small { display: block; color: var(--muted); font-size: 11px; line-height: 1.6; }
+.dining-control-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.dining-control-actions label { display: flex; gap: 6px; align-items: center; font-size: 12px; }
+.dining-control-actions select { border: 1px solid #bacfc0; border-radius: 7px; padding: 8px; background: var(--surface, #fff); color: var(--ink); }
+.dining-attribution { flex: 1 0 100%; }
+.dining-attribution a { text-decoration: underline; }
+.meal-dining { margin: 12px 0 0; padding: 12px; border: 1px solid #d5e5dc; border-radius: 10px; background: #f5faf6; color: #254c38; font-size: 12px; line-height: 1.5; text-align: left; }
+.meal-dining .dining-title { display: block; font-size: 12px; font-weight: 700; }
+.meal-dining ul { list-style: none; margin: 8px 0; padding: 0; }
+.meal-dining li + li { border-top: 1px solid #d8e7de; margin-top: 8px; padding-top: 8px; }
+.meal-dining li strong { display: block; font-size: 12px; overflow-wrap: anywhere; }
+.meal-dining li span { display: block; color: #516759; font-size: 11px; }
+.meal-dining li .dining-open { display: inline; color: #22613b; }
+.meal-dining p { margin: 6px 0; }
+.meal-dining small { display: block; font-size: 10px; color: #516759; }
+.dining-place-links { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 4px; }
+.meal-dining a { text-decoration: underline; text-underline-offset: 2px; }
+.dining-map-search { display: inline-block; margin-top: 8px; }
+.dining-location-link { display: block; padding: 3px 0; border: 0; background: none; color: inherit; text-decoration: underline; cursor: pointer; }
+.meal-dining.compact { margin-top: 8px; padding: 7px; font-size: 10px; }
+.meal-dining.compact .dining-title, .meal-dining.compact li strong { font-size: 10px; }
+.meal-dining.compact li span { font-size: 9px; }
+.meal-dining.compact ul { margin: 5px 0; }
+.timeline-meal-group > .meal-dining { margin: 0 22px 16px 184px; }
+.recipe-entry { min-width: 0; display: flex; flex-direction: column; }
+.recipe-entry .recipe-card { flex: 1; }
+.recipe-entry > .meal-dining { margin-top: 8px; }
+
+@media (max-width: 650px) {
+  .dining-controls { padding: 14px; }
+  .dining-control-actions { width: 100%; }
+  .dining-control-actions .button { min-height: 40px; }
+  .timeline-meal-group > .meal-dining { margin: 0 14px 14px 56px; }
+}
+
 .meal-alternative img {
   width: 34px;
   height: 34px;

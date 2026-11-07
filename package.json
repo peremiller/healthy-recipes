@@ -4,8 +4,13 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "test:nearby-dining": "node tests/nearby-dining.mjs",
     "test:diabetic-alternatives": "node tests/diabetic-alternatives.mjs",
-    "build": "node scripts/prepare-offline-static.mjs && node scripts/offline/build.mjs --dir dist --name \"NourishPlan\" --spa --limits \"Local recipes, meal plans and saved data remain available. Cloud sign-in/sync, external videos and unbundled recipe photographs require internet.\"",
+    "build": "node scripts/prepare-offline-static.mjs && node scripts/offline/build.mjs --dir dist --name \"NourishPlan\" --spa --limits \"Local recipes, meal plans and saved data remain available. Cloud sign-in/sync, nearby restaurant checks, external videos and unbundled photographs require internet.\"",
     "test:offline": "node --test scripts/offline/offline.test.mjs scripts/offline/client.test.mjs"
+  },
+  "dependencies": {
+    "opening_hours": "3.15.0",
+    "tz-lookup": "6.1.25"
   }
 }
