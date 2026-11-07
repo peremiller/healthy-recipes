@@ -1,0 +1,2181 @@
+{
+  "schema": 1,
+  "reviewedAt": "2026-11-07",
+  "scope": "All 152 managed NourishPlan recipes and their rendering surfaces",
+  "managedRecipes": 152,
+  "originalUniqueSharedPhotos": 44,
+  "reviewedRecipeIllustrations": 152,
+  "runtimeAssets": 10,
+  "runtimeAssetBytes": 3498458,
+  "method": "All 44 original shared photographs were visually inspected. Original source PDF photos were checked against the current normalized recipes. Mismatches were replaced with recipe-specific generated illustrations using the actual ingredients and preparation methods. Every generated cell was visually reviewed in reading order for its main protein, carbohydrate, prepared form and sides. A targeted correction on atlas 02 removed unlisted sesame-like garnish from chicken adobo.",
+  "labelRequired": "Recipe illustration",
+  "quantityNote": "Illustrated portions and counts are not measurement guides; follow the written ingredient quantities.",
+  "unsupportedRecipePolicy": "There is no generic stock-photo fallback. Changed ingredient names or preparation methods invalidate managed imagery. Unknown recipes require review. User photos require explicit confirmation bound to the photo URL, recipe name, ingredient list and method. User-confirmed photos are never described as reviewed by the app.",
+  "sourceAuditExamples": [
+    "The hummus recipe used a chocolate milkshake photograph.",
+    "Rice cake, cream puff and cheesecake recipes reused a chocolate layer cake photograph.",
+    "Several soups reused dry salad or unrelated meat stew photographs.",
+    "Different pasta recipes reused pesto bow-tie pasta.",
+    "Several old photographs included citrus absent from the recipes.",
+    "Some original PDF captions contradicted the pictured food."
+  ],
+  "atlases": [
+    {
+      "sheet": 1,
+      "path": "/assets/food/recipe-atlas-01.webp",
+      "kind": "illustration",
+      "label": "Recipe illustration",
+      "reviewedAt": "2026-11-07",
+      "tool": "image_gen built-in",
+      "prompt": "Create ONE production sprite atlas asset for a recipe-planner application. This is a recipe ILLUSTRATION atlas, not documentary photography. Required canvas: 2048 by 2048 pixels. EXACTLY 4 equal columns and 4 equal rows:16separate squaretiles, no gaps, no lines, no text, no numbers, no logos. Realistic editorial-food-photography style on a simplewarm ivorybackground. Each completeplate, bowl or glass remains in its own tile. Correct proteins, carbohydrate, preparation and listed sides. Only listed ingredients; no citrus or unlisted garnish. Recipe order and complete source ingredients/methods follow.\n\nRow1 column1: Overnight Oats with Berries. Ingredients: 0.5 cup rolled oats; 0.75 cup almond milk; 1 tbsp chia seeds; 0.5 cup mixed berries; 1 tsp honey. Method: Combine oats, milk, chia seeds and honey in a jar. Refrigerate overnight for at least four hours. Top with berries before serving.\n\nRow1 column2: Veggie Egg Scramble. Ingredients: 3  egg; 0.5 cup spinach; 0.25 cup bell pepper; 0.25 cup onion; 1 tsp olive oil. Method: Sauté onion and pepper in olive oil for three minutes. Add spinach until wilted. Add beaten eggs and scramble until just set.\n\nRow1 column3: Greek Yogurt Parfait. Ingredients: 1 cup greek yogurt; 0.25 cup granola; 0.5 cup mixed berries; 1 tsp honey. Method: Layer yogurt, granola and berries in a glass. Drizzle with honey.\n\nRow1 column4: Quinoa Chickpea Salad. Ingredients: 0.75 cup quinoa; 1 can chickpeas; 1 cup cucumber; 1 cup cherry tomatoes; 2 tbsp olive oil; 1 tbsp rice vinegar; 0.25 cup feta cheese. Method: Cook quinoa and let it cool. Chop cucumber and halve tomatoes. Toss everything with olive oil and rice vinegar.\n\nRow2 column1: Grilled Chicken Wrap. Ingredients: 150 g chicken breast; 1 pc whole-wheat tortilla; 0.5 cup lettuce; 0.25 cup tomato; 2 tbsp greek yogurt; 1 tsp olive oil. Method: Season and grill chicken for five to six minutes per side, then slice. Spread yogurt on the tortilla and add lettuce, tomato and chicken. Roll tightly and halve.\n\nRow2 column2: Hearty Lentil Soup. Ingredients: 1 cup red lentils; 1 pc carrot; 1 pc celery stalk; 0.5 cup onion; 2 clove garlic; 4 cup vegetable broth; 1 tbsp olive oil; 1 tsp cumin. Method: Sauté onion, carrot, celery and garlic in oil. Add lentils, cumin and broth, then simmer for 25 minutes. Season and serve.\n\nRow2 column3: Baked Salmon & Roasted Veggies. Ingredients: 180 g salmon fillet; 1 cup broccoli; 1 pc zucchini; 1 cup sweet potato; 2 tbsp olive oil; 1 tbsp rice vinegar. Method: Toss vegetables with oil and roast at 200°C for 15 minutes. Add salmon, drizzle rice vinegar over it, and bake for 12 to 14 minutes more.\n\nRow2 column4: Tofu Stir-Fry with Brown Rice. Ingredients: 200 g firm tofu; 0.75 cup brown rice; 1 cup broccoli; 0.5 cup bell pepper; 2 tbsp soy sauce; 1 tbsp sesame oil; 1 clove garlic; 1 tsp ginger. Method: Cook brown rice. Pan-fry cubed tofu until golden. Stir-fry vegetables with garlic and ginger, then add tofu and soy sauce. Serve over rice.\n\nRow3 column1: Turkey & Bean Chili. Ingredients: 300 g ground turkey; 1 can kidney beans; 1 can diced tomatoes; 0.5 cup onion; 2 clove garlic; 1 tbsp chili powder; 1 tsp cumin; 1 tbsp olive oil. Method: Brown turkey with onion and garlic in oil. Add spices, beans and tomatoes. Simmer for 25 to 30 minutes.\n\nRow3 column2: Zucchini Noodles with Pesto. Ingredients: 2 pc zucchini; 3 tbsp pesto; 1 cup cherry tomatoes; 2 tbsp parmesan; 1 tbsp pine nuts; 1 tsp olive oil. Method: Spiralize zucchini into noodles. Sauté for two minutes in olive oil. Toss with pesto and tomatoes, then top with parmesan and pine nuts.\n\nRow3 column3: Hummus & Veggie Sticks. Ingredients: 0.33 cup homemade hummus (chickpeas, tahini, garlic, rice vinegar, water); 1 pc carrot; 1 pc celery stalk; 0.5 cup bell pepper. Method: Cut vegetables into sticks. Blend cooked chickpeas, tahini, garlic, rice vinegar and water into a plain hummus; serve with the vegetables.\n\nRow3 column4: Apple with Peanut Butter. Ingredients: 1 pc apple; 2 tbsp peanut butter. Method: Slice the apple. Serve with peanut butter for dipping.\n\nRow4 column1: Healthy Carbonara. Ingredients: 60 g whole-wheat spaghetti; 1  egg; 0.25 cup plain Greek yogurt; 1 cup button mushrooms; 1 cup baby spinach; 0.25 cup green peas; 2 tbsp grated parmesan; 1 tsp olive oil; 1 clove garlic; 0.25 tsp black pepper. Method: Cook the whole-wheat spaghetti until al dente. Reserve half a cup of pasta water, then drain. Whisk the egg, Greek yogurt, parmesan and black pepper until smooth. Use a pasteurized egg when available. Heat olive oil in a pan. Sauté garlic and mushrooms for four to five minutes, then add peas and spinach until wilted. Add the drained spaghetti, toss, then remove the pan from the heat. Whisk two tablespoons of hot pasta water into the egg mixture. Pour it over the pasta while tossing continuously. Return to very low heat and toss for one to two minutes until the sauce is steaming and coats the pasta. Do not boil; add pasta water as needed.\n\nRow4 column2: Healthy Hot Pancakes. Ingredients: 0.5 cup rolled oats; 0.5 pc ripe banana; 1  egg; 0.25 cup low-fat milk; 0.5 tsp baking powder; 0.25 tsp cinnamon; 1 tsp olive oil; 0.25 cup mixed berries. Method: Blend the rolled oats into a fine flour. Mash the banana, then whisk it with the egg and low-fat milk. Stir in the oat flour, baking powder and cinnamon. Rest the batter for five minutes. Lightly coat a nonstick pan with olive oil and heat it over medium-low heat. Cook small pancakes for two to three minutes per side until golden and cooked through. Serve hot with mixed berries instead of syrup.\n\nRow4 column3: Healthy Buko Coconut Bowl. Ingredients: 0.5 cup fresh buko meat; 0.5 cup unsweetened coconut water; 0.5 cup plain Greek yogurt; 1 tbsp chia seeds; 0.25 cup diced pineapple; 0.25 cup ice. Method: Chill the buko meat, coconut water and Greek yogurt before assembling. Slice the fresh buko meat into thin strips. Stir the Greek yogurt, coconut water and chia seeds together until creamy. Fold in the buko strips and diced pineapple. Serve immediately over ice, or chill for 10 minutes to let the chia seeds thicken the bowl.\n\nRow4 column4: Healthy Pancit Bihon. Ingredients: 60 g bihon noodles; 80 g skinless chicken breast; 1 cup cabbage; 0.5 cup carrot; 0.5 cup bell pepper; 0.5 cup snap peas; 1 tsp olive oil; 1 clove garlic; 1 tbsp low-sodium soy sauce; 1 cup unsalted chicken broth; 1 tbsp rice vinegar. Method: Soak the bihon noodles according to package directions, then drain. Slice the chicken and vegetables thinly so they cook quickly and evenly. Heat olive oil in a wide pan. Sauté garlic and chicken until the chicken is fully cooked. Add cabbage, carrot, bell pepper and snap peas. Stir-fry for three to four minutes so the vegetables stay crisp. Pour in the unsalted broth and low-sodium soy sauce, then add the noodles. Toss until the noodles absorb the liquid. Finish with rice vinegar and serve hot.",
+      "promptRecord": "Reconstructed prompt specification from generation run; exact major constraints and recipe inputs preserved.",
+      "editPrompt": null,
+      "width": 1254,
+      "height": 1254,
+      "columns": 4,
+      "rows": 4,
+      "cellWidth": 313.5,
+      "cellHeight": 313.5,
+      "encoding": "WebP quality 88; original geometry unchanged.",
+      "sizeBytes": 402558,
+      "sha256": "35ee9ee688070d382a104f97a6e75aed351a283dc09f6d882321fe354afbeb1a",
+      "cells": [
+        {
+          "index": 1,
+          "name": "Overnight Oats with Berries",
+          "row": 0,
+          "column": 0,
+          "status": "reviewed",
+          "review": "Visible main protein/carbohydrate, prepared form and listed sides checked against recipe. No visible citrus or unrelated garnish. Portions are illustrations, not measured serving sizes.",
+          "kind": "illustration"
+        },
+        {
+          "index": 2,
+          "name": "Veggie Egg Scramble",
+          "row": 0,
+          "column": 1,
+          "status": "reviewed",
+          "review": "Visible main protein/carbohydrate, prepared form and listed sides checked against recipe. No visible citrus or unrelated garnish. Portions are illustrations, not measured serving sizes.",
+          "kind": "illustration"
+        },
+        {
+          "index": 3,
+          "name": "Greek Yogurt Parfait",
+          "row": 0,
+          "column": 2,
+          "status": "reviewed",
+          "review": "Visible main protein/carbohydrate, prepared form and listed sides checked against recipe. No visible citrus or unrelated garnish. Portions are illustrations, not measured serving sizes.",
+          "kind": "illustration"
+        },
+        {
+          "index": 4,
+          "name": "Quinoa Chickpea Salad",
+          "row": 0,
+          "column": 3,
+          "status": "reviewed",
+          "review": "Visible main protein/carbohydrate, prepared form and listed sides checked against recipe. No visible citrus or unrelated garnish. Portions are illustrations, not measured serving sizes.",
+          "kind": "illustration"
+        },
+        {
+          "index": 5,
+          "name": "Grilled Chicken Wrap",
+          "row": 1,
+          "column": 0,
+          "status": "reviewed",
+          "review": "Visible main protein/carbohydrate, prepared form and listed sides checked against recipe. No visible citrus or unrelated garnish. Portions are illustrations, not measured serving sizes.",
+          "kind": "illustration"
+        },
+        {
+          "index": 6,
+          "name": "Hearty Lentil Soup",
+          "row": 1,
+          "column": 1,
+          "status": "reviewed",
+          "review": "Visible main protein/carbohydrate, prepared form and listed sides checked against recipe. No visible citrus or unrelated garnish. Portions are illustrations, not measured serving sizes.",
+          "kind": "illustration"
+        },
+        {
+          "index": 7,
+          "name": "Baked Salmon & Roasted Veggies",
+          "row": 1,
+          "column": 2,
+          "status": "reviewed",
+          "review": "Visible main protein/carbohydrate, prepared form and listed sides checked against recipe. No visible citrus or unrelated garnish. Portions are illustrations, not measured serving sizes.",
+          "kind": "illustration"
+        },
+        {
+          "index": 8,
+          "name": "Tofu Stir-Fry with Brown Rice",
+          "row": 1,
+          "column": 3,
+          "status": "reviewed",
+          "review": "Visible main protein/carbohydrate, prepared form and listed sides checked against recipe. No visible citrus or unrelated garnish. Portions are illustrations, not measured serving sizes.",
+          "kind": "illustration"
+        },
+        {
+          "index": 9,
+          "name": "Turkey & Bean Chili",
+          "row": 2,
+          "column": 0,
+          "status": "reviewed",
+          "review": "Visible main protein/carbohydrate, prepared form and listed sides checked against recipe. No visible citrus or unrelated garnish. Portions are illustrations, not measured serving sizes.",
+          "kind": "illustration"
+        },
+        {
+          "index": 10,
+          "name": "Zucchini Noodles with Pesto",
+          "row": 2,
+          "column": 1,
+          "status": "reviewed",
+          "review": "Visible main protein/carbohydrate, prepared form and listed sides checked against recipe. No visible citrus or unrelated garnish. Portions are illustrations, not measured serving sizes.",
+          "kind": "illustration"
+        },
+        {
+          "index": 11,
+          "name": "Hummus & Veggie Sticks",
+          "row": 2,
+          "column": 2,
+          "status": "reviewed",
+          "review": "Visible main protein/carbohydrate, prepared form and listed sides checked against recipe. No visible citrus or unrelated garnish. Portions are illustrations, not measured serving sizes.",
+          "kind": "illustration"
+        },
+        {
+          "index": 12,
+          "name": "Apple with Peanut Butter",
+          "row": 2,
+          "column": 3,
+          "status": "reviewed",
+          "review": "Visible main protein/carbohydrate, prepared form and listed sides checked against recipe. No visible citrus or unrelated garnish. Portions are illustrations, not measured serving sizes.",
+          "kind": "illustration"
+        },
+        {
+          "index": 13,
+          "name": "Healthy Carbonara",
+          "row": 3,
+          "column": 0,
+          "status": "reviewed",
+          "review": "Visible main protein/carbohydrate, prepared form and listed sides checked against recipe. No visible citrus or unrelated garnish. Portions are illustrations, not measured serving sizes.",
+          "kind": "illustration"
+        },
+        {
+          "index": 14,
+          "name": "Healthy Hot Pancakes",
+          "row": 3,
+          "column": 1,
+          "status": "reviewed",
+          "review": "Visible main protein/carbohydrate, prepared form and listed sides checked against recipe. No visible citrus or unrelated garnish. Portions are illustrations, not measured serving sizes.",
+          "kind": "illustration"
+        },
+        {
+          "index": 15,
+          "name": "Healthy Buko Coconut Bowl",
+          "row": 3,
+          "column": 2,
+          "status": "reviewed",
+          "review": "Visible main protein/carbohydrate, prepared form and listed sides checked against recipe. No visible citrus or unrelated garnish. Portions are illustrations, not measured serving sizes.",
+          "kind": "illustration"
+        },
+        {
+          "index": 16,
+          "name": "Healthy Pancit Bihon",
+          "row": 3,
+          "column": 3,
+          "status": "reviewed",
+          "review": "Visible main protein/carbohydrate, prepared form and listed sides checked against recipe. No visible citrus or unrelated garnish. Portions are illustrations, not measured serving sizes.",
+          "kind": "illustration"
+        }
+      ],
+      "limitations": "AI-generated recipe illustration, not a photograph of a cooked recipe. Quantities, nut counts and exact portions follow the written recipe."
+    },
+    {
+      "sheet": 2,
+      "path": "/assets/food/recipe-atlas-02.webp",
+      "kind": "illustration",
+      "label": "Recipe illustration",
+      "reviewedAt": "2026-11-07",
+      "tool": "image_gen built-in",
+      "prompt": "Create ONE production food ILLUSTRATION sprite atlas, exact 4 columns by 4 rows of equal square cells, reading order left to right then top to bottom. Entire output square 2048x2048 pixels or greater, no gutters, gaps, borders, labels, letters, words, numerals, watermarks, or extra dishes. Consistent warm off-white background throughout, clean realistic editorial FOOD ILLUSTRATION style, not a camera photograph. Each cell shows a single complete dish, bowl, plate, pastry or drink centered fully within its cell with comfortable internal margin, viewed from a slight overhead angle, distinct and readily recognizable at thumbnail size. Nothing crosses cell boundaries. Exactly16 dishes in the specified arrangement. Render each dish according to its actual ingredient list and preparation below: match protein, carbohydrate, color, cooking method, and side vegetables, add no unlisted ingredient or garnish. Absolutely NO citrus of any kind, NO lemons/limes/oranges/calamansi, NO garnish or decorations not in that cell's ingredients. Do not swap recipes between cells. For fish show the specified species fillet, for poultry skinless cooked boneless breast meat, for whole-grain dishes use visibly brown whole-grain rice/grains/pasta. Do not add meat to vegetarian recipes. Do not render instructions or text. These Filipino vegetable dishes have exact distinct appearances: monggo is a mungbean stew, pinakbet is a colorful vegetable saute with crisp tofu cubes and pale adlai grains, kare-kare is a peanut-sauce vegetable stew, tinola is a clear ginger chicken soup. No shrimp paste, meat, mayonnaise or citrus on any tofu or vegetable dish.\n\nCELL CONTENTS (numbers are directions only; never draw them):\nROW 1, COLUMN 1: Healthy Rice Cake. Ingredients: brown rice flour, baking powder, egg, unsweetened light coconut milk, honey, coconut oil, fresh buko meat, cinnamon. Preparation: Heat the oven to 180°C and lightly grease a small baking dish or four muffin cups with coconut oil. Whisk the brown rice flour, baking powder and cinnamon together in a bowl. In a separate bowl, whisk the egg, light coconut milk and honey until smooth. Fold the wet mixture into the dry ingredients just until combined, then stir in the sliced fresh buko meat. Pour into the prepared dish and bake for 24 to 28 minutes, until the center is set and the top is lightly golden. Cool for 10 minutes before slicing. Serve warm without additional syrup.\n\nROW 1, COLUMN 2: Healthy Chicken Adobo. Ingredients: skinless chicken breast, low-sodium soy sauce, cane vinegar, water, garlic, bay leaf, black pepper, olive oil, green beans, brown rice. Preparation: Marinate the chicken in low-sodium soy sauce, cane vinegar, garlic and black pepper for 10 minutes. Heat the olive oil in a pan over medium heat and brown the chicken on both sides. Pour in the marinade and water, then add the bay leaf. Cover and simmer for 12 to 15 minutes, until the chicken reaches 74°C in the thickest part. Add the green beans for the final four to five minutes, then uncover and reduce the sauce until lightly thickened. Discard the bay leaf and serve the adobo with cooked brown rice.\n\nROW 1, COLUMN 3: Savory Oatmeal with Tofu & Pechay. Ingredients: rolled oats, firm tofu, pechay, tomato, olive oil, garlic, low-sodium soy sauce, turmeric, black pepper. Preparation: Cook the oats with one cup of water over medium-low heat until creamy, about five minutes. Pat the tofu dry, crumble it, and brown it in half of the olive oil for four to five minutes. Add the remaining oil, garlic, tomato and turmeric. Cook until the tomato softens. Fold in the pechay and low-sodium soy sauce, cooking just until the leaves wilt. Spoon the tofu and vegetables over the oats and finish with black pepper. Do not add sugar or salty toppings.\n\nROW 1, COLUMN 4: Cherry Chia Yogurt Oats. Ingredients: rolled oats, plain low-fat Greek yogurt, unsweetened tart cherries, chia seeds, ground flaxseed, cinnamon, water. Preparation: Stir the rolled oats, chia seeds, ground flaxseed and cinnamon together in a jar. Add the Greek yogurt and water, then mix until evenly combined. Fold in half of the unsweetened cherries. Cover and refrigerate for at least four hours or overnight. Top with the remaining cherries and serve without honey, syrup or sweetened granola.\n\nROW 2, COLUMN 1: Malunggay Egg-White Omelet & Kamote. Ingredients: egg white, egg, malunggay leaves, tomato, onion, olive oil, roasted sweet potato, black pepper. Preparation: Whisk the egg whites and whole egg with black pepper. Heat half of the olive oil in a nonstick pan and sauté the onion and tomato for three minutes. Add the malunggay leaves and cook until just wilted. Pour in the egg mixture and cook over low heat until set, folding once. Serve with the measured roasted sweet potato; skip ketchup and sweet sauces.\n\nROW 2, COLUMN 2: Monggo Malunggay Bowl. Ingredients: cooked mung beans, malunggay leaves, squash, tomato, onion, garlic, unsalted vegetable broth, olive oil, brown rice, black pepper. Preparation: Heat the olive oil and sauté the onion, garlic and tomato until softened. Add the squash and unsalted broth, then simmer until the squash is almost tender. Stir in the cooked mung beans and simmer for eight to ten minutes. Fold in the malunggay leaves for the final two minutes and season with black pepper. Serve with one-third cup cooked brown rice. Keep the dish meat-free and do not add bagoong or processed meat.\n\nROW 2, COLUMN 3: Tofu Pinakbet with Adlai. Ingredients: firm tofu, eggplant, okra, squash, sitaw, tomato, onion, canola oil, low-sodium soy sauce, cooked adlai. Preparation: Pat the tofu dry, cube it, and brown it in half of the canola oil. Set aside. Add the remaining oil, onion and tomato to the pan and cook until softened. Add the squash with a splash of water, cover, and cook for four minutes. Add the eggplant, okra and sitaw. Cook until tender-crisp, then return the tofu. Season with one teaspoon low-sodium soy sauce and serve over the measured adlai. This version intentionally omits bagoong.\n\nROW 2, COLUMN 4: Lean Chicken Tinola Bowl. Ingredients: skinless chicken breast, sayote, malunggay leaves, ginger, onion, garlic, unsalted chicken broth, olive oil, brown rice, rice vinegar. Preparation: Heat the olive oil and sauté the ginger, onion and garlic until fragrant. Add the chicken breast and cook until the outside is no longer pink. Pour in the unsalted broth and simmer gently for 12 minutes. Add the sayote and cook until tender, then fold in the malunggay leaves for two minutes. Check that the chicken reaches 74°C, finish with rice vinegar, and serve with one-third cup cooked brown rice.\n\nROW 3, COLUMN 1: Ginger Salmon with Okra & Barley. Ingredients: salmon fillet, cooked pearl barley, okra, broccoli, olive oil, rice vinegar, ginger, black pepper. Preparation: Heat the oven to 200°C and line a tray with parchment. Arrange the salmon, okra and broccoli on the tray. Brush with olive oil and season with ginger and black pepper. Bake for 12 to 15 minutes, until the salmon flakes and reaches 63°C. Warm the cooked barley with a splash of water. Finish the salmon and vegetables with rice vinegar and serve with the measured barley. Keep the fish portion to 120 grams.\n\nROW 3, COLUMN 2: Tokwa Mushroom Sisig Lettuce Cups. Ingredients: firm tofu, button mushrooms, red bell pepper, red onion, rice vinegar, low-sodium soy sauce, olive oil, lettuce leaves, brown rice, black pepper. Preparation: Pat the tofu dry, crumble it, and brown it in a nonstick pan with half of the olive oil. Add the remaining oil and mushrooms, cooking until their moisture evaporates. Stir in the bell pepper and red onion and cook for two minutes so they retain some crunch. Remove from heat and mix in the rice vinegar, low-sodium soy sauce and black pepper. Spoon into lettuce leaves and serve with one-third cup cooked brown rice. Do not add mayonnaise or processed meat.\n\nROW 3, COLUMN 3: Vegetable Kare-Kare with Brown Rice. Ingredients: firm tofu, eggplant, sitaw, pechay, squash, unsweetened peanut butter, brown rice flour, canola oil, garlic, onion, unsalted vegetable broth, brown rice. Preparation: Brown the cubed tofu in half of the canola oil and set aside. Sauté the garlic and onion in the remaining oil, then add the squash and unsalted broth. Whisk the peanut butter and brown rice flour with a little warm broth, then stir the mixture into the pot. Add the eggplant and sitaw and simmer until tender; return the tofu and fold in the pechay. Serve with one-third cup cooked brown rice. Skip bagoong to keep sodium lower.\n\nROW 3, COLUMN 4: Apple Oat-Bran Yogurt Cup. Ingredients: apple, plain low-fat Greek yogurt, oat bran, ground flaxseed, cinnamon. Preparation: Dice the apple, keeping the peel for added fiber. Spoon the plain low-fat Greek yogurt into a bowl. Stir in the oat bran and ground flaxseed. Top with the apple and cinnamon and serve immediately without honey or syrup.\n\nROW 4, COLUMN 1: Green Papaya Cucumber Salad. Ingredients: shredded green papaya, cucumber, tomato, rice vinegar, unsalted roasted peanuts, olive oil, black pepper. Preparation: Combine the shredded green papaya, cucumber and tomato in a bowl. Whisk the rice vinegar, olive oil and black pepper. Toss the vegetables with the dressing and let them stand for five minutes. Top with unsalted roasted peanuts and serve chilled. Do not add sugar, fish sauce or bagoong.\n\nROW 4, COLUMN 2: Soy Cacao Chia Pudding. Ingredients: unsweetened soy milk, chia seeds, unsweetened cocoa powder, mixed berries, cinnamon, vanilla extract. Preparation: Whisk the soy milk, chia seeds, cocoa powder, cinnamon and vanilla until no cocoa lumps remain. Rest for five minutes, whisk again, then cover. Refrigerate for at least four hours or overnight. Stir before serving and top with the mixed berries. Keep it unsweetened; do not add syrup or condensed milk.\n\nROW 4, COLUMN 3: Garlic-Herb Grilled Chicken Bowl. Ingredients: skinless chicken breast, cooked tri-color quinoa, broccoli, cherry tomatoes, red onion, rice vinegar, apple cider vinegar, olive oil, garlic, fresh parsley, dried oregano, black pepper. Preparation: Combine the sliced red onion with the apple cider vinegar and one tablespoon of water. Set aside for at least 15 minutes to quick-pickle without added sugar. Coat the chicken with one tablespoon rice vinegar, half of the olive oil, oregano and black pepper. Grill over medium-high heat for five to six minutes per side, until the center reaches 74°C, then rest and slice. Roast the broccoli and cherry tomatoes at 210°C with a light coating of the remaining oil for 12 to 15 minutes. Whisk the remaining rice vinegar with the minced garlic, parsley and any remaining olive oil to make the garlic-herb vinaigrette. Add the cooked tri-color quinoa to a bowl, then arrange the roasted vegetables, drained pickled onion and sliced charred chicken on top. Drizzle with the garlic-herb vinaigrette. Brown rice may replace the quinoa in the same measured portion.\n\nROW 4, COLUMN 4: Miso Glazed Salmon Fillet. Ingredients: salmon fillet, cooked brown rice, shelled edamame, shredded purple cabbage, cucumber, white miso paste, low-sodium soy sauce, rice vinegar, sesame oil, grated ginger, sesame seeds. Preparation: Whisk the white miso, low-sodium soy sauce, half of the rice vinegar, sesame oil and grated ginger into a smooth sesame-ginger glaze. Pat the salmon dry and brush it with half of the glaze. Heat a nonstick skillet over medium-high heat. Cook the salmon skin-side down for four to five minutes, turn, add the remaining glaze, and cook until the center reaches 63°C. Steam the shelled edamame until hot. Use a vegetable peeler to cut the cucumber into ribbons. Season the warm brown rice with the remaining rice vinegar, add it to a bowl, and arrange the edamame, shredded purple cabbage and cucumber ribbons around it. Place the pan-roasted salmon fillet on top, spoon over the warm glaze, and finish with sesame seeds.",
+      "promptRecord": "Exact prompt retained from generation call.",
+      "editPrompt": null,
+      "width": 1254,
+      "height": 1254,
+      "columns": 4,
+      "rows": 4,
+      "cellWidth": 313.5,
+      "cellHeight": 313.5,
+      "encoding": "WebP quality 88; original geometry unchanged.",
+      "sizeBytes": 414908,
+      "sha256": "a4c12bacc730ca8ab09d94063f29bd40737e7a9c9e8865efe94f656141287bd7",
+      "cells": [
+        {
+          "recipeIndex": 17,
+          "row": 0,
+          "column": 0,
+          "status": "reviewed",
+          "review": "Visually reviewed dish form, primary proteins/carbohydrates and side ingredients against actual recipe; artificial illustration, not actual meal photography.",
+          "index": 17,
+          "name": "Healthy Rice Cake",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 18,
+          "row": 0,
+          "column": 1,
+          "status": "reviewed",
+          "review": "Visually reviewed dish form, primary proteins/carbohydrates and side ingredients against actual recipe; artificial illustration, not actual meal photography.",
+          "index": 18,
+          "name": "Healthy Chicken Adobo",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 19,
+          "row": 0,
+          "column": 2,
+          "status": "reviewed",
+          "review": "Visually reviewed dish form, primary proteins/carbohydrates and side ingredients against actual recipe; artificial illustration, not actual meal photography.",
+          "index": 19,
+          "name": "Savory Oatmeal with Tofu & Pechay",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 20,
+          "row": 0,
+          "column": 3,
+          "status": "reviewed",
+          "review": "Visually reviewed dish form, primary proteins/carbohydrates and side ingredients against actual recipe; artificial illustration, not actual meal photography.",
+          "index": 20,
+          "name": "Cherry Chia Yogurt Oats",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 21,
+          "row": 1,
+          "column": 0,
+          "status": "reviewed",
+          "review": "Visually reviewed dish form, primary proteins/carbohydrates and side ingredients against actual recipe; artificial illustration, not actual meal photography.",
+          "index": 21,
+          "name": "Malunggay Egg-White Omelet & Kamote",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 22,
+          "row": 1,
+          "column": 1,
+          "status": "reviewed",
+          "review": "Visually reviewed dish form, primary proteins/carbohydrates and side ingredients against actual recipe; artificial illustration, not actual meal photography.",
+          "index": 22,
+          "name": "Monggo Malunggay Bowl",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 23,
+          "row": 1,
+          "column": 2,
+          "status": "reviewed",
+          "review": "Visually reviewed dish form, primary proteins/carbohydrates and side ingredients against actual recipe; artificial illustration, not actual meal photography.",
+          "index": 23,
+          "name": "Tofu Pinakbet with Adlai",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 24,
+          "row": 1,
+          "column": 3,
+          "status": "reviewed",
+          "review": "Visually reviewed dish form, primary proteins/carbohydrates and side ingredients against actual recipe; artificial illustration, not actual meal photography.",
+          "index": 24,
+          "name": "Lean Chicken Tinola Bowl",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 25,
+          "row": 2,
+          "column": 0,
+          "status": "reviewed",
+          "review": "Visually reviewed dish form, primary proteins/carbohydrates and side ingredients against actual recipe; artificial illustration, not actual meal photography.",
+          "index": 25,
+          "name": "Ginger Salmon with Okra & Barley",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 26,
+          "row": 2,
+          "column": 1,
+          "status": "reviewed",
+          "review": "Visually reviewed dish form, primary proteins/carbohydrates and side ingredients against actual recipe; artificial illustration, not actual meal photography.",
+          "index": 26,
+          "name": "Tokwa Mushroom Sisig Lettuce Cups",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 27,
+          "row": 2,
+          "column": 2,
+          "status": "reviewed",
+          "review": "Visually reviewed dish form, primary proteins/carbohydrates and side ingredients against actual recipe; artificial illustration, not actual meal photography.",
+          "index": 27,
+          "name": "Vegetable Kare-Kare with Brown Rice",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 28,
+          "row": 2,
+          "column": 3,
+          "status": "reviewed",
+          "review": "Visually reviewed dish form, primary proteins/carbohydrates and side ingredients against actual recipe; artificial illustration, not actual meal photography.",
+          "index": 28,
+          "name": "Apple Oat-Bran Yogurt Cup",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 29,
+          "row": 3,
+          "column": 0,
+          "status": "reviewed",
+          "review": "Visually reviewed dish form, primary proteins/carbohydrates and side ingredients against actual recipe; artificial illustration, not actual meal photography.",
+          "index": 29,
+          "name": "Green Papaya Cucumber Salad",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 30,
+          "row": 3,
+          "column": 1,
+          "status": "reviewed",
+          "review": "Visually reviewed dish form, primary proteins/carbohydrates and side ingredients against actual recipe; artificial illustration, not actual meal photography.",
+          "index": 30,
+          "name": "Soy Cacao Chia Pudding",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 31,
+          "row": 3,
+          "column": 2,
+          "status": "reviewed",
+          "review": "Visually reviewed dish form, primary proteins/carbohydrates and side ingredients against actual recipe; artificial illustration, not actual meal photography.",
+          "index": 31,
+          "name": "Garlic-Herb Grilled Chicken Bowl",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 32,
+          "row": 3,
+          "column": 3,
+          "status": "reviewed",
+          "review": "Visually reviewed dish form, primary proteins/carbohydrates and side ingredients against actual recipe; artificial illustration, not actual meal photography.",
+          "index": 32,
+          "name": "Miso Glazed Salmon Fillet",
+          "kind": "illustration"
+        }
+      ],
+      "limitations": "AI-generated recipe illustration, not a photograph of a cooked recipe. Quantities, nut counts and exact portions follow the written recipe."
+    },
+    {
+      "sheet": 3,
+      "path": "/assets/food/recipe-atlas-03.webp",
+      "kind": "illustration",
+      "label": "Recipe illustration",
+      "reviewedAt": "2026-11-07",
+      "tool": "image_gen built-in",
+      "prompt": "Create ONE complete production food-image sprite atlas for a recipe planner. This is a labeled-in-app generated RECIPE ILLUSTRATION, not documentary photography. Canvas target 2048x2048. EXACTLY 4 equal columns and 4 equal rows, 16 equally sized square tiles. No gaps, no visible divider lines, no text, no numbers, no logos. Realistic editorial food photography style, clean warm ivory background. Each whole plate, bowl or glass is centered in middle80% of its tile, contained fully, nothing overlaps adjacent tile. Follow the exact left-to-right, top-to-bottom recipe order below. Faithfully depict each recipe's protein, carbohydrate, vegetables, preparation and sides, using ONLY its ingredients. No decorative garnish or additional foods: NO citrus, lemon, lime, orange, calamansi, or grapefruit anywhere. No bread, fried eggs, sauces, syrup, or fruit unless explicitly listed for that cell. Drinks should be finished drinks in individual glass/cup without whole ingredient props cluttering cell. Primary subject of each tile is that specific finished recipe. All cells will be independently cropped via CSS, so keep a mathematically regular grid.\n\nRow 1 column 1: Mediterranean Falafel & Egg Bowl. Ingredients: 0.75 cup cooked chickpeas; 0.25 cup fresh parsley; 1 clove garlic; 0.5 tsp ground cumin; 1 tsp olive oil; 2  egg; 2 tbsp homemade hummus (chickpeas, tahini, garlic, rice vinegar, water); 2 cup mixed greens; 4 pc kalamata olives; 0.5 cup cucumber; 1 tbsp tahini; 1 tbsp rice vinegar; 0.25 tsp black pepper. Preparation: Heat the oven to 200°C and line a small baking tray. Pulse the chickpeas, parsley, garlic, cumin and black pepper until crumbly. Shape into three small patties, brush with olive oil, and bake for 18 to 20 minutes, turning halfway. Lower the eggs into gently boiling water for seven minutes, then transfer them to ice water. Peel and halve once cool enough to handle. Finely grate half of the cucumber and whisk it with the tahini, rice vinegar and one to two tablespoons of water until pourable. Slice the remaining cucumber. Fill a bowl with the mixed greens and sliced cucumber, then add the baked falafel patties, soft-boiled eggs, homemade hummus (blend chickpeas, tahini, garlic, rice vinegar and water) and kalamata olives. Drizzle with the cucumber-tahini dressing and serve immediately.\n\nRow 1 column 2: Bangus Sisig. Ingredients: 120 g boneless bangus fillet; 0.33 cup cooked brown rice; 0.25 cup red onion; 0.5 cup red bell pepper; 1 clove garlic; 1 pc green chili; 1 tbsp rice vinegar; 1 tsp olive oil; 2 pc lettuce leaves; 0.25 tsp black pepper. Preparation: Check the bangus fillet for pin bones, pat dry, and season with black pepper. Heat a nonstick pan over medium heat with half the olive oil. Cook the bangus for about five to seven minutes per side, until the thickest part reaches 63°C. Remove from the pan and flake into bite-sized pieces, checking again for bones. Add the remaining oil, garlic, red onion, bell pepper and sliced green chili to the pan. Cook for two to three minutes until fragrant but still crisp. Return the flaked bangus to the pan and toss briefly until the edges brown. Turn off the heat and stir in the rice vinegar. Serve the sisig on the lettuce leaves with one-third cup cooked brown rice. Skip mayonnaise and salty seasoning; add fresh herbs to taste.\n\nRow 1 column 3: Garlic yogurt chicken grain bowl. Ingredients: 120 g cooked grilled chicken; 150 g cooked brown rice; 0.5 cup cucumber; 1 cup lettuce; 0.25 cup carrots; 1 tsp rice vinegar; 60 g plain yogurt; 1 clove garlic; 10 g Nutrilite All Plant Protein Powder. Preparation: Grill chicken to 74°C and rest before slicing. Plate brown rice, washed vegetables and chicken. Whisk 10 g plant protein into cold yogurt with garlic and rice vinegar; drizzle before serving.\n\nRow 1 column 4: Garden tofu rice bowl. Ingredients: 150 g firm tofu; 150 g cooked brown rice; 0.5 cup cucumber; 0.25 cup carrots; 1 cup leafy greens; 1 tbsp tahini; 1 tsp rice vinegar; 10 g Nutrilite All Plant Protein Powder. Preparation: Sear tofu until golden; cook rice and wash vegetables. Whisk tahini, rice vinegar and a little water; mix in 10 g plant protein away from heat. Arrange in a bowl and serve the dressing cold.\n\nRow 2 column 1: Chicken & greens pita. Ingredients: 1 pc whole wheat pita; 100 g cooked chicken; 1 cup lettuce; 0.25 cup tomato; 0.25 cup cucumber; 60 g plain yogurt; 1 tbsp fresh herbs; 10 g Nutrilite All Plant Protein Powder. Preparation: Cook chicken to 74°C; warm the pita separately. Blend 10 g plant protein into chilled yogurt with herbs. Fill pita with vegetables and chicken, then add the cold sauce.\n\nRow 2 column 2: Mango vanilla overnight oats. Ingredients: 40 g rolled oats; 250 ml unsweetened soy milk; 25 g Herbalife Formula 1 vanilla shake mix; 80 g mango; 1 tbsp pumpkin seeds. Preparation: Use one serving of a locally available vanilla Formula 1 variant according to its Philippine label; 25 g is a planning amount. Stir oats and shake mix into chilled soy milk. Refrigerate at 5°C or below overnight; top with mango and seeds.\n\nRow 2 column 3: Berry yogurt breakfast cup. Ingredients: 180 g plain unsweetened yogurt; 25 g Herbalife Formula 1 vanilla shake mix; 60 g mixed berries; 25 g rolled oats. Preparation: Use one serving of a locally available vanilla Formula 1 variant according to its Philippine label; 25 g is a planning amount. Whisk the mix into chilled yogurt following the selected pack directions. Layer with washed berries and oats; keep chilled.\n\nRow 2 column 4: Chocolate banana blend. Ingredients: 25 g Herbalife Formula 1 chocolate shake mix; 250 ml unsweetened soy milk; 0.5 pc banana; 4 cubes ice. Preparation: Use one serving of a locally available chocolate Formula 1 variant according to its Philippine label; 25 g is a planning amount. Add cold soy milk, banana, powder and ice to a clean blender. Blend smooth and serve immediately.\n\nRow 3 column 1: Mango barley cooler. Ingredients: 3 g Santé Barley no-added-sweetener powder; 100 g mango; 220 ml chilled water; 4 cubes ice. Preparation: Blend mango and chilled water until smooth. Mix in 3 g barley powder following the purchased pack directions; serve cold over ice.\n\nRow 3 column 2: Cucumber mint green tea. Ingredients: 3 g Santé Barley no-added-sweetener powder; 200 ml brewed green tea; 0.25 cup cucumber; 4 leaf mint; 4 cubes ice. Preparation: Brew green tea, cool rapidly and refrigerate. Stir in 3 g barley powder according to purchased pack directions. Add cucumber and mint; pour over ice.\n\nRow 3 column 3: Green Apple Cucumber Juice. Ingredients: 1 pc cucumber; 1 pc green apple; 1 pc celery stalk; 1 cup spinach; 0.5 inch fresh ginger. Preparation: Wash all produce, core the apple and chop the cucumber and celery. Blend with the spinach and ginger, adding a splash of cold water as needed. Pour into clean glasses and keep unused portions chilled. Keep the pulp and do not add sugar or syrup. Divide into 2 small servings; serve promptly and refrigerate any remainder.\n\nRow 3 column 4: Beet Carrot Apple Juice. Ingredients: 1 pc beetroot; 1 pc carrot; 1 pc apple; 0.5 inch fresh ginger. Preparation: Wash and chop the beetroot, carrot and ginger; core the apple. Blend until smooth with a splash of cold water as needed. Pour into clean glasses and keep unused portions chilled. Keep the pulp and do not add sugar or syrup. Divide into 2 small servings; serve promptly and refrigerate any remainder.\n\nRow 4 column 1: Apple Pear Ginger Juice. Ingredients: 1 pc apple; 1 pc pear; 0.5 inch fresh ginger; 0.5 cup cold water. Preparation: Wash and core the apple and pear, then chop with the ginger. Blend the fruit, ginger and cold water until smooth. Pour into clean glasses and keep unused portions chilled. Keep the pulp and do not add sugar or syrup. Divide into 2 small servings; serve promptly and refrigerate any remainder.\n\nRow 4 column 2: Pineapple Cucumber Mint Juice. Ingredients: 1 slice pineapple; 1 pc cucumber; 8 pc mint leaves; 0.5 inch fresh ginger. Preparation: Wash the cucumber, mint and ginger; chop the pineapple and cucumber. Blend all ingredients with a splash of cold water as needed. Pour into clean glasses and keep unused portions chilled. Keep the pulp and do not add sugar or syrup. Divide into 2 small servings; serve promptly and refrigerate any remainder.\n\nRow 4 column 3: Watermelon Cucumber Mint Juice. Ingredients: 2 cup watermelon; 0.5 pc cucumber; 8 pc mint leaves. Preparation: Wash the cucumber and mint and remove watermelon seeds. Chop and blend until smooth; the watermelon supplies the liquid. Pour into clean glasses and keep unused portions chilled. Keep the pulp and do not add sugar or syrup. Divide into 2 small servings; serve promptly and refrigerate any remainder.\n\nRow 4 column 4: Carrot Turmeric Ginger Juice. Ingredients: 1 pc carrot; 0.5 pc apple; 0.5 inch fresh turmeric; 0.5 inch fresh ginger; 1 pinch black pepper; 0.5 cup cold water. Preparation: Wash and chop the carrot, turmeric and ginger; core the apple. Protect pale surfaces from turmeric stains. Blend all ingredients until smooth. One-half teaspoon ground turmeric can replace fresh turmeric. Pour into clean glasses and keep unused portions chilled. Keep the pulp and do not add sugar or syrup. Divide into 1 small serving; serve promptly and refrigerate any remainder.",
+      "promptRecord": "Exact prompt retained from generation call.",
+      "editPrompt": null,
+      "width": 1254,
+      "height": 1254,
+      "columns": 4,
+      "rows": 4,
+      "cellWidth": 313.5,
+      "cellHeight": 313.5,
+      "encoding": "WebP quality 88; original geometry unchanged.",
+      "sizeBytes": 274162,
+      "sha256": "5ab5d9f2e5e895b080351c7ef4c26dda1e5a3aa97991a77d394163e4a0a93d9d",
+      "cells": [
+        {
+          "index": 33,
+          "name": "Mediterranean Falafel & Egg Bowl",
+          "row": 0,
+          "column": 0,
+          "status": "reviewed",
+          "review": "Visible main protein/carbohydrate, prepared form and listed sides checked against recipe. No visible citrus or unrelated garnish. Portions are illustrations, not measured serving sizes.",
+          "kind": "illustration"
+        },
+        {
+          "index": 34,
+          "name": "Bangus Sisig",
+          "row": 0,
+          "column": 1,
+          "status": "reviewed",
+          "review": "Visible main protein/carbohydrate, prepared form and listed sides checked against recipe. No visible citrus or unrelated garnish. Portions are illustrations, not measured serving sizes.",
+          "kind": "illustration"
+        },
+        {
+          "index": 35,
+          "name": "Garlic yogurt chicken grain bowl",
+          "row": 0,
+          "column": 2,
+          "status": "reviewed",
+          "review": "Visible main protein/carbohydrate, prepared form and listed sides checked against recipe. No visible citrus or unrelated garnish. Portions are illustrations, not measured serving sizes.",
+          "kind": "illustration"
+        },
+        {
+          "index": 36,
+          "name": "Garden tofu rice bowl",
+          "row": 0,
+          "column": 3,
+          "status": "reviewed",
+          "review": "Visible main protein/carbohydrate, prepared form and listed sides checked against recipe. No visible citrus or unrelated garnish. Portions are illustrations, not measured serving sizes.",
+          "kind": "illustration"
+        },
+        {
+          "index": 37,
+          "name": "Chicken & greens pita",
+          "row": 1,
+          "column": 0,
+          "status": "reviewed",
+          "review": "Visible main protein/carbohydrate, prepared form and listed sides checked against recipe. No visible citrus or unrelated garnish. Portions are illustrations, not measured serving sizes.",
+          "kind": "illustration"
+        },
+        {
+          "index": 38,
+          "name": "Mango vanilla overnight oats",
+          "row": 1,
+          "column": 1,
+          "status": "reviewed",
+          "review": "Visible main protein/carbohydrate, prepared form and listed sides checked against recipe. No visible citrus or unrelated garnish. Portions are illustrations, not measured serving sizes.",
+          "kind": "illustration"
+        },
+        {
+          "index": 39,
+          "name": "Berry yogurt breakfast cup",
+          "row": 1,
+          "column": 2,
+          "status": "reviewed",
+          "review": "Visible main protein/carbohydrate, prepared form and listed sides checked against recipe. No visible citrus or unrelated garnish. Portions are illustrations, not measured serving sizes.",
+          "kind": "illustration"
+        },
+        {
+          "index": 40,
+          "name": "Chocolate banana blend",
+          "row": 1,
+          "column": 3,
+          "status": "reviewed",
+          "review": "Visible main protein/carbohydrate, prepared form and listed sides checked against recipe. No visible citrus or unrelated garnish. Portions are illustrations, not measured serving sizes.",
+          "kind": "illustration"
+        },
+        {
+          "index": 41,
+          "name": "Mango barley cooler",
+          "row": 2,
+          "column": 0,
+          "status": "reviewed",
+          "review": "Visible main protein/carbohydrate, prepared form and listed sides checked against recipe. No visible citrus or unrelated garnish. Portions are illustrations, not measured serving sizes.",
+          "kind": "illustration"
+        },
+        {
+          "index": 42,
+          "name": "Cucumber mint green tea",
+          "row": 2,
+          "column": 1,
+          "status": "reviewed",
+          "review": "Visible main protein/carbohydrate, prepared form and listed sides checked against recipe. No visible citrus or unrelated garnish. Portions are illustrations, not measured serving sizes.",
+          "kind": "illustration"
+        },
+        {
+          "index": 43,
+          "name": "Green Apple Cucumber Juice",
+          "row": 2,
+          "column": 2,
+          "status": "reviewed",
+          "review": "Visible main protein/carbohydrate, prepared form and listed sides checked against recipe. No visible citrus or unrelated garnish. Portions are illustrations, not measured serving sizes.",
+          "kind": "illustration"
+        },
+        {
+          "index": 44,
+          "name": "Beet Carrot Apple Juice",
+          "row": 2,
+          "column": 3,
+          "status": "reviewed",
+          "review": "Visible main protein/carbohydrate, prepared form and listed sides checked against recipe. No visible citrus or unrelated garnish. Portions are illustrations, not measured serving sizes.",
+          "kind": "illustration"
+        },
+        {
+          "index": 45,
+          "name": "Apple Pear Ginger Juice",
+          "row": 3,
+          "column": 0,
+          "status": "reviewed",
+          "review": "Visible main protein/carbohydrate, prepared form and listed sides checked against recipe. No visible citrus or unrelated garnish. Portions are illustrations, not measured serving sizes.",
+          "kind": "illustration"
+        },
+        {
+          "index": 46,
+          "name": "Pineapple Cucumber Mint Juice",
+          "row": 3,
+          "column": 1,
+          "status": "reviewed",
+          "review": "Visible main protein/carbohydrate, prepared form and listed sides checked against recipe. No visible citrus or unrelated garnish. Portions are illustrations, not measured serving sizes.",
+          "kind": "illustration"
+        },
+        {
+          "index": 47,
+          "name": "Watermelon Cucumber Mint Juice",
+          "row": 3,
+          "column": 2,
+          "status": "reviewed",
+          "review": "Visible main protein/carbohydrate, prepared form and listed sides checked against recipe. No visible citrus or unrelated garnish. Portions are illustrations, not measured serving sizes.",
+          "kind": "illustration"
+        },
+        {
+          "index": 48,
+          "name": "Carrot Turmeric Ginger Juice",
+          "row": 3,
+          "column": 3,
+          "status": "reviewed",
+          "review": "Visible main protein/carbohydrate, prepared form and listed sides checked against recipe. No visible citrus or unrelated garnish. Portions are illustrations, not measured serving sizes.",
+          "kind": "illustration"
+        }
+      ],
+      "limitations": "AI-generated recipe illustration, not a photograph of a cooked recipe. Quantities, nut counts and exact portions follow the written recipe."
+    },
+    {
+      "sheet": 4,
+      "path": "/assets/food/recipe-atlas-04.webp",
+      "kind": "illustration",
+      "label": "Recipe illustration",
+      "reviewedAt": "2026-11-07",
+      "tool": "image_gen built-in",
+      "prompt": "Create ONE production food illustration sprite atlas, exact 4 columns by 4 rows of equal square cells, reading order left to right then top to bottom. Entire output square 2048x2048 pixels or greater, no gutters, gaps, borders, labels, letters, words, numerals, watermarks, or extra dishes. Consistent warm off-white background throughout, clean realistic editorial FOOD ILLUSTRATION style, not a camera photograph. Each cell shows a single complete dish, bowl, plate, pastry or drink centered fully within its cell with comfortable internal margin, viewed from a slight overhead angle, distinct and readily recognizable at thumbnail size. Nothing crosses cell boundaries. Exactly16 dishes in the specified arrangement. Render each dish according to its actual ingredient list and preparation below: match protein, carbohydrate, color, cooking method, and side vegetables, add no unlisted ingredient or garnish. Absolutely NO citrus of any kind, NO lemons/limes/oranges/cal​amansi, NO garnish or decorations not in that cell's ingredients. Do not swap recipes between cells. For fish show the specified species fillet, for poultry skinless cooked meat, for whole-grain dishes use visibly brown whole-grain rice/pasta. Do not add meat to vegetarian recipes. Do not render instructions or text.\n\nCELL CONTENTS (numbers are directions only; never draw them):\nROW 1, COLUMN 1: Oats, yogurt & banana. Ingredients: rolled oats, plain unsweetened yogurt, banana, unsalted nuts, water. Preparation: Cook a portion of oats in water or your usual milk. Top with plain yogurt, sliced banana and a small amount of nuts. Adjust portions to appetite and your care plan.\n\nROW 1, COLUMN 2: Egg & vegetable breakfast. Ingredients: egg, tomato, leafy vegetables, whole-grain bread, olive oil. Preparation: Cook eggs with tomatoes and greens using a small amount of oil. Serve with whole-grain bread or a measured portion of rice. Season lightly and add pepper or herbs.\n\nROW 1, COLUMN 3: Chicken tinola bowl. Ingredients: skinless chicken, sayote, malunggay, ginger, cooked brown rice, water. Preparation: Simmer ginger and chicken until the chicken is thoroughly cooked. Add sayote and malunggay; cook until tender. Serve with rice. Keep sauces and salty condiments modest.\n\nROW 1, COLUMN 4: Tofu & vegetable rice bowl. Ingredients: tofu, cabbage, carrot, cooked brown rice, garlic, olive oil. Preparation: Pan-cook cubed tofu with a small amount of oil. Add garlic and chopped cabbage and carrots. Serve over rice; use a modest amount of your preferred sauce.\n\nROW 2, COLUMN 1: Vegetable monggo. Ingredients: dry mung beans, malunggay, tomato, garlic, cooked brown rice, water. Preparation: Simmer rinsed mung beans until fully tender. Cook garlic and tomatoes and add to the beans. Stir in malunggay and serve with a portion of rice.\n\nROW 2, COLUMN 2: Chicken & roasted vegetables. Ingredients: skinless chicken, squash, green beans, camote, rice vinegar. Preparation: Cook skinless chicken thoroughly with herbs and rice vinegar. Roast or steam squash, green beans and camote. Choose portions that match your appetite and nutrition plan.\n\nROW 2, COLUMN 3: Fruit & plain yogurt. Ingredients: papaya, plain unsweetened yogurt. Preparation: Slice washed papaya or another seasonal fruit. Serve with plain yogurt without sweetened syrup.\n\nROW 2, COLUMN 4: Carrot-Ginger Red Lentil Soup. Ingredients: carrot, red lentils, onion, garlic, fresh ginger, unsalted vegetable broth, olive oil, turmeric, rice vinegar. Preparation: Heat the olive oil and soften the onion, garlic and ginger for three minutes. Add the carrots, lentils, turmeric and broth; simmer for 24 to 28 minutes until tender. Blend until mostly smooth, leaving a little texture. Finish with rice vinegar and black pepper; do not add sugar.\n\nROW 3, COLUMN 1: Roasted Carrot & Chickpea Quinoa Bowl. Ingredients: carrot, cooked chickpeas, cooked quinoa, baby spinach, olive oil, rice vinegar, pumpkin seeds, ground cumin. Preparation: Heat the oven to 210°C. Toss carrots and chickpeas with half the oil and cumin; roast for 22 to 25 minutes. Layer quinoa and spinach in a bowl, then add the warm roasted vegetables. Dress with the remaining olive oil and rice vinegar and finish with pumpkin seeds.\n\nROW 3, COLUMN 2: Carrot Oat Breakfast Muffins. Ingredients: rolled oats, grated carrot, egg, ripe banana, low-fat milk, ground flaxseed, baking powder, cinnamon, olive oil. Preparation: Heat the oven to 180°C and lightly oil four muffin cups. Blend the oats into flour, then stir in flaxseed, baking powder and cinnamon. Mash the banana and whisk with the egg and milk; fold in the grated carrot and dry mixture. Divide among the cups and bake for 20 to 23 minutes; cool for five minutes before serving.\n\nROW 3, COLUMN 3: Salmon, Squash & Pechay Plate. Ingredients: salmon fillet, squash, pechay, cooked brown rice, olive oil, rice vinegar, garlic, black pepper. Preparation: Heat the oven to 200°C and place the squash on a lined tray with half the olive oil. Roast for 12 minutes, add the salmon, and cook for another 12 to 14 minutes until the center reaches 63°C. Sauté the garlic and pechay in the remaining oil until just wilted. Serve with brown rice and rice vinegar.\n\nROW 3, COLUMN 4: Ginger Chamomile Tea. Ingredients: dried chamomile flowers, dried peppermint leaves, fennel seeds, dried ginger, boiling water, fresh ginger. Preparation: Combine chamomile, peppermint, fennel and ginger in a mug. Pour over boiling water, cover and steep for 10 minutes. Strain, add the fresh ginger slice and serve hot or chilled without sweetener.\n\nROW 4, COLUMN 1: Chicken Oyakodon. Ingredients: cooked brown rice, skinless chicken thigh, onion, low-sodium dashi stock, low-sodium soy sauce, mirin, egg, pechay. Preparation: Warm the chicken and onion in a covered skillet until the chicken begins to brown. Add dashi, soy sauce and mirin; simmer until the chicken reaches 74°C. Pour in the beaten egg, cover and steam until set. Serve over brown rice with wilted pechay.\n\nROW 4, COLUMN 2: Caesar Salad. Ingredients: romaine lettuce, whole-grain croutons, plain Greek yogurt, anchovy fillet, grated parmesan, Dijon mustard, rice vinegar, garlic, black pepper. Preparation: Mash the anchovy and garlic, then whisk with yogurt, mustard, rice vinegar and pepper. Toss the romaine with the dressing. Add whole-grain croutons and a measured tablespoon of parmesan.\n\nROW 4, COLUMN 3: Seafood Linguine. Ingredients: whole-wheat linguine, shrimp, squid, mussels, cherry tomatoes, tomato paste, olive oil, garlic, chili flakes, fresh parsley. Preparation: Cook linguine until al dente and reserve a little pasta water. Sauté garlic in olive oil, add tomato paste and tomatoes, then loosen with pasta water. Add shrimp, squid and mussels; cover until the mussels open and discard any that stay closed. Toss with linguine and parsley and serve immediately.\n\nROW 4, COLUMN 4: Halo-Halo. Ingredients: ripe banana, jackfruit, cooked white beans, nata de coco, crushed ice, low-fat evaporated milk, ube yogurt, pandan jelly. Preparation: Chill the fruit, beans and milk. Layer banana, jackfruit, white beans, nata de coco and pandan jelly in a glass. Add crushed ice and evaporated milk, then finish with a small spoonful of ube yogurt.",
+      "promptRecord": "Exact prompt retained from generation call.",
+      "editPrompt": null,
+      "width": 1254,
+      "height": 1254,
+      "columns": 4,
+      "rows": 4,
+      "cellWidth": 313.5,
+      "cellHeight": 313.5,
+      "encoding": "WebP quality 88; original geometry unchanged.",
+      "sizeBytes": 413648,
+      "sha256": "b6e20edab52f100727421fd443931fd7c5b48120cfcaacb5a845cdaadd07f24c",
+      "cells": [
+        {
+          "recipeIndex": 49,
+          "row": 0,
+          "column": 0,
+          "status": "reviewed",
+          "review": "Visually checked against recipe's named dish, primary ingredients, preparation form and sides; synthetic illustration, not evidence of an actual prepared meal.",
+          "index": 49,
+          "name": "Oats, yogurt & banana",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 50,
+          "row": 0,
+          "column": 1,
+          "status": "reviewed",
+          "review": "Visually checked against recipe's named dish, primary ingredients, preparation form and sides; synthetic illustration, not evidence of an actual prepared meal.",
+          "index": 50,
+          "name": "Egg & vegetable breakfast",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 51,
+          "row": 0,
+          "column": 2,
+          "status": "reviewed",
+          "review": "Visually checked against recipe's named dish, primary ingredients, preparation form and sides; synthetic illustration, not evidence of an actual prepared meal.",
+          "index": 51,
+          "name": "Chicken tinola bowl",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 52,
+          "row": 0,
+          "column": 3,
+          "status": "reviewed",
+          "review": "Visually checked against recipe's named dish, primary ingredients, preparation form and sides; synthetic illustration, not evidence of an actual prepared meal.",
+          "index": 52,
+          "name": "Tofu & vegetable rice bowl",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 53,
+          "row": 1,
+          "column": 0,
+          "status": "reviewed",
+          "review": "Visually checked against recipe's named dish, primary ingredients, preparation form and sides; synthetic illustration, not evidence of an actual prepared meal.",
+          "index": 53,
+          "name": "Vegetable monggo",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 54,
+          "row": 1,
+          "column": 1,
+          "status": "reviewed",
+          "review": "Visually checked against recipe's named dish, primary ingredients, preparation form and sides; synthetic illustration, not evidence of an actual prepared meal.",
+          "index": 54,
+          "name": "Chicken & roasted vegetables",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 55,
+          "row": 1,
+          "column": 2,
+          "status": "reviewed",
+          "review": "Visually checked against recipe's named dish, primary ingredients, preparation form and sides; synthetic illustration, not evidence of an actual prepared meal.",
+          "index": 55,
+          "name": "Fruit & plain yogurt",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 56,
+          "row": 1,
+          "column": 3,
+          "status": "reviewed",
+          "review": "Visually checked against recipe's named dish, primary ingredients, preparation form and sides; synthetic illustration, not evidence of an actual prepared meal.",
+          "index": 56,
+          "name": "Carrot-Ginger Red Lentil Soup",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 57,
+          "row": 2,
+          "column": 0,
+          "status": "reviewed",
+          "review": "Visually checked against recipe's named dish, primary ingredients, preparation form and sides; synthetic illustration, not evidence of an actual prepared meal.",
+          "index": 57,
+          "name": "Roasted Carrot & Chickpea Quinoa Bowl",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 58,
+          "row": 2,
+          "column": 1,
+          "status": "reviewed",
+          "review": "Visually checked against recipe's named dish, primary ingredients, preparation form and sides; synthetic illustration, not evidence of an actual prepared meal.",
+          "index": 58,
+          "name": "Carrot Oat Breakfast Muffins",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 59,
+          "row": 2,
+          "column": 2,
+          "status": "reviewed",
+          "review": "Visually checked against recipe's named dish, primary ingredients, preparation form and sides; synthetic illustration, not evidence of an actual prepared meal.",
+          "index": 59,
+          "name": "Salmon, Squash & Pechay Plate",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 60,
+          "row": 2,
+          "column": 3,
+          "status": "reviewed",
+          "review": "Visually checked against recipe's named dish, primary ingredients, preparation form and sides; synthetic illustration, not evidence of an actual prepared meal.",
+          "index": 60,
+          "name": "Ginger Chamomile Tea",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 61,
+          "row": 3,
+          "column": 0,
+          "status": "reviewed",
+          "review": "Visually checked against recipe's named dish, primary ingredients, preparation form and sides; synthetic illustration, not evidence of an actual prepared meal.",
+          "index": 61,
+          "name": "Chicken Oyakodon",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 62,
+          "row": 3,
+          "column": 1,
+          "status": "reviewed",
+          "review": "Visually checked against recipe's named dish, primary ingredients, preparation form and sides; synthetic illustration, not evidence of an actual prepared meal.",
+          "index": 62,
+          "name": "Caesar Salad",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 63,
+          "row": 3,
+          "column": 2,
+          "status": "reviewed",
+          "review": "Visually checked against recipe's named dish, primary ingredients, preparation form and sides; synthetic illustration, not evidence of an actual prepared meal.",
+          "index": 63,
+          "name": "Seafood Linguine",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 64,
+          "row": 3,
+          "column": 3,
+          "status": "reviewed",
+          "review": "Visually checked against recipe's named dish, primary ingredients, preparation form and sides; synthetic illustration, not evidence of an actual prepared meal.",
+          "index": 64,
+          "name": "Halo-Halo",
+          "kind": "illustration"
+        }
+      ],
+      "limitations": "AI-generated recipe illustration, not a photograph of a cooked recipe. Quantities, nut counts and exact portions follow the written recipe."
+    },
+    {
+      "sheet": 5,
+      "path": "/assets/food/recipe-atlas-05.webp",
+      "kind": "illustration",
+      "label": "Recipe illustration",
+      "reviewedAt": "2026-11-07",
+      "tool": "image_gen built-in",
+      "prompt": "Create ONE production food illustration sprite atlas, exact 4 columns by 4 rows of equal square cells, reading order left to right then top to bottom. Entire output square 2048x2048 pixels or greater, no gutters, gaps, borders, labels, letters, words, numerals, watermarks, or extra dishes. Consistent warm off-white background throughout, clean realistic editorial FOOD ILLUSTRATION style, not a camera photograph. Each cell shows a single complete dish, bowl, plate, pastry or drink centered fully within its cell with comfortable internal margin, viewed from a slight overhead angle, distinct and readily recognizable at thumbnail size. Nothing crosses cell boundaries. Exactly16 dishes in the specified arrangement. Render each dish according to its actual ingredient list and preparation below: match protein, carbohydrate, color, cooking method, and side vegetables, add no unlisted ingredient or garnish. Absolutely NO citrus of any kind, NO lemons/limes/oranges/cal​amansi, NO garnish or decorations not in that cell's ingredients. Do not swap recipes between cells. For fish show the specified species fillet, for poultry skinless cooked meat, for whole-grain dishes use visibly brown whole-grain rice/pasta. Do not add meat to vegetarian recipes. Do not render instructions or text.\n\nCELL CONTENTS (numbers are directions only; never draw them):\nROW 1, COLUMN 1: Chicken Quesadilla. Ingredients: skinless chicken breast, whole-wheat tortilla, red bell pepper, green bell pepper, onion, reduced-fat cheddar, olive oil, ground cumin, paprika. Preparation: Season the chicken with cumin and paprika and cook until it reaches 74°C. Sauté the peppers and onion in olive oil. Fill the tortilla with chicken, vegetables and measured cheese, fold, and toast on both sides until crisp.\n\nROW 1, COLUMN 2: Napoleones Cream Puff. Ingredients: puff pastry, low-fat milk, egg yolk, cornstarch, butter, sugar, vanilla extract. Preparation: Bake a small puff-pastry rectangle at 200°C until golden and cool completely. Whisk milk, egg yolk, cornstarch, sugar and vanilla over low heat until thick; cool. Split the pastry and add a thin layer of custard. Serve one small piece as an occasional dessert.\n\nROW 1, COLUMN 3: Chicken Teriyaki. Ingredients: skinless chicken thigh, low-sodium soy sauce, pineapple juice, rice vinegar, fresh ginger, garlic, cornstarch, broccoli, cooked brown rice. Preparation: Whisk soy sauce, pineapple juice, vinegar, ginger, garlic and cornstarch. Cook the chicken in a nonstick pan until nearly done, then add the sauce and simmer until it reaches 74°C. Steam the broccoli and serve with the chicken and measured brown rice.\n\nROW 1, COLUMN 4: Chocolate Chip Ice Cream. Ingredients: plain Greek yogurt, ripe banana, mini dark chocolate chips, vanilla extract, peppermint extract. Preparation: Blend the yogurt, frozen banana, vanilla and peppermint until smooth. Fold in the dark chocolate chips. Freeze for 60 to 90 minutes and serve a half-cup portion.\n\nROW 2, COLUMN 1: Garden Salad. Ingredients: romaine lettuce, endive, grape tomatoes, carrot, cucumber, radish, red onion, black olives, homemade honey mustard dressing (Dijon mustard, honey, rice vinegar, olive oil). Preparation: Wash and dry all vegetables. Combine the greens, tomatoes, carrot, cucumber, radish, onion and olives. Toss with a measured tablespoon of dressing just before serving.\n\nROW 2, COLUMN 2: Mango Cheesecake. Ingredients: plain Greek yogurt, light cream cheese, fresh mango, crushed graham crackers, melted butter, unflavored gelatin, honey. Preparation: Mix the graham crumbs and butter and press into a small ramekin. Blend yogurt, cream cheese, honey and half the mango. Dissolve gelatin as directed, mix it into the filling, and spoon over the crust. Top with remaining mango and chill until set.\n\nROW 2, COLUMN 3: Watermelon Bingsu. Ingredients: shaved ice, watermelon, low-fat milk, blueberries, chia seeds. Preparation: Shave or finely crush the ice into a chilled bowl. Cover with watermelon and blueberries. Drizzle with low-fat milk, sprinkle with chia seeds and serve immediately.\n\nROW 2, COLUMN 4: Salmon & Spinach with Tartar Cream. Ingredients: salmon fillet, spinach, plain Greek yogurt, capers, rice vinegar, olive oil. Preparation: Bake the salmon at 200°C until it reaches 63°C. Wilt the spinach in olive oil. Mix yogurt, capers and rice vinegar for the tartar cream and spoon over the fish.\n\nROW 3, COLUMN 1: Superhealthy Salmon Burgers. Ingredients: salmon fillet, rolled oats, green onion, rice vinegar, whole-grain bun, lettuce, tomato. Preparation: Pulse salmon with oats, green onion and rice vinegar and form a patty. Cook in a nonstick pan until the center reaches 63°C. Serve in the whole-grain bun with lettuce and tomato.\n\nROW 3, COLUMN 2: Salmon Egg-Fried Rice. Ingredients: salmon fillet, cooked brown rice, egg, carrot, green peas, sesame oil, low-sodium soy sauce. Preparation: Flake cooked salmon into large pieces. Stir-fry carrot and peas in sesame oil, then add rice. Push aside, scramble the egg, fold in salmon and finish with low-sodium soy sauce.\n\nROW 3, COLUMN 3: Cilantro Tilapia with Spinach & Tomatoes. Ingredients: tilapia fillet, spinach, tomato, cilantro, rice vinegar, olive oil. Preparation: Season tilapia with pepper and rice vinegar. Pan-cook in half the oil until opaque and the center reaches 63°C. Wilt spinach and tomatoes in the remaining oil and finish with cilantro.\n\nROW 3, COLUMN 4: Chicken, Red Pepper & Almond Traybake. Ingredients: skinless chicken breast, red bell pepper, red onion, sweet potato, almonds, olive oil, paprika. Preparation: Heat the oven to 210°C. Toss chicken, pepper, onion and sweet potato with oil and paprika. Roast for 25 to 30 minutes until chicken reaches 74°C; add almonds for the final five minutes.\n\nROW 4, COLUMN 1: Honey-Soy Chicken with Sesame Broccoli. Ingredients: skinless chicken breast, broccoli, low-sodium soy sauce, honey, sesame oil, sesame seeds, fresh ginger. Preparation: Whisk soy sauce, honey, sesame oil and ginger. Cook the chicken until browned, add the sauce and simmer until it reaches 74°C. Steam broccoli and serve with the chicken and sesame seeds.\n\nROW 4, COLUMN 2: Herb-Yogurt Chicken Flatbreads. Ingredients: skinless chicken breast, whole-wheat flatbread, plain Greek yogurt, rice vinegar, lettuce, cucumber, tomato. Preparation: Marinate chicken with half the yogurt and rice vinegar for 15 minutes. Cook until the center reaches 74°C and slice. Fill the flatbread with lettuce, cucumber, tomato, chicken and remaining yogurt.\n\nROW 4, COLUMN 3: Caper Chicken Piccata. Ingredients: skinless chicken breast, whole-wheat flour, rice vinegar, capers, unsalted chicken broth, olive oil, green beans. Preparation: Lightly coat the chicken in flour and brown it in olive oil. Add broth, rice vinegar and capers and simmer until chicken reaches 74°C. Serve with steamed green beans.\n\nROW 4, COLUMN 4: Chocolate & Berry Mousse Pots. Ingredients: plain Greek yogurt, unsweetened cocoa powder, mixed berries, honey, chia seeds. Preparation: Whisk yogurt, cocoa and honey until smooth. Fold in half the berries and chia seeds. Divide into small pots, chill for 20 minutes and top with remaining berries.",
+      "promptRecord": "Exact prompt retained from generation call.",
+      "editPrompt": null,
+      "width": 1254,
+      "height": 1254,
+      "columns": 4,
+      "rows": 4,
+      "cellWidth": 313.5,
+      "cellHeight": 313.5,
+      "encoding": "WebP quality 88; original geometry unchanged.",
+      "sizeBytes": 381060,
+      "sha256": "3b628ca19fa536d024e76012793d1c74bcf78bdd2b2ea5aa374bb6e707672895",
+      "cells": [
+        {
+          "recipeIndex": 65,
+          "row": 0,
+          "column": 0,
+          "status": "reviewed",
+          "review": "Visually checked against recipe's named dish, primary ingredients, preparation form and sides; synthetic illustration, not evidence of an actual prepared meal.",
+          "index": 65,
+          "name": "Chicken Quesadilla",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 66,
+          "row": 0,
+          "column": 1,
+          "status": "reviewed",
+          "review": "Visually checked against recipe's named dish, primary ingredients, preparation form and sides; synthetic illustration, not evidence of an actual prepared meal.",
+          "index": 66,
+          "name": "Napoleones Cream Puff",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 67,
+          "row": 0,
+          "column": 2,
+          "status": "reviewed",
+          "review": "Visually checked against recipe's named dish, primary ingredients, preparation form and sides; synthetic illustration, not evidence of an actual prepared meal.",
+          "index": 67,
+          "name": "Chicken Teriyaki",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 68,
+          "row": 0,
+          "column": 3,
+          "status": "reviewed",
+          "review": "Visually checked against recipe's named dish, primary ingredients, preparation form and sides; synthetic illustration, not evidence of an actual prepared meal.",
+          "index": 68,
+          "name": "Chocolate Chip Ice Cream",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 69,
+          "row": 1,
+          "column": 0,
+          "status": "reviewed",
+          "review": "Visually checked against recipe's named dish, primary ingredients, preparation form and sides; synthetic illustration, not evidence of an actual prepared meal.",
+          "index": 69,
+          "name": "Garden Salad",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 70,
+          "row": 1,
+          "column": 1,
+          "status": "reviewed",
+          "review": "Visually checked against recipe's named dish, primary ingredients, preparation form and sides; synthetic illustration, not evidence of an actual prepared meal.",
+          "index": 70,
+          "name": "Mango Cheesecake",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 71,
+          "row": 1,
+          "column": 2,
+          "status": "reviewed",
+          "review": "Visually checked against recipe's named dish, primary ingredients, preparation form and sides; synthetic illustration, not evidence of an actual prepared meal.",
+          "index": 71,
+          "name": "Watermelon Bingsu",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 72,
+          "row": 1,
+          "column": 3,
+          "status": "reviewed",
+          "review": "Visually checked against recipe's named dish, primary ingredients, preparation form and sides; synthetic illustration, not evidence of an actual prepared meal.",
+          "index": 72,
+          "name": "Salmon & Spinach with Tartar Cream",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 73,
+          "row": 2,
+          "column": 0,
+          "status": "reviewed",
+          "review": "Visually checked against recipe's named dish, primary ingredients, preparation form and sides; synthetic illustration, not evidence of an actual prepared meal.",
+          "index": 73,
+          "name": "Superhealthy Salmon Burgers",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 74,
+          "row": 2,
+          "column": 1,
+          "status": "reviewed",
+          "review": "Visually checked against recipe's named dish, primary ingredients, preparation form and sides; synthetic illustration, not evidence of an actual prepared meal.",
+          "index": 74,
+          "name": "Salmon Egg-Fried Rice",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 75,
+          "row": 2,
+          "column": 2,
+          "status": "reviewed",
+          "review": "Visually checked against recipe's named dish, primary ingredients, preparation form and sides; synthetic illustration, not evidence of an actual prepared meal.",
+          "index": 75,
+          "name": "Cilantro Tilapia with Spinach & Tomatoes",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 76,
+          "row": 2,
+          "column": 3,
+          "status": "reviewed",
+          "review": "Visually checked against recipe's named dish, primary ingredients, preparation form and sides; synthetic illustration, not evidence of an actual prepared meal.",
+          "index": 76,
+          "name": "Chicken, Red Pepper & Almond Traybake",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 77,
+          "row": 3,
+          "column": 0,
+          "status": "reviewed",
+          "review": "Visually checked against recipe's named dish, primary ingredients, preparation form and sides; synthetic illustration, not evidence of an actual prepared meal.",
+          "index": 77,
+          "name": "Honey-Soy Chicken with Sesame Broccoli",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 78,
+          "row": 3,
+          "column": 1,
+          "status": "reviewed",
+          "review": "Visually checked against recipe's named dish, primary ingredients, preparation form and sides; synthetic illustration, not evidence of an actual prepared meal.",
+          "index": 78,
+          "name": "Herb-Yogurt Chicken Flatbreads",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 79,
+          "row": 3,
+          "column": 2,
+          "status": "reviewed",
+          "review": "Visually checked against recipe's named dish, primary ingredients, preparation form and sides; synthetic illustration, not evidence of an actual prepared meal.",
+          "index": 79,
+          "name": "Caper Chicken Piccata",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 80,
+          "row": 3,
+          "column": 3,
+          "status": "reviewed",
+          "review": "Visually checked against recipe's named dish, primary ingredients, preparation form and sides; synthetic illustration, not evidence of an actual prepared meal.",
+          "index": 80,
+          "name": "Chocolate & Berry Mousse Pots",
+          "kind": "illustration"
+        }
+      ],
+      "limitations": "AI-generated recipe illustration, not a photograph of a cooked recipe. Quantities, nut counts and exact portions follow the written recipe."
+    },
+    {
+      "sheet": 6,
+      "path": "/assets/food/recipe-atlas-06.webp",
+      "kind": "illustration",
+      "label": "Recipe illustration",
+      "reviewedAt": "2026-11-07",
+      "tool": "image_gen built-in",
+      "prompt": "Create ONE production food illustration sprite atlas, exact 4 columns by 4 rows of equal square cells, reading order left to right then top to bottom. Entire output square 2048x2048 pixels or greater, no gutters, gaps, borders, labels, letters, words, numerals, watermarks, or extra dishes. Consistent warm off-white background throughout, clean realistic editorial FOOD ILLUSTRATION style, not a camera photograph. Each cell shows a single complete dish, bowl, plate, pastry or drink centered fully within its cell with comfortable internal margin, viewed from a slight overhead angle, distinct and readily recognizable at thumbnail size. Nothing crosses cell boundaries. Exactly16 dishes in the specified arrangement. Render each dish according to its actual ingredient list and preparation below: match protein, carbohydrate, color, cooking method, and side vegetables, add no unlisted ingredient or garnish. Absolutely NO citrus of any kind, NO lemons/limes/oranges/cal​amansi, NO garnish or decorations not in that cell's ingredients. Do not swap recipes between cells. For fish show the specified species fillet, for poultry skinless cooked meat, for whole-grain dishes use visibly brown whole-grain rice/pasta. Do not add meat to vegetarian recipes. Do not render instructions or text.\n\nCELL CONTENTS (numbers are directions only; never draw them):\nROW 1, COLUMN 1: Chocolate Muffins with Hot Chocolate Mustard. Ingredients: whole-wheat flour, rolled oats, unsweetened cocoa powder, ripe banana, egg, low-fat milk, baking powder, mustard powder. Preparation: Heat the oven to 180°C and line four muffin cups. Combine the dry ingredients, including only a small pinch of mustard powder. Whisk banana, egg and milk, fold into the dry mix, and bake for 18 to 20 minutes.\n\nROW 1, COLUMN 2: Chocolate & Raspberry Birthday Layer Cake. Ingredients: whole-wheat flour, unsweetened cocoa powder, egg, low-fat milk, ripe banana, raspberries, plain Greek yogurt, honey. Preparation: Bake two small cocoa-banana cake layers at 180°C until a tester comes out clean. Cool completely. Layer with Greek yogurt and raspberries, then chill before slicing into small portions.\n\nROW 1, COLUMN 3: Healthy Chocolate Ice Cream. Ingredients: frozen banana, plain Greek yogurt, unsweetened cocoa powder, peanut butter, vanilla extract. Preparation: Blend frozen banana, yogurt, cocoa, peanut butter and vanilla until smooth. Freeze for 30 minutes for a firmer texture. Serve a measured half-cup portion.\n\nROW 1, COLUMN 4: Garlic-Herb Spaghetti with Tuna & Broccoli. Ingredients: whole-wheat spaghetti, tuna in water, broccoli, rice vinegar, fresh parsley, olive oil, garlic. Preparation: Cook spaghetti and broccoli together until al dente and reserve pasta water. Sauté garlic in olive oil and add drained tuna. Toss with pasta, broccoli, rice vinegar,  and enough pasta water to coat.\n\nROW 2, COLUMN 1: Sausage Ragu. Ingredients: lean chicken sausage, crushed tomatoes, carrot, mushrooms, onion, garlic, whole-wheat pasta, olive oil. Preparation: Brown the chicken sausage and break it into small pieces. Add onion, garlic, carrot, mushrooms and tomatoes and simmer for 25 minutes. Serve over cooked whole-wheat pasta.\n\nROW 2, COLUMN 2: Spaghetti Puttanesca. Ingredients: whole-wheat spaghetti, crushed tomatoes, black olives, capers, anchovy fillet, garlic, olive oil, chili flakes. Preparation: Cook spaghetti until al dente. Sauté garlic and anchovy in olive oil, then add tomatoes, olives, capers and chili. Simmer for 12 minutes and toss with the pasta.\n\nROW 2, COLUMN 3: Child-Friendly Thai Chicken Noodles. Ingredients: skinless chicken breast, rice noodles, carrot, bell pepper, snap peas, rice vinegar, low-sodium soy sauce, sesame oil. Preparation: Soak noodles according to the package. Cook chicken in sesame oil until it reaches 74°C, then add vegetables. Toss with noodles, rice vinegar and low-sodium soy sauce; keep the dish mild.\n\nROW 2, COLUMN 4: Puttanesca Baked Gnocchi. Ingredients: whole-wheat gnocchi, crushed tomatoes, black olives, capers, spinach, part-skim mozzarella, garlic. Preparation: Combine gnocchi, tomatoes, olives, capers, garlic and spinach in a small baking dish. Cover and bake at 200°C for 20 minutes. Top with mozzarella and bake uncovered until bubbling.\n\nROW 3, COLUMN 1: Tuna, Tomato & Caper One-Pot Pasta. Ingredients: whole-wheat pasta, tuna in water, cherry tomatoes, capers, rice vinegar, olive oil, garlic. Preparation: Simmer pasta, tomatoes and garlic with just enough water to cook the pasta. Fold in drained tuna and capers. Finish with rice vinegar and olive oil.\n\nROW 3, COLUMN 2: Mushroom & Thyme Risotto. Ingredients: arborio rice, mushrooms, unsalted vegetable broth, onion, garlic, olive oil, fresh thyme, grated parmesan. Preparation: Sauté onion, garlic and mushrooms in olive oil. Add rice and stir, then add warm broth gradually until creamy and al dente. Finish with thyme and a measured tablespoon of parmesan.\n\nROW 3, COLUMN 3: Agua Fresca de Pepino. Ingredients: cucumber, cold water, ice, mint. Preparation: Blend cucumber, water and mint. Strain if preferred. Serve over ice without added sugar.\n\nROW 3, COLUMN 4: Mexican-Inspired Fruit Salad. Ingredients: mango, watermelon, pineapple, cucumber, chili powder. Preparation: Cube the fruit and cucumber. Toss with a small pinch of chili. Chill briefly and serve.\n\nROW 4, COLUMN 1: Strawberry-Melon Summer Salad. Ingredients: strawberries, melon, fresh mint, pumpkin seeds. Preparation: Slice the strawberries and melon. Toss with mint. Finish with pumpkin seeds and serve chilled.\n\nROW 4, COLUMN 2: Garlic-Herb Shrimp Pasta. Ingredients: whole-wheat pasta, shrimp, rice vinegar, garlic, onion, olive oil, grated parmesan, dried oregano. Preparation: Cook pasta until al dente and reserve pasta water. Sauté garlic, onion and shrimp until the shrimp are opaque. Add rice vinegar and pasta water, toss with the pasta, oregano and parmesan.\n\nROW 4, COLUMN 3: Savory Sardine & Tomato Noodle Stir-Fry. Ingredients: whole-grain noodles, sardines in tomato sauce, tomato, onion, garlic, seaweed crisps. Preparation: Prepare noodles according to the package. Sauté onion, garlic and tomato, then add sardines and break them into chunks. Toss in the noodles and finish with crushed seaweed crisps.\n\nROW 4, COLUMN 4: Dark Chocolate & Banana Pancakes. Ingredients: oat pancake mix, unsweetened oat milk, banana, dark chocolate, cinnamon. Preparation: Prepare the pancake batter with oat milk, cinnamon, half the mashed banana and chopped dark chocolate. Cook small pancakes in a nonstick pan. Serve with the remaining banana slices instead of syrup.",
+      "promptRecord": "Exact prompt retained from generation call.",
+      "editPrompt": null,
+      "width": 1254,
+      "height": 1254,
+      "columns": 4,
+      "rows": 4,
+      "cellWidth": 313.5,
+      "cellHeight": 313.5,
+      "encoding": "WebP quality 88; original geometry unchanged.",
+      "sizeBytes": 432728,
+      "sha256": "5edb6f54e8d5f97d47b4d89d7433d0fc1ca2cc67d6867aa3a85caab4cfa200a5",
+      "cells": [
+        {
+          "recipeIndex": 81,
+          "row": 0,
+          "column": 0,
+          "status": "reviewed",
+          "review": "Visually checked against recipe's named dish, primary ingredients, preparation form and sides; synthetic illustration, not evidence of an actual prepared meal.",
+          "index": 81,
+          "name": "Chocolate Muffins with Hot Chocolate Mustard",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 82,
+          "row": 0,
+          "column": 1,
+          "status": "reviewed",
+          "review": "Visually checked against recipe's named dish, primary ingredients, preparation form and sides; synthetic illustration, not evidence of an actual prepared meal.",
+          "index": 82,
+          "name": "Chocolate & Raspberry Birthday Layer Cake",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 83,
+          "row": 0,
+          "column": 2,
+          "status": "reviewed",
+          "review": "Visually checked against recipe's named dish, primary ingredients, preparation form and sides; synthetic illustration, not evidence of an actual prepared meal.",
+          "index": 83,
+          "name": "Healthy Chocolate Ice Cream",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 84,
+          "row": 0,
+          "column": 3,
+          "status": "reviewed",
+          "review": "Visually checked against recipe's named dish, primary ingredients, preparation form and sides; synthetic illustration, not evidence of an actual prepared meal.",
+          "index": 84,
+          "name": "Garlic-Herb Spaghetti with Tuna & Broccoli",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 85,
+          "row": 1,
+          "column": 0,
+          "status": "reviewed",
+          "review": "Visually checked against recipe's named dish, primary ingredients, preparation form and sides; synthetic illustration, not evidence of an actual prepared meal.",
+          "index": 85,
+          "name": "Sausage Ragu",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 86,
+          "row": 1,
+          "column": 1,
+          "status": "reviewed",
+          "review": "Visually checked against recipe's named dish, primary ingredients, preparation form and sides; synthetic illustration, not evidence of an actual prepared meal.",
+          "index": 86,
+          "name": "Spaghetti Puttanesca",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 87,
+          "row": 1,
+          "column": 2,
+          "status": "reviewed",
+          "review": "Visually checked against recipe's named dish, primary ingredients, preparation form and sides; synthetic illustration, not evidence of an actual prepared meal.",
+          "index": 87,
+          "name": "Child-Friendly Thai Chicken Noodles",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 88,
+          "row": 1,
+          "column": 3,
+          "status": "reviewed",
+          "review": "Visually checked against recipe's named dish, primary ingredients, preparation form and sides; synthetic illustration, not evidence of an actual prepared meal.",
+          "index": 88,
+          "name": "Puttanesca Baked Gnocchi",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 89,
+          "row": 2,
+          "column": 0,
+          "status": "reviewed",
+          "review": "Visually checked against recipe's named dish, primary ingredients, preparation form and sides; synthetic illustration, not evidence of an actual prepared meal.",
+          "index": 89,
+          "name": "Tuna, Tomato & Caper One-Pot Pasta",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 90,
+          "row": 2,
+          "column": 1,
+          "status": "reviewed",
+          "review": "Visually checked against recipe's named dish, primary ingredients, preparation form and sides; synthetic illustration, not evidence of an actual prepared meal.",
+          "index": 90,
+          "name": "Mushroom & Thyme Risotto",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 91,
+          "row": 2,
+          "column": 2,
+          "status": "reviewed",
+          "review": "Visually checked against recipe's named dish, primary ingredients, preparation form and sides; synthetic illustration, not evidence of an actual prepared meal.",
+          "index": 91,
+          "name": "Agua Fresca de Pepino",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 92,
+          "row": 2,
+          "column": 3,
+          "status": "reviewed",
+          "review": "Visually checked against recipe's named dish, primary ingredients, preparation form and sides; synthetic illustration, not evidence of an actual prepared meal.",
+          "index": 92,
+          "name": "Mexican-Inspired Fruit Salad",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 93,
+          "row": 3,
+          "column": 0,
+          "status": "reviewed",
+          "review": "Visually checked against recipe's named dish, primary ingredients, preparation form and sides; synthetic illustration, not evidence of an actual prepared meal.",
+          "index": 93,
+          "name": "Strawberry-Melon Summer Salad",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 94,
+          "row": 3,
+          "column": 1,
+          "status": "reviewed",
+          "review": "Visually checked against recipe's named dish, primary ingredients, preparation form and sides; synthetic illustration, not evidence of an actual prepared meal.",
+          "index": 94,
+          "name": "Garlic-Herb Shrimp Pasta",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 95,
+          "row": 3,
+          "column": 2,
+          "status": "reviewed",
+          "review": "Visually checked against recipe's named dish, primary ingredients, preparation form and sides; synthetic illustration, not evidence of an actual prepared meal.",
+          "index": 95,
+          "name": "Savory Sardine & Tomato Noodle Stir-Fry",
+          "kind": "illustration"
+        },
+        {
+          "recipeIndex": 96,
+          "row": 3,
+          "column": 3,
+          "status": "reviewed",
+          "review": "Visually checked against recipe's named dish, primary ingredients, preparation form and sides; synthetic illustration, not evidence of an actual prepared meal.",
+          "index": 96,
+          "name": "Dark Chocolate & Banana Pancakes",
+          "kind": "illustration"
+        }
+      ],
+      "limitations": "AI-generated recipe illustration, not a photograph of a cooked recipe. Quantities, nut counts and exact portions follow the written recipe."
+    },
+    {
+      "sheet": 7,
+      "path": "/assets/food/recipe-atlas-07.webp",
+      "kind": "illustration",
+      "label": "Recipe illustration",
+      "reviewedAt": "2026-11-07",
+      "tool": "image_gen built-in",
+      "prompt": "Create ONE production raster asset for a recipe app: a square food-illustration sprite atlas, exactly 2048x2048 pixels if possible. EXACTLY FOUR COLUMNS AND FOUR ROWS, 16 equally sized square cells in strict row-major reading order. Each cell has its own COMPLETE centered plate, bowl or glass, entirely inside its square; leave about12% clean warm off-white margin inside EVERY cell. All16 cells share the same plain warm off-white background. There are NO grid lines, borders, frames, labels, letters, numbers, text, logos, watermarks, tablecloths or utensils. NO food may cross from one cell into another. High-quality naturalistic editorial FOOD ILLUSTRATIONS with realistic texture, soft overhead light and overhead three-quarter view. This is clearly an illustration set, not documentary proof of an actual meal. Ingredient accuracy is the priority: draw ONLY listed food/components; especially NO lemons, limes, oranges, citrus wedges, unlisted salad garnish, bread, sauces or side dishes. Make 16 DISTINCT complete compositions, no repeated copied plates. Cells:\nRow1 column1: a whole-wheat tortilla wrap cut in half, filled with pale creamy flaked tuna, lettuce, finely chopped onion and walnut pieces in yogurt mayonnaise; NO cheese because this recipe's ingredients do not contain cheese.\nRow1 column2: a single clear straight-sided glass of muted light-green cucumber, malunggay, okra and ginger wellness drink, with no garnish or fruit.\nRow1 column3: a small white ramekin of coarsely mashed gray-pink sardine spread with tiny red onion pieces, light mayonnaise and black pepper; no bread.\nRow1 column4: a small white ramekin of chopped hard-boiled egg whites and yellow yolks mixed with creamy yogurt and mustard; no bread.\nRow2 column1: a small white ramekin of flaked tuna and obvious yellow sweetcorn kernels in a light creamy yogurt dressing and pepper.\nRow2 column2: a small white ramekin of pale pink flaked tuna with mayonnaise and black pepper, creamy chunky texture, no vegetables or bread.\nRow2 column3: a small white ramekin of finely chopped hard-boiled egg whites and yellow yolks in mayonnaise, with a fine sprinkle of black pepper.\nRow2 column4: a small white ramekin of smooth tan savory peanut butter spread, with a few red chili flakes, no bread or fruit.\nRow3 column1: a small white ramekin of creamy flaked tuna mixed with finely chopped green cucumber and white yogurt, black pepper.\nRow3 column2: a small white ramekin of mashed banana blended into tan peanut butter and plain yogurt, subtle banana pieces visible, no bread.\nRow3 column3: a small white ramekin of chopped boiled eggs, small pale yellow cheese cubes, and a small amount of mayonnaise and pepper.\nRow3 column4: a small white bowl of white yogurt mixed with chopped apple and banana, with a teaspoon-sized tan peanut-butter swirl.\nRow4 column1: a white bowl with clearly separated cooked brown rice and cooked black beans, topped with red tomato dice and a little chopped onion, lightly dressed.\nRow4 column2: a white bowl of mixed green leaves with bright tomato chunks and cucumber slices, sprinkled with green pumpkin seeds and a light olive oil dressing.\nRow4 column3: a white breakfast plate with exactly TWO cooked eggs, one thin pale yellow cheese slice, wilted spinach and sauteed tomato; no bread.\nRow4 column4: a plain white bowl of creamy cooked rolled-oat porridge with cinnamon and ground flaxseed sprinkled on top; no fruit, milk glass or nuts.\n",
+      "promptRecord": "Exact prompt retained from generation call.",
+      "editPrompt": null,
+      "width": 1254,
+      "height": 1254,
+      "columns": 4,
+      "rows": 4,
+      "cellWidth": 313.5,
+      "cellHeight": 313.5,
+      "encoding": "WebP quality 88; original geometry unchanged.",
+      "sizeBytes": 252188,
+      "sha256": "33db05009867baf79c26e98d93fb04d0022a8a7c549948035fbd0a753adade69",
+      "cells": [
+        {
+          "index": 97,
+          "name": "Creamy Tuna & Cheese Salad Wrap",
+          "row": 0,
+          "column": 0,
+          "cellIndex": 0,
+          "status": "reviewed",
+          "visibleSubject": "Tuna/lettuce/walnut wrap, without cheese (ingredient list has none).",
+          "majorIngredientsAndPreparationMatch": true,
+          "noVisibleCitrus": true,
+          "noTextOrWatermark": true,
+          "sourceRecipeIngredientNames": [
+            "tuna in water",
+            "plain Greek yogurt",
+            "light mayonnaise",
+            "rice vinegar",
+            "onion",
+            "walnuts",
+            "whole-wheat tortilla",
+            "lettuce"
+          ],
+          "kind": "illustration"
+        },
+        {
+          "index": 98,
+          "name": "Malunggay-Okra-Luya Morning Wellness Drink",
+          "row": 0,
+          "column": 1,
+          "cellIndex": 1,
+          "status": "reviewed",
+          "visibleSubject": "Single green wellness drink, no garnish.",
+          "majorIngredientsAndPreparationMatch": true,
+          "noVisibleCitrus": true,
+          "noTextOrWatermark": true,
+          "sourceRecipeIngredientNames": [
+            "malunggay okra luya concentrate",
+            "cucumber juice",
+            "cold water"
+          ],
+          "kind": "illustration"
+        },
+        {
+          "index": 99,
+          "name": "Savory Sardine & Herb Spread",
+          "row": 0,
+          "column": 2,
+          "cellIndex": 2,
+          "status": "reviewed",
+          "visibleSubject": "Sardine/red-onion creamy spread.",
+          "majorIngredientsAndPreparationMatch": true,
+          "noVisibleCitrus": true,
+          "noTextOrWatermark": true,
+          "sourceRecipeIngredientNames": [
+            "sardines",
+            "light mayonnaise",
+            "rice vinegar",
+            "red onion",
+            "black pepper"
+          ],
+          "kind": "illustration"
+        },
+        {
+          "index": 100,
+          "name": "Creamy Egg & Mustard Salad Spread",
+          "row": 0,
+          "column": 3,
+          "cellIndex": 3,
+          "status": "reviewed",
+          "visibleSubject": "Chopped egg and mustard/yogurt spread.",
+          "majorIngredientsAndPreparationMatch": true,
+          "noVisibleCitrus": true,
+          "noTextOrWatermark": true,
+          "sourceRecipeIngredientNames": [
+            "hard-boiled egg",
+            "plain Greek yogurt",
+            "mustard",
+            "black pepper"
+          ],
+          "kind": "illustration"
+        },
+        {
+          "index": 101,
+          "name": "Tuna & Corn Relish Spread",
+          "row": 1,
+          "column": 0,
+          "cellIndex": 4,
+          "status": "reviewed",
+          "visibleSubject": "Tuna spread with yellow corn kernels.",
+          "majorIngredientsAndPreparationMatch": true,
+          "noVisibleCitrus": true,
+          "noTextOrWatermark": true,
+          "sourceRecipeIngredientNames": [
+            "tuna in water",
+            "whole-kernel corn",
+            "plain Greek yogurt",
+            "black pepper"
+          ],
+          "kind": "illustration"
+        },
+        {
+          "index": 102,
+          "name": "Creamy Tuna & Mayo Spread",
+          "row": 1,
+          "column": 1,
+          "cellIndex": 5,
+          "status": "reviewed",
+          "visibleSubject": "Plain creamy tuna spread.",
+          "majorIngredientsAndPreparationMatch": true,
+          "noVisibleCitrus": true,
+          "noTextOrWatermark": true,
+          "sourceRecipeIngredientNames": [
+            "tuna in water",
+            "light mayonnaise",
+            "rice vinegar",
+            "onion powder",
+            "black pepper"
+          ],
+          "kind": "illustration"
+        },
+        {
+          "index": 103,
+          "name": "Filipino-Style Egg Spread",
+          "row": 1,
+          "column": 2,
+          "cellIndex": 6,
+          "status": "reviewed",
+          "visibleSubject": "Finely chopped egg/mayo spread.",
+          "majorIngredientsAndPreparationMatch": true,
+          "noVisibleCitrus": true,
+          "noTextOrWatermark": true,
+          "sourceRecipeIngredientNames": [
+            "hard-boiled egg",
+            "light mayonnaise",
+            "garlic powder",
+            "black pepper"
+          ],
+          "kind": "illustration"
+        },
+        {
+          "index": 104,
+          "name": "Savory Peanut Butter Spread",
+          "row": 1,
+          "column": 3,
+          "cellIndex": 7,
+          "status": "reviewed",
+          "visibleSubject": "Tan peanut spread with chili flakes.",
+          "majorIngredientsAndPreparationMatch": true,
+          "noVisibleCitrus": true,
+          "noTextOrWatermark": true,
+          "sourceRecipeIngredientNames": [
+            "unsweetened peanut butter",
+            "low-sodium soy sauce",
+            "rice vinegar",
+            "garlic powder",
+            "warm water",
+            "chili flakes"
+          ],
+          "kind": "illustration"
+        },
+        {
+          "index": 105,
+          "name": "Tuna Cucumber Yogurt Spread",
+          "row": 2,
+          "column": 0,
+          "cellIndex": 8,
+          "status": "reviewed",
+          "visibleSubject": "Tuna yogurt spread with cucumber cubes.",
+          "majorIngredientsAndPreparationMatch": true,
+          "noVisibleCitrus": true,
+          "noTextOrWatermark": true,
+          "sourceRecipeIngredientNames": [
+            "tuna in water",
+            "plain yogurt",
+            "rice vinegar",
+            "black pepper",
+            "cucumber"
+          ],
+          "kind": "illustration"
+        },
+        {
+          "index": 106,
+          "name": "Peanut Butter Banana Spread",
+          "row": 2,
+          "column": 1,
+          "cellIndex": 9,
+          "status": "reviewed",
+          "visibleSubject": "Peanut/banana spread.",
+          "majorIngredientsAndPreparationMatch": true,
+          "noVisibleCitrus": true,
+          "noTextOrWatermark": true,
+          "sourceRecipeIngredientNames": [
+            "unsweetened peanut butter",
+            "ripe banana",
+            "plain yogurt"
+          ],
+          "kind": "illustration"
+        },
+        {
+          "index": 107,
+          "name": "Egg & Cheese Spread",
+          "row": 2,
+          "column": 2,
+          "cellIndex": 10,
+          "status": "reviewed",
+          "visibleSubject": "Chopped egg with cheese cubes.",
+          "majorIngredientsAndPreparationMatch": true,
+          "noVisibleCitrus": true,
+          "noTextOrWatermark": true,
+          "sourceRecipeIngredientNames": [
+            "hard-boiled egg",
+            "reduced-fat cheese",
+            "light mayonnaise",
+            "black pepper"
+          ],
+          "kind": "illustration"
+        },
+        {
+          "index": 108,
+          "name": "Yogurt Fruit Spread",
+          "row": 2,
+          "column": 3,
+          "cellIndex": 11,
+          "status": "reviewed",
+          "visibleSubject": "Yogurt apple/banana mixture with peanut swirl.",
+          "majorIngredientsAndPreparationMatch": true,
+          "noVisibleCitrus": true,
+          "noTextOrWatermark": true,
+          "sourceRecipeIngredientNames": [
+            "plain yogurt",
+            "banana",
+            "apple",
+            "unsweetened peanut butter"
+          ],
+          "kind": "illustration"
+        },
+        {
+          "index": 109,
+          "name": "Rice & Beans Power Bowl",
+          "row": 3,
+          "column": 0,
+          "cellIndex": 12,
+          "status": "reviewed",
+          "visibleSubject": "Brown rice and black beans with tomato/onion.",
+          "majorIngredientsAndPreparationMatch": true,
+          "noVisibleCitrus": true,
+          "noTextOrWatermark": true,
+          "sourceRecipeIngredientNames": [
+            "cooked brown rice",
+            "cooked black beans",
+            "tomato",
+            "onion",
+            "rice vinegar",
+            "olive oil"
+          ],
+          "kind": "illustration"
+        },
+        {
+          "index": 110,
+          "name": "Greens & Tomatoes Salad",
+          "row": 3,
+          "column": 1,
+          "cellIndex": 13,
+          "status": "reviewed",
+          "visibleSubject": "Leafy tomato/cucumber salad with pumpkin seeds.",
+          "majorIngredientsAndPreparationMatch": true,
+          "noVisibleCitrus": true,
+          "noTextOrWatermark": true,
+          "sourceRecipeIngredientNames": [
+            "mixed greens",
+            "tomato",
+            "cucumber",
+            "pumpkin seeds",
+            "olive oil",
+            "rice vinegar"
+          ],
+          "kind": "illustration"
+        },
+        {
+          "index": 111,
+          "name": "Egg & Cheese Breakfast Plate",
+          "row": 3,
+          "column": 2,
+          "cellIndex": 14,
+          "status": "reviewed",
+          "visibleSubject": "Two eggs, cheese, spinach and tomato.",
+          "majorIngredientsAndPreparationMatch": true,
+          "noVisibleCitrus": true,
+          "noTextOrWatermark": true,
+          "sourceRecipeIngredientNames": [
+            "egg",
+            "reduced-fat cheese",
+            "spinach",
+            "tomato",
+            "olive oil"
+          ],
+          "kind": "illustration"
+        },
+        {
+          "index": 112,
+          "name": "Simple Oatmeal & Water",
+          "row": 3,
+          "column": 3,
+          "cellIndex": 15,
+          "status": "reviewed",
+          "visibleSubject": "Plain oats with cinnamon/flax topping.",
+          "majorIngredientsAndPreparationMatch": true,
+          "noVisibleCitrus": true,
+          "noTextOrWatermark": true,
+          "sourceRecipeIngredientNames": [
+            "rolled oats",
+            "water",
+            "cinnamon",
+            "ground flaxseed"
+          ],
+          "kind": "illustration"
+        }
+      ],
+      "limitations": "AI-generated recipe illustration, not a photograph of a cooked recipe. Quantities, nut counts and exact portions follow the written recipe."
+    },
+    {
+      "sheet": 8,
+      "path": "/assets/food/recipe-atlas-08.webp",
+      "kind": "illustration",
+      "label": "Recipe illustration",
+      "reviewedAt": "2026-11-07",
+      "tool": "image_gen built-in",
+      "prompt": "Create ONE production raster asset for a recipe app: a square food-illustration sprite atlas, exactly 2048x2048 pixels if possible. EXACTLY FOUR COLUMNS AND FOUR ROWS, 16 equally sized square cells in strict row-major reading order. Each cell has its own COMPLETE centered plate, bowl or glass, entirely inside its square; leave about12% clean warm off-white margin inside EVERY cell. All16 cells share the same plain warm off-white background. There are NO grid lines, borders, frames, labels, letters, numbers, text, logos, watermarks, tablecloths or utensils. NO food may cross from one cell into another. High-quality naturalistic editorial FOOD ILLUSTRATIONS with realistic texture, soft overhead light and overhead three-quarter view. This is clearly an illustration set, not documentary proof of an actual meal. Ingredient accuracy is the priority: draw ONLY listed food/components; especially NO lemons, limes, oranges, citrus wedges, unlisted salad garnish, bread, sauces or side dishes. Make 16 DISTINCT complete compositions, no repeated copied plates. Cells:\nRow1 column1: one slice of whole-grain toast topped with chopped red tomato, a light olive oil sheen, fine garlic and black pepper; no cheese.\nRow1 column2: a single glass of deep purple berry-spinach smoothie made with yogurt and chia; tiny chia specks visible, no decorative garnish.\nRow1 column3: a white bowl of wilted dark leafy greens lightly sauteed with thin garlic slices and olive oil; no rice, eggs or meat.\nRow1 column4: a white bowl of softly scrambled eggs mixed with spinach, diced carrot, red bell pepper and onion; no bread or potatoes.\nRow2 column1: a white plate with lightly cayenne-spiced grilled skinless chicken breast, broccoli florets, carrot pieces and bell pepper; no rice.\nRow2 column2: a white bowl of creamy oatmeal topped with walnut pieces, small apple dice and a light cinnamon dusting; no berries.\nRow2 column3: a white bowl of black beans, red bell pepper and onion topped with ONE cooked egg; no rice or avocado.\nRow2 column4: a clear cup of amber herbal tea with a ginger slice and two mint leaves inside the drink; NO lemon or citrus.\nRow3 column1: a white plate of baked salmon fillet, roasted halved baby potatoes and broccoli florets, with a little dried dill; NO citrus.\nRow3 column2: a small white plate of fresh red apple slices alongside a measured small handful of shelled green pistachios, nothing else.\nRow3 column3: a small white plate with dark-chocolate-coated whole almond clusters, light cinnamon dusting, no cakes or fruit.\nRow3 column4: a breakfast plate of cooked scrambled eggs and egg whites with a separate small plain bowl of cinnamon oatmeal within this SAME cell; no fruit or bread.\nRow4 column1: a white plate of grilled chicken breast with one cooked orange sweet potato and steamed green beans; no rice.\nRow4 column2: ONE cell containing a clear glass of pale unflavored protein shake beside a small cup of black coffee; no fruit, oats or nuts.\nRow4 column3: a white plate of baked WHITE fish fillet with spinach leaves, cucumber slices and sliced avocado, olive oil sheen; do not draw pink salmon.\nRow4 column4: a small white bowl of thick plain Greek yogurt topped with walnut pieces and cinnamon, no fruit, granola or honey.\n",
+      "promptRecord": "Exact prompt retained from generation call.",
+      "editPrompt": null,
+      "width": 1254,
+      "height": 1254,
+      "columns": 4,
+      "rows": 4,
+      "cellWidth": 313.5,
+      "cellHeight": 313.5,
+      "encoding": "WebP quality 88; original geometry unchanged.",
+      "sizeBytes": 297538,
+      "sha256": "41917a61014e8f8571d40d01c5c429b763a194a1eb4d6dd6e079817628f3e4e2",
+      "cells": [
+        {
+          "index": 113,
+          "name": "Tomatoes & Olive Oil Toast",
+          "row": 0,
+          "column": 0,
+          "cellIndex": 0,
+          "status": "reviewed",
+          "visibleSubject": "Whole-grain toast with chopped tomato.",
+          "majorIngredientsAndPreparationMatch": true,
+          "noVisibleCitrus": true,
+          "noTextOrWatermark": true,
+          "sourceRecipeIngredientNames": [
+            "tomato",
+            "whole-grain bread",
+            "olive oil",
+            "garlic",
+            "black pepper"
+          ],
+          "kind": "illustration"
+        },
+        {
+          "index": 114,
+          "name": "Berry Spinach Smoothie",
+          "row": 0,
+          "column": 1,
+          "cellIndex": 1,
+          "status": "reviewed",
+          "visibleSubject": "Purple berry-spinach/chia smoothie.",
+          "majorIngredientsAndPreparationMatch": true,
+          "noVisibleCitrus": true,
+          "noTextOrWatermark": true,
+          "sourceRecipeIngredientNames": [
+            "spinach",
+            "mixed berries",
+            "plain Greek yogurt",
+            "water",
+            "chia seeds"
+          ],
+          "kind": "illustration"
+        },
+        {
+          "index": 115,
+          "name": "Greens with Olive Oil & Garlic",
+          "row": 0,
+          "column": 2,
+          "cellIndex": 2,
+          "status": "reviewed",
+          "visibleSubject": "Wilted leafy greens with garlic.",
+          "majorIngredientsAndPreparationMatch": true,
+          "noVisibleCitrus": true,
+          "noTextOrWatermark": true,
+          "sourceRecipeIngredientNames": [
+            "leafy greens",
+            "olive oil",
+            "garlic",
+            "rice vinegar",
+            "black pepper"
+          ],
+          "kind": "illustration"
+        },
+        {
+          "index": 116,
+          "name": "Vegetable & Egg Breakfast Bowl",
+          "row": 0,
+          "column": 3,
+          "cellIndex": 3,
+          "status": "reviewed",
+          "visibleSubject": "Vegetable egg scramble.",
+          "majorIngredientsAndPreparationMatch": true,
+          "noVisibleCitrus": true,
+          "noTextOrWatermark": true,
+          "sourceRecipeIngredientNames": [
+            "egg",
+            "spinach",
+            "carrot",
+            "red bell pepper",
+            "onion",
+            "olive oil"
+          ],
+          "kind": "illustration"
+        },
+        {
+          "index": 117,
+          "name": "Cayenne Chicken & Vegetables",
+          "row": 1,
+          "column": 0,
+          "cellIndex": 4,
+          "status": "reviewed",
+          "visibleSubject": "Chicken breast with broccoli/carrot/pepper.",
+          "majorIngredientsAndPreparationMatch": true,
+          "noVisibleCitrus": true,
+          "noTextOrWatermark": true,
+          "sourceRecipeIngredientNames": [
+            "skinless chicken breast",
+            "broccoli",
+            "carrot",
+            "bell pepper",
+            "cayenne pepper",
+            "olive oil"
+          ],
+          "kind": "illustration"
+        },
+        {
+          "index": 118,
+          "name": "Oatmeal with Walnuts",
+          "row": 1,
+          "column": 1,
+          "cellIndex": 5,
+          "status": "reviewed",
+          "visibleSubject": "Oatmeal with walnuts and apple.",
+          "majorIngredientsAndPreparationMatch": true,
+          "noVisibleCitrus": true,
+          "noTextOrWatermark": true,
+          "sourceRecipeIngredientNames": [
+            "rolled oats",
+            "water",
+            "walnuts",
+            "cinnamon",
+            "apple"
+          ],
+          "kind": "illustration"
+        },
+        {
+          "index": 119,
+          "name": "Egg, Bean & Pepper Breakfast Bowl",
+          "row": 1,
+          "column": 2,
+          "cellIndex": 6,
+          "status": "reviewed",
+          "visibleSubject": "Black bean/pepper bowl with cooked egg.",
+          "majorIngredientsAndPreparationMatch": true,
+          "noVisibleCitrus": true,
+          "noTextOrWatermark": true,
+          "sourceRecipeIngredientNames": [
+            "egg",
+            "cooked black beans",
+            "red bell pepper",
+            "onion",
+            "olive oil",
+            "rice vinegar"
+          ],
+          "kind": "illustration"
+        },
+        {
+          "index": 120,
+          "name": "Ginger Mint Tea Infusion",
+          "row": 1,
+          "column": 3,
+          "cellIndex": 7,
+          "status": "reviewed",
+          "visibleSubject": "Tea with ginger and mint, no citrus.",
+          "majorIngredientsAndPreparationMatch": true,
+          "noVisibleCitrus": true,
+          "noTextOrWatermark": true,
+          "sourceRecipeIngredientNames": [
+            "herbal tea leaves",
+            "fresh ginger",
+            "boiling water",
+            "mint"
+          ],
+          "kind": "illustration"
+        },
+        {
+          "index": 121,
+          "name": "Salmon & Potato Sheet-Pan Meal",
+          "row": 2,
+          "column": 0,
+          "cellIndex": 8,
+          "status": "reviewed",
+          "visibleSubject": "Salmon, baby potatoes and broccoli.",
+          "majorIngredientsAndPreparationMatch": true,
+          "noVisibleCitrus": true,
+          "noTextOrWatermark": true,
+          "sourceRecipeIngredientNames": [
+            "salmon fillet",
+            "baby potato",
+            "broccoli",
+            "olive oil",
+            "rice vinegar",
+            "dried dill"
+          ],
+          "kind": "illustration"
+        },
+        {
+          "index": 122,
+          "name": "Pistachio & Apple Snack",
+          "row": 2,
+          "column": 1,
+          "cellIndex": 9,
+          "status": "reviewed",
+          "visibleSubject": "Apple slices with pistachios.",
+          "majorIngredientsAndPreparationMatch": true,
+          "noVisibleCitrus": true,
+          "noTextOrWatermark": true,
+          "sourceRecipeIngredientNames": [
+            "apple",
+            "unsalted pistachios"
+          ],
+          "kind": "illustration"
+        },
+        {
+          "index": 123,
+          "name": "Dark Chocolate Almond Bites",
+          "row": 2,
+          "column": 2,
+          "cellIndex": 10,
+          "status": "reviewed",
+          "visibleSubject": "Chocolate-coated almond clusters.",
+          "majorIngredientsAndPreparationMatch": true,
+          "noVisibleCitrus": true,
+          "noTextOrWatermark": true,
+          "sourceRecipeIngredientNames": [
+            "dark chocolate",
+            "unsalted almonds",
+            "cinnamon"
+          ],
+          "kind": "illustration"
+        },
+        {
+          "index": 124,
+          "name": "Breakfast (V-Taper Foundation)",
+          "row": 2,
+          "column": 3,
+          "cellIndex": 11,
+          "status": "reviewed",
+          "visibleSubject": "Egg scramble with separate cinnamon oatmeal bowl.",
+          "majorIngredientsAndPreparationMatch": true,
+          "noVisibleCitrus": true,
+          "noTextOrWatermark": true,
+          "sourceRecipeIngredientNames": [
+            "egg whites",
+            "whole egg",
+            "rolled oats",
+            "cinnamon"
+          ],
+          "kind": "illustration"
+        },
+        {
+          "index": 125,
+          "name": "Lunch (V-Taper Foundation)",
+          "row": 3,
+          "column": 0,
+          "cellIndex": 12,
+          "status": "reviewed",
+          "visibleSubject": "Chicken, sweet potato and green beans.",
+          "majorIngredientsAndPreparationMatch": true,
+          "noVisibleCitrus": true,
+          "noTextOrWatermark": true,
+          "sourceRecipeIngredientNames": [
+            "chicken breast",
+            "sweet potato",
+            "green beans",
+            "olive oil"
+          ],
+          "kind": "illustration"
+        },
+        {
+          "index": 126,
+          "name": "Pre-Workout Snack (V-Taper Foundation)",
+          "row": 3,
+          "column": 1,
+          "cellIndex": 13,
+          "status": "reviewed",
+          "visibleSubject": "Protein shake and black coffee.",
+          "majorIngredientsAndPreparationMatch": true,
+          "noVisibleCitrus": true,
+          "noTextOrWatermark": true,
+          "sourceRecipeIngredientNames": [
+            "protein powder",
+            "black coffee",
+            "water"
+          ],
+          "kind": "illustration"
+        },
+        {
+          "index": 127,
+          "name": "Dinner (V-Taper Foundation)",
+          "row": 3,
+          "column": 2,
+          "cellIndex": 14,
+          "status": "reviewed",
+          "visibleSubject": "White fish with spinach/cucumber/avocado.",
+          "majorIngredientsAndPreparationMatch": true,
+          "noVisibleCitrus": true,
+          "noTextOrWatermark": true,
+          "sourceRecipeIngredientNames": [
+            "white fish",
+            "spinach",
+            "cucumber",
+            "avocado",
+            "olive oil"
+          ],
+          "kind": "illustration"
+        },
+        {
+          "index": 128,
+          "name": "Evening Snack (Sleep-Support)",
+          "row": 3,
+          "column": 3,
+          "cellIndex": 15,
+          "status": "reviewed",
+          "visibleSubject": "Yogurt with walnut/cinnamon topping.",
+          "majorIngredientsAndPreparationMatch": true,
+          "noVisibleCitrus": true,
+          "noTextOrWatermark": true,
+          "sourceRecipeIngredientNames": [
+            "non-fat Greek yogurt",
+            "walnuts",
+            "cinnamon"
+          ],
+          "kind": "illustration"
+        }
+      ],
+      "limitations": "AI-generated recipe illustration, not a photograph of a cooked recipe. Quantities, nut counts and exact portions follow the written recipe."
+    },
+    {
+      "sheet": 9,
+      "path": "/assets/food/recipe-atlas-09.webp",
+      "kind": "illustration",
+      "label": "Recipe illustration",
+      "reviewedAt": "2026-11-07",
+      "tool": "image_gen built-in",
+      "prompt": "Create ONE production raster asset for a recipe app: a square food-illustration sprite atlas, exactly 2048x2048 pixels if possible. EXACTLY FOUR COLUMNS AND FOUR ROWS, 16 equally sized square cells in strict row-major reading order. Each cell has its own COMPLETE centered plate, bowl or glass, entirely inside its square; leave about12% clean warm off-white margin inside EVERY cell. All16 cells share the same plain warm off-white background. There are NO grid lines, borders, frames, labels, letters, numbers, text, logos, watermarks, tablecloths or utensils. NO food may cross from one cell into another. High-quality naturalistic editorial FOOD ILLUSTRATIONS with realistic texture, soft overhead light and overhead three-quarter view. This is clearly an illustration set, not documentary proof of an actual meal. Ingredient accuracy is the priority: draw ONLY listed food/components; especially NO lemons, limes, oranges, citrus wedges, unlisted salad garnish, bread, sauces or side dishes. Make 16 DISTINCT complete compositions, no repeated copied plates. Cells:\nRow1 column1: a white plate of scrambled eggs and egg whites cooked with mushrooms and kale, with a small separate portion of mixed berries on the same plate.\nRow1 column2: a white plate of grilled chicken breast with arugula leaves, cucumber slices, thin celery and radish slices, and steamed asparagus; no rice.\nRow1 column3: one clear glass of pale plain protein shake beside a small portion of about12 raw whole almonds, within the same cell; no coffee.\nRow1 column4: a white plate of baked WHITE fish fillet with orange roasted pumpkin and green zucchini pieces; do not draw salmon or rice.\nRow2 column1: a small white bowl of thick plain Greek yogurt lightly sprinkled with cinnamon; absolutely no fruit, nuts, honey or granola.\nRow2 column2: a white plate of scrambled eggs and egg whites mixed with spinach and mushrooms, with half a fresh apple alongside; no bread.\nRow2 column3: a white plate of grilled chicken breast with fresh arugula, cucumber slices and steamed asparagus; no radish or rice.\nRow2 column4: one clear glass of pale plain protein shake beside exactly10 raw whole almonds on a small side dish, all inside the same cell.\nRow3 column1: a white plate of baked WHITE fish fillet with roasted orange pumpkin and steamed broccoli; no pink salmon.\nRow3 column2: a white plate of yellow scrambled eggs with wilted spinach and sliced avocado; no bread, rice or fish.\nRow3 column3: a white plate of grilled chicken breast with steamed asparagus and a small measured serving of cooked brown rice.\nRow3 column4: a white plate of grilled chicken breast with steamed broccoli and a small measured serving of cooked quinoa; no rice.\nRow4 column1: a small white plate containing one fresh red apple and a small ramekin of shelled green pumpkin seeds; NO citrus or nuts.\nRow4 column2: one clear glass of pale protein shake beside ONE round puffed rice cake spread with tan peanut butter; both complete within this cell.\nRow4 column3: a white plate of baked pink SALMON fillet with roasted orange sweet potato pieces and steamed asparagus; NO citrus.\nRow4 column4: a white plate of cooked WHITE fish fillet with a large mixed leafy green salad and sliced avocado; no pink salmon, rice or citrus.\n",
+      "promptRecord": "Exact prompt retained from generation call.",
+      "editPrompt": null,
+      "width": 1254,
+      "height": 1254,
+      "columns": 4,
+      "rows": 4,
+      "cellWidth": 313.5,
+      "cellHeight": 313.5,
+      "encoding": "WebP quality 88; original geometry unchanged.",
+      "sizeBytes": 326302,
+      "sha256": "b366c68e1ca54241f10c57a496b5404dd828b89ac892c77fed20f955914ab5e1",
+      "cells": [
+        {
+          "index": 129,
+          "name": "Breakfast (Recovery & Refine)",
+          "row": 0,
+          "column": 0,
+          "cellIndex": 0,
+          "status": "reviewed",
+          "visibleSubject": "Egg/mushroom/kale scramble with berries.",
+          "majorIngredientsAndPreparationMatch": true,
+          "noVisibleCitrus": true,
+          "noTextOrWatermark": true,
+          "sourceRecipeIngredientNames": [
+            "egg whites",
+            "whole egg",
+            "mushrooms",
+            "kale",
+            "mixed berries"
+          ],
+          "kind": "illustration"
+        },
+        {
+          "index": 130,
+          "name": "Lunch (Recovery & Refine)",
+          "row": 0,
+          "column": 1,
+          "cellIndex": 1,
+          "status": "reviewed",
+          "visibleSubject": "Chicken with arugula/cucumber/celery/radish/asparagus.",
+          "majorIngredientsAndPreparationMatch": true,
+          "noVisibleCitrus": true,
+          "noTextOrWatermark": true,
+          "sourceRecipeIngredientNames": [
+            "chicken breast",
+            "arugula",
+            "cucumber",
+            "celery stalk",
+            "radish",
+            "asparagus"
+          ],
+          "kind": "illustration"
+        },
+        {
+          "index": 131,
+          "name": "Mid-Afternoon Snack (Recovery & Refine)",
+          "row": 0,
+          "column": 2,
+          "cellIndex": 2,
+          "status": "reviewed",
+          "visibleSubject": "Protein shake with raw almonds.",
+          "majorIngredientsAndPreparationMatch": true,
+          "noVisibleCitrus": true,
+          "noTextOrWatermark": true,
+          "sourceRecipeIngredientNames": [
+            "whey protein",
+            "raw almonds",
+            "water"
+          ],
+          "kind": "illustration"
+        },
+        {
+          "index": 132,
+          "name": "Dinner (Sleep-Support Meal)",
+          "row": 0,
+          "column": 3,
+          "cellIndex": 3,
+          "status": "reviewed",
+          "visibleSubject": "White fish with pumpkin/zucchini.",
+          "majorIngredientsAndPreparationMatch": true,
+          "noVisibleCitrus": true,
+          "noTextOrWatermark": true,
+          "sourceRecipeIngredientNames": [
+            "white fish",
+            "pumpkin",
+            "zucchini",
+            "olive oil"
+          ],
+          "kind": "illustration"
+        },
+        {
+          "index": 133,
+          "name": "Evening Snack (Recovery & Refine)",
+          "row": 1,
+          "column": 0,
+          "cellIndex": 4,
+          "status": "reviewed",
+          "visibleSubject": "Plain cinnamon yogurt.",
+          "majorIngredientsAndPreparationMatch": true,
+          "noVisibleCitrus": true,
+          "noTextOrWatermark": true,
+          "sourceRecipeIngredientNames": [
+            "non-fat Greek yogurt",
+            "cinnamon"
+          ],
+          "kind": "illustration"
+        },
+        {
+          "index": 134,
+          "name": "Breakfast: V-Taper Recovery Day",
+          "row": 1,
+          "column": 1,
+          "cellIndex": 5,
+          "status": "reviewed",
+          "visibleSubject": "Egg/spinach/mushroom scramble with half apple.",
+          "majorIngredientsAndPreparationMatch": true,
+          "noVisibleCitrus": true,
+          "noTextOrWatermark": true,
+          "sourceRecipeIngredientNames": [
+            "egg whites",
+            "whole egg",
+            "spinach",
+            "mushrooms",
+            "apple"
+          ],
+          "kind": "illustration"
+        },
+        {
+          "index": 135,
+          "name": "Lunch: V-Taper Recovery Day",
+          "row": 1,
+          "column": 2,
+          "cellIndex": 6,
+          "status": "reviewed",
+          "visibleSubject": "Chicken with arugula/cucumber/asparagus.",
+          "majorIngredientsAndPreparationMatch": true,
+          "noVisibleCitrus": true,
+          "noTextOrWatermark": true,
+          "sourceRecipeIngredientNames": [
+            "chicken breast",
+            "arugula",
+            "cucumber",
+            "asparagus"
+          ],
+          "kind": "illustration"
+        },
+        {
+          "index": 136,
+          "name": "Mid-Afternoon Snack: V-Taper Recovery Day",
+          "row": 1,
+          "column": 3,
+          "cellIndex": 7,
+          "status": "reviewed",
+          "visibleSubject": "Protein shake with raw almonds.",
+          "majorIngredientsAndPreparationMatch": true,
+          "noVisibleCitrus": true,
+          "noTextOrWatermark": true,
+          "sourceRecipeIngredientNames": [
+            "whey protein",
+            "raw almonds",
+            "water"
+          ],
+          "kind": "illustration"
+        },
+        {
+          "index": 137,
+          "name": "Dinner: Deep Sleep Support Meal",
+          "row": 2,
+          "column": 0,
+          "cellIndex": 8,
+          "status": "reviewed",
+          "visibleSubject": "White fish with pumpkin/broccoli.",
+          "majorIngredientsAndPreparationMatch": true,
+          "noVisibleCitrus": true,
+          "noTextOrWatermark": true,
+          "sourceRecipeIngredientNames": [
+            "white fish",
+            "pumpkin",
+            "broccoli",
+            "olive oil"
+          ],
+          "kind": "illustration"
+        },
+        {
+          "index": 138,
+          "name": "Breakfast (T-Boost)",
+          "row": 2,
+          "column": 1,
+          "cellIndex": 9,
+          "status": "reviewed",
+          "visibleSubject": "Spinach scrambled eggs with avocado.",
+          "majorIngredientsAndPreparationMatch": true,
+          "noVisibleCitrus": true,
+          "noTextOrWatermark": true,
+          "sourceRecipeIngredientNames": [
+            "whole egg",
+            "spinach",
+            "avocado"
+          ],
+          "kind": "illustration"
+        },
+        {
+          "index": 139,
+          "name": "Lunch: V-Taper Foundation Day",
+          "row": 2,
+          "column": 2,
+          "cellIndex": 10,
+          "status": "reviewed",
+          "visibleSubject": "Chicken, asparagus and brown rice.",
+          "majorIngredientsAndPreparationMatch": true,
+          "noVisibleCitrus": true,
+          "noTextOrWatermark": true,
+          "sourceRecipeIngredientNames": [
+            "chicken breast",
+            "asparagus",
+            "brown rice"
+          ],
+          "kind": "illustration"
+        },
+        {
+          "index": 140,
+          "name": "Lunch (T-Boost)",
+          "row": 2,
+          "column": 3,
+          "cellIndex": 11,
+          "status": "reviewed",
+          "visibleSubject": "Chicken, broccoli and quinoa.",
+          "majorIngredientsAndPreparationMatch": true,
+          "noVisibleCitrus": true,
+          "noTextOrWatermark": true,
+          "sourceRecipeIngredientNames": [
+            "chicken breast",
+            "broccoli",
+            "quinoa"
+          ],
+          "kind": "illustration"
+        },
+        {
+          "index": 141,
+          "name": "Pre-Workout Snack (T-Boost)",
+          "row": 3,
+          "column": 0,
+          "cellIndex": 12,
+          "status": "reviewed",
+          "visibleSubject": "Apple with pumpkin seeds.",
+          "majorIngredientsAndPreparationMatch": true,
+          "noVisibleCitrus": true,
+          "noTextOrWatermark": true,
+          "sourceRecipeIngredientNames": [
+            "pumpkin seeds",
+            "fresh fruit"
+          ],
+          "kind": "illustration"
+        },
+        {
+          "index": 142,
+          "name": "Pre-Workout Snack: V-Taper Foundation Day",
+          "row": 3,
+          "column": 1,
+          "cellIndex": 13,
+          "status": "reviewed",
+          "visibleSubject": "Protein shake and peanut-butter rice cake.",
+          "majorIngredientsAndPreparationMatch": true,
+          "noVisibleCitrus": true,
+          "noTextOrWatermark": true,
+          "sourceRecipeIngredientNames": [
+            "whey protein",
+            "rice cake",
+            "peanut butter",
+            "water"
+          ],
+          "kind": "illustration"
+        },
+        {
+          "index": 143,
+          "name": "Dinner (T-Boost)",
+          "row": 3,
+          "column": 2,
+          "cellIndex": 14,
+          "status": "reviewed",
+          "visibleSubject": "Salmon, sweet potato and asparagus.",
+          "majorIngredientsAndPreparationMatch": true,
+          "noVisibleCitrus": true,
+          "noTextOrWatermark": true,
+          "sourceRecipeIngredientNames": [
+            "salmon fillet",
+            "sweet potato",
+            "asparagus",
+            "olive oil"
+          ],
+          "kind": "illustration"
+        },
+        {
+          "index": 144,
+          "name": "Dinner: V-Taper Foundation Day",
+          "row": 3,
+          "column": 3,
+          "cellIndex": 15,
+          "status": "reviewed",
+          "visibleSubject": "White fish with leafy greens/avocado.",
+          "majorIngredientsAndPreparationMatch": true,
+          "noVisibleCitrus": true,
+          "noTextOrWatermark": true,
+          "sourceRecipeIngredientNames": [
+            "white fish",
+            "mixed salad greens",
+            "avocado",
+            "olive oil"
+          ],
+          "kind": "illustration"
+        }
+      ],
+      "limitations": "AI-generated recipe illustration, not a photograph of a cooked recipe. Quantities, nut counts and exact portions follow the written recipe."
+    },
+    {
+      "sheet": 10,
+      "path": "/assets/food/recipe-atlas-10.webp",
+      "kind": "illustration",
+      "label": "Recipe illustration",
+      "reviewedAt": "2026-11-07",
+      "tool": "image_gen built-in",
+      "prompt": "Create ONE complete production food-image sprite atlas for a recipe planner. This is a labeled-in-app generated RECIPE ILLUSTRATION, not documentary photography. Canvas target 2048x1024. EXACTLY 4 equal columns and 2 equal rows, 8 equally sized square tiles. No gaps, no visible divider lines, no text, no numbers, no logos. Realistic editorial food photography style, clean warm ivory background. Each whole plate, bowl or glass is centered in middle80% of its tile, contained fully, nothing overlaps adjacent tile. Follow the exact left-to-right, top-to-bottom recipe order below. Faithfully depict each recipe's protein, carbohydrate, vegetables, preparation and sides, using ONLY its ingredients. No decorative garnish or additional foods: NO citrus, lemon, lime, orange, calamansi, or grapefruit anywhere. No bread, fried eggs, sauces, syrup, or fruit unless explicitly listed for that cell. Drinks should be finished drinks in individual glass/cup without whole ingredient props cluttering cell. Primary subject of each tile is that specific finished recipe. All cells will be independently cropped via CSS, so keep a mathematically regular grid.\n\nRow 1 column 1: Meal 1: The Breaking (Ghost Protocol). Ingredients: 4 pc whole egg; 0.5 pc avocado; 1 cup spinach. Preparation: Wilt the spinach in a nonstick pan. Add the beaten eggs and scramble until fully set. Serve with avocado; walnuts or kale may be substituted as noted in the calendar.\n\nRow 1 column 2: Meal 2: The Monolith (Ghost Protocol). Ingredients: 250 g salmon fillet; 1 cup white rice; 1 cup broccoli; 1 tsp olive oil. Preparation: Cook the rice. Roast the broccoli with olive oil. Bake the salmon until cooked through; grass-fed beef or sweet potato may be substituted as noted in the calendar.\n\nRow 1 column 3: Meal 3: The Restoration (Ghost Protocol). Ingredients: 180 g chicken breast; 3 cup mixed salad greens; 1 tbsp olive oil. Preparation: Grill the chicken until its thickest part reaches 74°C; white fish may be substituted. Toss the salad greens with olive oil. Serve mindfully without distractions, following the calendar note.\n\nRow 1 column 4: Breakfast: Accelerated 11% Cut. Ingredients: 2 cup egg whites; 1 pc whole egg; 1 cup spinach; 0.5 cup mushrooms; 0.25 cup blueberries. Preparation: Sauté the spinach and mushrooms in a nonstick pan. Add the egg whites and whole egg, then scramble until fully set. Serve with blueberries.\n\nRow 2 column 1: Lunch: Accelerated 11% Cut. Ingredients: 220 g chicken breast; 1.5 cup broccoli; 1.5 cup asparagus. Preparation: Grill the chicken until its thickest part reaches 74°C. Steam the broccoli and asparagus until crisp-tender. Serve together.\n\nRow 2 column 2: Pre-Workout Snack: Accelerated 11% Cut. Ingredients: 1.5 scoop whey protein; 1.5 cup water. Preparation: Shake the whey protein with water until smooth. Drink shortly before the planned workout.\n\nRow 2 column 3: Dinner: Accelerated 11% Cut. Ingredients: 250 g white fish; 3 cup mixed salad greens; 0.25 pc avocado; 1 tsp olive oil. Preparation: Bake or pan-sear the fish until opaque and cooked through. Toss the salad greens with olive oil and top with avocado. Serve the fish with the salad.\n\nRow 2 column 4: Evening Snack: Accelerated 11% Cut. Ingredients: 150 g non-fat Greek yogurt; 1 scoop casein protein. Preparation: Spoon the yogurt into a bowl. Stir in casein protein until smooth; whey may be substituted.",
+      "promptRecord": "Exact prompt retained from generation call.",
+      "editPrompt": null,
+      "width": 1774,
+      "height": 887,
+      "columns": 4,
+      "rows": 2,
+      "cellWidth": 443.5,
+      "cellHeight": 443.5,
+      "encoding": "WebP quality 88; original geometry unchanged.",
+      "sizeBytes": 303366,
+      "sha256": "108c771b56bad3aeb2907bb4303f20e956dd9c3531aa133f85c6af06ccd5a83b",
+      "cells": [
+        {
+          "index": 145,
+          "name": "Meal 1: The Breaking (Ghost Protocol)",
+          "row": 0,
+          "column": 0,
+          "status": "reviewed",
+          "review": "Visible main protein/carbohydrate, prepared form and listed sides checked against recipe. No visible citrus or unrelated garnish. Portions are illustrations, not measured serving sizes.",
+          "kind": "illustration"
+        },
+        {
+          "index": 146,
+          "name": "Meal 2: The Monolith (Ghost Protocol)",
+          "row": 0,
+          "column": 1,
+          "status": "reviewed",
+          "review": "Visible main protein/carbohydrate, prepared form and listed sides checked against recipe. No visible citrus or unrelated garnish. Portions are illustrations, not measured serving sizes.",
+          "kind": "illustration"
+        },
+        {
+          "index": 147,
+          "name": "Meal 3: The Restoration (Ghost Protocol)",
+          "row": 0,
+          "column": 2,
+          "status": "reviewed",
+          "review": "Visible main protein/carbohydrate, prepared form and listed sides checked against recipe. No visible citrus or unrelated garnish. Portions are illustrations, not measured serving sizes.",
+          "kind": "illustration"
+        },
+        {
+          "index": 148,
+          "name": "Breakfast: Accelerated 11% Cut",
+          "row": 0,
+          "column": 3,
+          "status": "reviewed",
+          "review": "Visible main protein/carbohydrate, prepared form and listed sides checked against recipe. No visible citrus or unrelated garnish. Portions are illustrations, not measured serving sizes.",
+          "kind": "illustration"
+        },
+        {
+          "index": 149,
+          "name": "Lunch: Accelerated 11% Cut",
+          "row": 1,
+          "column": 0,
+          "status": "reviewed",
+          "review": "Visible main protein/carbohydrate, prepared form and listed sides checked against recipe. No visible citrus or unrelated garnish. Portions are illustrations, not measured serving sizes.",
+          "kind": "illustration"
+        },
+        {
+          "index": 150,
+          "name": "Pre-Workout Snack: Accelerated 11% Cut",
+          "row": 1,
+          "column": 1,
+          "status": "reviewed",
+          "review": "Visible main protein/carbohydrate, prepared form and listed sides checked against recipe. No visible citrus or unrelated garnish. Portions are illustrations, not measured serving sizes.",
+          "kind": "illustration"
+        },
+        {
+          "index": 151,
+          "name": "Dinner: Accelerated 11% Cut",
+          "row": 1,
+          "column": 2,
+          "status": "reviewed",
+          "review": "Visible main protein/carbohydrate, prepared form and listed sides checked against recipe. No visible citrus or unrelated garnish. Portions are illustrations, not measured serving sizes.",
+          "kind": "illustration"
+        },
+        {
+          "index": 152,
+          "name": "Evening Snack: Accelerated 11% Cut",
+          "row": 1,
+          "column": 3,
+          "status": "reviewed",
+          "review": "Visible main protein/carbohydrate, prepared form and listed sides checked against recipe. No visible citrus or unrelated garnish. Portions are illustrations, not measured serving sizes.",
+          "kind": "illustration"
+        }
+      ],
+      "limitations": "AI-generated recipe illustration, not a photograph of a cooked recipe. Quantities, nut counts and exact portions follow the written recipe."
+    }
+  ]
+}

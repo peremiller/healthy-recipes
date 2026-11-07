@@ -5,6 +5,7 @@ import { haversineKm } from "./lib/geo.mjs";
 import { fillRollingMealPlan, isPlannerRecipeAllowed, MEAL_TYPES } from "./lib/meal-plan.mjs";
 import { diabeticAlternativeFor, isDiabeticFriendlyRecipe } from "./lib/diabetic-alternatives.mjs";
 import { createNearbyDining } from "./lib/nearby-dining.mjs";
+import { resolveRecipeVisual, recipeVisualSignature } from "./lib/recipe-photos.mjs";
 import { IMPORTED_RECIPE_DEFINITIONS } from "./lib/imported-recipes.mjs";
 import { createCloudSync } from "./lib/cloud-sync.mjs";
 import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "./lib/cloud-config.mjs";
@@ -432,11 +433,17 @@ function dedupeRecipes(recipes) {
   return { recipes: unique, redirects };
 }
 
-function recipeImage(item) {
-  if (!item) return "";
-  if (item.visualMode === "custom" && item.image) return item.image;
-  const mealFallback = PHOTOS[item.cat === "breakfast" ? "oatmeal" : item.cat === "lunch" ? "salad" : item.cat === "dinner" ? "tofu" : "apple"];
-  return IMAGE_BY_RECIPE[item.name] || CALENDAR_PHOTO_BY_RECIPE[item.name] || item.image || mealFallback;
+function recipeVisualMarkup(item, className = "", { mini = false } = {}) {
+  const visual = resolveRecipeVisual(item);
+  const label = `${visual.label}: ${item?.name || "Recipe"}`;
+  const attributes = `class="recipe-visual ${className} ${mini ? "mini" : ""}" role="img" aria-label="${esc(label)}" title="${esc(label)}" data-recipe-visual="${esc(item?.name || "")}" data-visual-kind="${visual.kind}"`;
+  if (!visual.src) return `<span ${attributes}>${icon("ph-image")}<small class="visual-caption">Image needs review</small></span>`;
+  // The SVG is a viewport over generated raster imagery, preserving each cell's
+  // aspect ratio. It never draws food or substitutes a different recipe's cell.
+  const picture = visual.kind === "illustration"
+    ? `<svg viewBox="${visual.column} ${visual.row} 1 1" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false"><image href="${esc(visual.src)}" width="${visual.columns}" height="${visual.rows}" /></svg>`
+    : `<img src="${esc(visual.src)}" alt="" loading="lazy" />`;
+  return `<span ${attributes}>${picture}<small class="visual-caption">${visual.kind === "illustration" ? "Illustration" : "Your photo"}</small></span>`;
 }
 
 function recipe(name, cat, cal, time, tags, image, ingredients, steps) {
@@ -1179,7 +1186,7 @@ function renderMealAlternatives(date, meal, currentItem) {
     }
     if (!alternative) return "";
     return `<button class="meal-alternative ${rule.key}-alternative" type="button" data-use-meal-alternative="${date}|${meal}|${alternative.id}|${rule.key}" data-alternative-kind="${rule.key}" aria-label="Use ${rule.label.toLowerCase()} ${esc(alternative.name)}">
-      <img src="${esc(recipeImage(alternative))}" alt="" loading="lazy" /><span><small>${rule.label}</small><strong>${esc(alternative.name)}</strong>${rule.key === "diabetes" ? `<span class="alternative-nutrition">${alternative.cal} kcal · ${fmtPeso(mealCostPeso(alternative))} est. · Swap meal</span>` : ""}</span>${icon("ph-swap")}
+      ${recipeVisualMarkup(alternative, "", { mini: true })}<span><small>${rule.label}</small><strong>${esc(alternative.name)}</strong>${rule.key === "diabetes" ? `<span class="alternative-nutrition">${alternative.cal} kcal · ${fmtPeso(mealCostPeso(alternative))} est. · Swap meal</span>` : ""}</span>${icon("ph-swap")}
     </button>${nearbyDining.renderMeal(alternative, { compact: true })}`;
   }).join("");
 }
@@ -1214,7 +1221,7 @@ function calendarMealPickerModal(date, meal) {
   const currentId = planFor(date)[meal];
   openModal(`<h2>Calendar meals · ${fmtDow(date)} ${fmtDate(date)}</h2><p class="modal-subtitle">Choose the ${MEAL_LABEL[meal].toLowerCase()} that should count toward your plan. Other calendar meals remain available here.</p>
     <div class="calendar-picker-list">${items.map((item) => `<button class="calendar-picker-row ${item.id === currentId ? "selected" : ""}" type="button" data-use-calendar-recipe="${item.id}" ${item.id === currentId ? "disabled" : ""}>
-      <img src="${esc(recipeImage(item))}" alt="" /><span><strong>${esc(item.name)}</strong><small>${item.cal} kcal · ${fmtPeso(mealCostPeso(item))} est. · ${item.time} min${item.id === currentId ? " · Currently planned" : ""}</small></span>${item.id === currentId ? icon("ph-check-circle") : icon("ph-arrow-right")}
+      ${recipeVisualMarkup(item, "", { mini: true })}<span><strong>${esc(item.name)}</strong><small>${item.cal} kcal · ${fmtPeso(mealCostPeso(item))} est. · ${item.time} min${item.id === currentId ? " · Currently planned" : ""}</small></span>${item.id === currentId ? icon("ph-check-circle") : icon("ph-arrow-right")}
     </button>`).join("")}</div>`);
   $$('[data-use-calendar-recipe]').forEach((button) => button.addEventListener("click", () => {
     setPlannedMeal(date, meal, button.dataset.useCalendarRecipe, `${MEAL_LABEL[meal]} updated from Google Calendar`);
@@ -1435,7 +1442,7 @@ function shell(route, body) {
           <label class="global-search">${icon("ph-magnifying-glass")}<input id="globalSearch" type="search" placeholder="Search recipes, ingredients, meals…" /><span class="search-key">⌘ K</span></label>
           ${route.section === "planner" || route.section === "meal-map" ? `<div class="topbar-actions"><button class="icon-button" type="button" aria-label="Notifications">${icon("ph-bell")}</button><span class="today-date">${fmtDateWithYear()}</span></div>` : ""}
         </header>
-        <main class="content" id="mainContent">${["planner", "daily-wellness", "meal-map", "recipes"].includes(route.section) || route.detail === "recipe" ? nearbyDining.renderControls() : ""}${body}</main>
+        <main class="content" id="mainContent">${["planner", "daily-wellness", "meal-map", "recipes"].includes(route.section) || route.detail === "recipe" ? `${nearbyDining.renderControls()}<p class="recipe-visual-note">Food previews are recipe illustrations, matched to the ingredients and preparation. Follow the written quantities for portions. Restaurant dishes may differ.</p>` : ""}${body}</main>
       </section>
     </div>`;
 }
@@ -1631,7 +1638,7 @@ function mealVisualizationData() {
 function mealVizDetails(node, data) {
   if (node?.kind === "meal") {
     const { item, date, meal } = node;
-    return `<div class="meal-viz-detail-photo"><img src="${esc(recipeImage(item))}" alt="${esc(item.name)}" /></div>
+    return `<div class="meal-viz-detail-photo">${recipeVisualMarkup(item, "timeline-visual")}</div>
       <span class="meal-viz-eyebrow"><i style="background:${MEAL_VISUAL[meal].color}"></i>${MEAL_LABEL[meal]} · ${fmtLong(date)}</span>
       <h2>${esc(item.name)}</h2>
       <div class="meal-viz-nutrition"><span><strong>${item.cal}</strong> kcal</span><span><strong>${fmtPeso(mealCostPeso(item))}</strong> estimated</span><span><strong>${item.time}</strong> min</span><span><strong>${item.ingredients.length}</strong> ingredients</span></div>
@@ -1795,13 +1802,20 @@ function drawMealVisualization(canvas, data) {
     context.shadowBlur = 0;
 
     if (node.kind === "meal") {
-      const image = mealVizImage(recipeImage(node.item), () => drawMealVisualization(canvas, data));
+      const visual = resolveRecipeVisual(node.item);
+      const image = mealVizImage(visual.src, () => drawMealVisualization(canvas, data));
       context.save();
       context.beginPath();
       context.arc(point.x, point.y, Math.max(12, radius - 3), 0, Math.PI * 2);
       context.clip();
       if (image?.complete && image.naturalWidth) {
-        context.drawImage(image, point.x - radius, point.y - radius, radius * 2, radius * 2);
+        if (visual.sourceRect) {
+          const { x, y, width, height } = visual.sourceRect;
+          context.drawImage(image, x, y, width, height, point.x - radius, point.y - radius, radius * 2, radius * 2);
+        } else {
+          const edge = Math.min(image.naturalWidth, image.naturalHeight);
+          context.drawImage(image, (image.naturalWidth - edge) / 2, (image.naturalHeight - edge) / 2, edge, edge, point.x - radius, point.y - radius, radius * 2, radius * 2);
+        }
       } else {
         context.fillStyle = MEAL_VISUAL[node.meal].color;
         context.fillRect(point.x - radius, point.y - radius, radius * 2, radius * 2);
@@ -1996,7 +2010,7 @@ function renderWeekPlanner() {
       const item = recipeById(planFor(date)[meal]);
       return `<div class="week-cell meal-slot ${date === today ? "today" : ""}">
         <div class="primary-meal-slot">${item ? `<button class="meal-card-button" type="button" data-pick="${date}|${meal}" aria-label="Change ${MEAL_LABEL[meal]} on ${fmtLong(date)}">
-          <img class="meal-thumb" src="${esc(recipeImage(item))}" alt="${esc(item.name)}" loading="lazy" />
+          ${recipeVisualMarkup(item, "meal-thumb")}
           <span class="meal-name">${esc(item.name)}</span><span class="meal-calories">${item.cal} kcal · <span class="meal-cost" data-meal-cost="${mealCostPeso(item)}">${fmtPeso(mealCostPeso(item))} est.</span></span>
         </button>` : `<button class="empty-meal-button" type="button" data-pick="${date}|${meal}">${icon("ph-plus")}<span>Add meal</span></button>`}</div>
         ${renderCalendarMealOptions(date, meal, item?.id)}
@@ -2059,7 +2073,7 @@ function renderDayPlanner() {
           const item = recipeById(planFor(dayDate)[meal]);
           const times = ["8:00 AM", "12:30 PM", "6:00 PM", "8:30 PM"];
           const primary = item ? `<div class="timeline-row">
-            <span class="meal-type-icon">${icon(MEAL_ICON[meal])}</span><span class="meal-time">${times[index]}</span><img src="${esc(recipeImage(item))}" alt="${esc(item.name)}" /><div class="timeline-copy"><strong>${esc(item.name)}</strong><span>${MEAL_LABEL[meal]} · ${item.cal} kcal · <span class="meal-cost" data-meal-cost="${mealCostPeso(item)}">${fmtPeso(mealCostPeso(item))} est.</span></span></div><button class="icon-button" type="button" data-pick="${dayDate}|${meal}" aria-label="Change meal">${icon("ph-dots-three-vertical")}</button>
+            <span class="meal-type-icon">${icon(MEAL_ICON[meal])}</span><span class="meal-time">${times[index]}</span>${recipeVisualMarkup(item, "timeline-visual")}<div class="timeline-copy"><strong>${esc(item.name)}</strong><span>${MEAL_LABEL[meal]} · ${item.cal} kcal · <span class="meal-cost" data-meal-cost="${mealCostPeso(item)}">${fmtPeso(mealCostPeso(item))} est.</span></span></div><button class="icon-button" type="button" data-pick="${dayDate}|${meal}" aria-label="Change meal">${icon("ph-dots-three-vertical")}</button>
           </div>` : `<button class="timeline-row empty-day-row" type="button" data-pick="${dayDate}|${meal}"><span class="meal-type-icon">${icon(MEAL_ICON[meal])}</span><span class="meal-time">${times[index]}</span><span></span><span>Add ${MEAL_LABEL[meal].toLowerCase()}</span>${icon("ph-plus")}</button>`;
           return `<div class="timeline-meal-group">${primary}${renderCalendarMealOptions(dayDate, meal, item?.id)}${renderMealAlternatives(dayDate, meal, item)}${nearbyDining.renderMeal(item)}</div>`;
         }).join("")}
@@ -2086,7 +2100,7 @@ function renderRecipes() {
     </div>
     ${list.length ? `<div class="recipe-grid">${list.map((item) => `
       <article class="recipe-entry"><a class="recipe-card" href="${recipePath(item)}" data-route>
-        <img src="${esc(recipeImage(item))}" alt="${esc(item.name)}" loading="lazy" />
+        ${recipeVisualMarkup(item, "recipe-card-visual")}
         <div class="recipe-card-body"><h2>${esc(item.name)}</h2><div class="recipe-meta"><span>${MEAL_LABEL[item.cat]}</span><span>${item.cal} kcal</span><span>${item.time} min</span></div><div class="tags">${item.tags.slice(0, 3).map((tag) => `<span class="tag">${esc(tag)}</span>`).join("")}</div></div>
       </a>${nearbyDining.renderMeal(item, { limit: 2 })}</article>`).join("")}</div>` : `<div class="surface empty-state">${icon("ph-bowl-food")}No recipes match those filters.</div>`}`;
 }
@@ -2111,7 +2125,7 @@ function renderRecipeDetail(item) {
     <div class="detail-grid">
       ${sourceNote}
       <section class="surface detail-section"><h2>Ingredients</h2>${item.ingredients.map((ingredient) => `<div class="ingredient-row"><span>${esc(ingredient.name)}</span><strong>${ingredient.qty} ${esc(ingredient.unit)}</strong></div>`).join("") || '<div class="empty-state">No ingredients listed.</div>'}</section>
-      <aside class="surface detail-section"><h2>Meal overview</h2><img src="${esc(recipeImage(item))}" alt="${esc(item.name)}" style="width:100%;height:190px;object-fit:cover;border-radius:10px;margin-bottom:16px" />${nearbyDining.renderMeal(item, { limit: 6 })}<div class="grocery-bridge" style="grid-template-columns:1fr"><a href="/grocery" data-route>${icon("ph-basket")}<div><strong>Check your grocery list</strong><span>See what you already have and what to buy</span></div>${icon("ph-caret-right")}</a></div></aside>
+      <aside class="surface detail-section"><h2>Meal overview</h2>${recipeVisualMarkup(item, "recipe-detail-visual")}${nearbyDining.renderMeal(item, { limit: 6 })}<div class="grocery-bridge" style="grid-template-columns:1fr"><a href="/grocery" data-route>${icon("ph-basket")}<div><strong>Check your grocery list</strong><span>See what you already have and what to buy</span></div>${icon("ph-caret-right")}</a></div></aside>
       <section class="surface detail-section" style="grid-column:1/-1"><h2>Method</h2>${item.steps.map((step, index) => `<div class="step-row"><span class="step-number">${index + 1}</span><span>${esc(step)}</span></div>`).join("") || '<div class="empty-state">No steps listed.</div>'}</section>
     </div>`;
 }
@@ -2289,10 +2303,12 @@ function closeModal() {
 function recipeModal(existing = null) {
   const item = existing || {};
   const customPhoto = item.visualMode === "custom" ? item.image || "" : "";
+  const customPhotoConfirmed = resolveRecipeVisual(item).kind === "user-photo";
   openModal(`
     <h2>${existing ? "Edit" : "Add"} recipe</h2><p class="modal-subtitle">Keep the essentials together so planning stays quick.</p>
     <label class="form-field">Recipe name<input id="recipeName" value="${esc(item.name || "")}" placeholder="Miso salmon bowl" /></label>
-    <div class="form-grid"><label class="form-field">Meal type<select id="recipeCategory">${MEALS.map((meal) => `<option value="${meal}" ${item.cat === meal ? "selected" : ""}>${MEAL_LABEL[meal]}</option>`).join("")}</select></label><label class="form-field">Photo URL (optional)<input id="recipeImage" type="url" value="${esc(customPhoto)}" placeholder="Leave blank to use a real meal photo" /></label></div>
+    <div class="form-grid"><label class="form-field">Meal type<select id="recipeCategory">${MEALS.map((meal) => `<option value="${meal}" ${item.cat === meal ? "selected" : ""}>${MEAL_LABEL[meal]}</option>`).join("")}</select></label><label class="form-field">Your photo URL (optional)<input id="recipeImage" type="url" value="${esc(customPhoto)}" placeholder="Leave blank for a matched recipe illustration" /></label></div>
+    <label class="photo-confirmation"><input id="recipePhotoConfirmed" type="checkbox" ${customPhotoConfirmed ? "checked" : ""} /> I confirm that this photo shows this recipe’s ingredients and preparation.</label><p class="recipe-visual-note">Your photo is displayed after confirmation. Recipe edits need a matching illustration or a newly confirmed photo.</p>
     <div class="form-grid"><label class="form-field">Calories<input id="recipeCalories" type="number" min="0" value="${item.cal || ""}" placeholder="450" /></label><label class="form-field">Prep time in minutes<input id="recipeTime" type="number" min="0" value="${item.time || ""}" placeholder="25" /></label></div>
     <label class="form-field">Tags<input id="recipeTags" value="${esc((item.tags || []).join(", "))}" placeholder="high-protein, quick" /></label>
     <label class="form-field">Ingredients — one per line<textarea id="recipeIngredients" placeholder="0.5 cup rolled oats\n2 eggs">${esc((item.ingredients || []).map(ingToLine).join("\n"))}</textarea></label>
@@ -2313,6 +2329,15 @@ function recipeModal(existing = null) {
       return;
     }
     const customImage = $("#recipeImage").value.trim();
+    if (customImage) {
+      try {
+        const photoUrl = new URL(customImage);
+        if (photoUrl.protocol !== "https:" || photoUrl.username || photoUrl.password) throw new Error();
+      } catch {
+        toast("Use a public HTTPS photo URL without a username or password");
+        return;
+      }
+    }
     const data = {
       name,
       cat: $("#recipeCategory").value,
@@ -2324,6 +2349,8 @@ function recipeModal(existing = null) {
       ingredients: $("#recipeIngredients").value.split("\n").map(parseIngLine).filter(Boolean),
       steps: $("#recipeSteps").value.split("\n").map((step) => step.trim()).filter(Boolean)
     };
+    data.photoConfirmed = Boolean(customImage && $("#recipePhotoConfirmed").checked);
+    data.photoReview = data.photoConfirmed ? { confirmed: true, url: customImage, name: data.name, ingredientSignature: recipeVisualSignature(data) } : null;
     if (containsCitrus([data.name, data.ingredients, data.steps, data.tags])) {
       toast("Choose ingredients and instructions without citrus");
       return;
@@ -2476,7 +2503,7 @@ function pickerRows(date, meal, query = "") {
     || item.name.toLowerCase().includes(normalizedQuery)
     || item.tags.join(" ").toLowerCase().includes(normalizedQuery)));
   const sorted = [...matches].sort((a, b) => Number(b.cat === meal) - Number(a.cat === meal) || a.name.localeCompare(b.name));
-  return sorted.length ? sorted.map((item) => `<button class="picker-row" type="button" data-choose-recipe="${item.id}" data-picker-date="${date}" data-picker-meal="${meal}"><img src="${esc(recipeImage(item))}" alt="" /><div><strong>${esc(item.name)}</strong><span>${item.cal} kcal · ${fmtPeso(mealCostPeso(item))} est. · ${item.time} min</span></div><span class="tag">${MEAL_LABEL[item.cat]}</span></button>`).join("") : '<div class="empty-state">No matching recipes.</div>';
+  return sorted.length ? sorted.map((item) => `<button class="picker-row" type="button" data-choose-recipe="${item.id}" data-picker-date="${date}" data-picker-meal="${meal}">${recipeVisualMarkup(item, "", { mini: true })}<div><strong>${esc(item.name)}</strong><span>${item.cal} kcal · ${fmtPeso(mealCostPeso(item))} est. · ${item.time} min</span></div><span class="tag">${MEAL_LABEL[item.cat]}</span></button>`).join("") : '<div class="empty-state">No matching recipes.</div>';
 }
 
 function pickerModal(date, meal) {

@@ -1,10 +1,14 @@
 import { searchOpenRestaurants, validateRestaurantLocation } from "../server/restaurants.mjs";
+import { searchGoogleOpenRestaurants } from "../server/google-restaurants.mjs";
+
+const searchConfiguredProvider = (input) => process.env.GOOGLE_PLACES_API_KEY || process.env.GOOGLE_MAPS_API_KEY
+  ? searchGoogleOpenRestaurants(input) : searchOpenRestaurants(input);
 
 const json = (body, status = 200, extra = {}) => Response.json(body, {
   status, headers: { "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff", ...extra }
 });
 
-export async function handleRestaurantRequest(request, { search = searchOpenRestaurants } = {}) {
+export async function handleRestaurantRequest(request, { search = searchConfiguredProvider } = {}) {
   if (request.method !== "POST") return json({ error: "Use POST to search nearby restaurants." }, 405, { Allow: "POST" });
   const origin = request.headers.get("origin");
   if (origin && origin !== new URL(request.url).origin) return json({ error: "Use the restaurant search from this site." }, 403);

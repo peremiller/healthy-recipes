@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { EYE_SUPPORTIVE_RECIPES, IMPORTED_RECIPE_DEFINITIONS } from "../lib/imported-recipes.mjs";
 import { fillRollingMealPlan } from "../lib/meal-plan.mjs";
+import { resolveRecipeVisual } from "../lib/recipe-photos.mjs";
 
 const HEALTH_RECIPE_NAMES = [
   "Savory Oatmeal with Tofu & Pechay",
@@ -130,12 +131,12 @@ assert.ok(Buffer.byteLength(JSON.stringify(fresh)) <= 2 * 1024 * 1024, "the comp
 assert.match(freshMarkup, /data-cloud-account/, "the application shell must expose cloud sync settings");
 assert.match(freshMarkup, /Saved on this device/, "signed-out users must see the local persistence state");
 assert.equal((freshMarkup.match(/class="recipe-card"/g) || []).length, EXPECTED_RECIPE_COUNT, "all seeded recipes must render as cards");
-const renderedImages = [...freshMarkup.matchAll(/<img src="([^"]+)" alt="[^"]+" loading="lazy"/g)].map((match) => match[1]);
+const renderedImages = [...freshMarkup.matchAll(/data-recipe-visual="([^"]+)"/g)].map((match) => match[1]);
 assert.equal(renderedImages.length, EXPECTED_RECIPE_COUNT, "every recipe card must render a visual");
-renderedImages.forEach((src) => {
-  assert.match(src, /^(https:\/\/images\.unsplash\.com\/|\/assets\/bangus-sisig\.webp$)/, "managed recipe visuals must be food photographs");
-  assert.ok(!src.startsWith("data:image/svg+xml"), "managed recipe visuals must not be generated SVG artwork");
+fresh.recipes.forEach((item) => {
+  assert.equal(resolveRecipeVisual(item).status, "reviewed", `${item.name} must have a reviewed recipe-specific visual`);
 });
+assert.match(freshMarkup, /Food previews are recipe illustrations/);
 
 window.location.pathname = "/grocery";
 await loadState("grocery-coverage");
@@ -191,7 +192,7 @@ REQUESTED_BOWL_RECIPE_NAMES.forEach((name) => {
   const ingredientNames = new Set(item.ingredients.map((ingredient) => ingredient.name));
   REQUESTED_BOWL_INGREDIENTS[name].forEach((ingredient) => assert.ok(ingredientNames.has(ingredient), `${name} is missing ${ingredient}`));
   assert.ok(item.steps.length >= 6, `${name} needs complete preparation steps`);
-  assert.match(item.image, /^https:\/\/images\.unsplash\.com\//, `${name} must use a real food photograph`);
+  assert.equal(resolveRecipeVisual(item).status, "reviewed", `${name} must use a reviewed recipe illustration`);
 });
 JUICE_RECIPE_NAMES.forEach((name, index) => {
   const item = fresh.recipes.find((recipe) => recipe.name === name);
@@ -202,7 +203,7 @@ JUICE_RECIPE_NAMES.forEach((name, index) => {
   assert.ok(item.ingredients.length >= 3, `${name} needs measurable produce ingredients`);
   assert.ok(item.steps.length >= 5, `${name} needs a complete preparation method`);
   assert.equal(item.source, "Screenshot 2026-09-07 at 5.23.15 AM.png", `${name} must identify the source image`);
-  assert.match(item.image, /^https:\/\/images\.unsplash\.com\//, `${name} must use a real drink photograph`);
+  assert.equal(resolveRecipeVisual(item).status, "reviewed", `${name} must use a reviewed drink illustration`);
 });
 IMPORTED_RECIPE_NAMES.forEach((name) => {
   const item = fresh.recipes.find((recipe) => recipe.name === name);
@@ -210,7 +211,7 @@ IMPORTED_RECIPE_NAMES.forEach((name) => {
   assert.ok(item.ingredients.length >= 2, `${name} needs measurable ingredients`);
   assert.ok(item.steps.length >= (item.source === "Body Card" ? 2 : 3), `${name} needs a complete method`);
   assert.ok(item.source, `${name} needs attachment provenance`);
-  assert.match(item.image, /^https:\/\/images\.unsplash\.com\//, `${name} must use a real food photograph`);
+  assert.equal(resolveRecipeVisual(item).status, "reviewed", `${name} must use a reviewed recipe illustration`);
 });
 EYE_SUPPORTIVE_RECIPES.forEach(({ name }) => {
   const item = fresh.recipes.find((recipe) => recipe.name === name);
@@ -342,7 +343,7 @@ const plannerMarkup = appElement.innerHTML;
 assert.match(plannerMarkup, /Not synced on this device/, "Planner must make local-only state explicit");
 assert.match(plannerMarkup, /data-cloud-account/, "Planner must offer a direct device connection action");
 assert.match(plannerMarkup, /This phone is using a separate local meal plan/, "Planner must explain why two unconnected devices can differ");
-const plannerPhotos = [...plannerMarkup.matchAll(/<img class="meal-thumb" src="([^"]+)"/g)].map((match) => match[1]);
+const plannerPhotos = [...plannerMarkup.matchAll(/class="recipe-visual meal-thumb[^"]*"[^>]*data-recipe-visual="([^"]+)"/g)].map((match) => match[1]);
 assert.equal(plannerPhotos.length, 28, "the current planner week must render a photo for every meal slot");
 const plannerCosts = [...plannerMarkup.matchAll(/data-meal-cost="([0-9]+)"/g)].map((match) => Number(match[1]));
 assert.equal(plannerCosts.length, 28, "the current planner week must show an estimated Philippine peso cost for every meal");
@@ -364,10 +365,8 @@ turkeyAlternatives.forEach((match) => {
   assert.ok(!containsTerm(alternative, "turkey"), "a turkey-free alternative must not contain turkey");
 });
 assert.match(plannerMarkup, /Turkey-free alternative/, "turkey alternatives must be clearly labeled");
-plannerPhotos.forEach((src) => {
-  assert.match(src, /^(https:\/\/images\.unsplash\.com\/|\/assets\/bangus-sisig\.webp$)/, "planner meal visuals must use food imagery");
-  assert.ok(!src.startsWith("data:image/svg+xml"), "planner meal visuals must not use SVG artwork");
-});
+assert.doesNotMatch(plannerMarkup, /images\.unsplash\.com/, "legacy generic stock photos must never be rendered");
+assert.match(plannerMarkup, /preserveAspectRatio="xMidYMid slice"/, "image cells preserve aspect ratio");
 
 window.matchMedia = () => ({ matches: true });
 window.location.pathname = "/planner";

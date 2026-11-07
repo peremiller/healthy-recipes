@@ -100,3 +100,18 @@ await denied.locateAndSearch();
 assert.match(denied.snapshot().error, /permission was denied/);
 assert.equal(denied.snapshot().location, null);
 console.log("Nearby dining passed: venue-local hours, overnight and unknown schedules, distance/cuisine ranking, single request sharing, API validation/no-store, permission denial, expiry, offline and location clearing.");
+let googleTime = +now;
+let googleRequests = 0;
+const googleController = createNearbyDining({
+  clock: () => googleTime, geolocation: () => geo,
+  fetchImpl: async () => { googleRequests += 1; return { ok: true, json: async () => ({ ...data, source: 'Google Maps', cacheable: false, places: [{ ...data.places[0], attributions: [{ provider: 'Test credit', providerUri: 'https://example.com/credit' }] }] }) }; }
+});
+await googleController.locateAndSearch();
+const googleMarkup = googleController.renderMeal({ name: 'Tinola' });
+assert.match(googleMarkup, /translate="no">Google Maps/);
+assert.match(googleMarkup, /https:\/\/example.com\/credit/);
+assert.doesNotMatch(googleMarkup, /OpenStreetMap/, 'provider attribution must not mix Google and OSM');
+googleTime += 300001;
+await googleController.refreshIfNeeded();
+assert.equal(googleRequests, 1, 'expired Google content requires user action instead of automatic paid requests');
+assert.equal(googleController.snapshot().places.length, 0);
