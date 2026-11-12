@@ -17,7 +17,7 @@ const server = http.createServer(async (req, res) => {
   if (!filename.startsWith(root + path.sep)) { res.writeHead(403); res.end(); return; }
   try {
     const body = await readFile(filename);
-    res.setHeader("Content-Type", mime[ext] || "application/octet-stream");
+    res.setHeader("Content-Type", mime[ext] || (ext ? "application/octet-stream" : "text/html; charset=utf-8"));
     res.end(body);
   } catch {
     res.writeHead(404); res.end("Not found");
