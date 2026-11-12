@@ -57,7 +57,11 @@ try {
       assert.equal(await dialog.count(), 0);
       assert.equal(await page.evaluate(() => document.activeElement?.hasAttribute("data-new-recipe")), true);
       const widthMeasured = await page.evaluate(() => document.documentElement.scrollWidth);
-      assert.ok(widthMeasured <= width + 2, `Unexpected horizontal overflow: ${widthMeasured} > ${width}`);
+      const overflowElements = widthMeasured > width + 2 ? await page.evaluate(() => [...document.querySelectorAll("body *")]
+        .map(element => ({ element: element.tagName.toLowerCase(), class: String(element.className || "").slice(0, 90),
+          left: Math.round(element.getBoundingClientRect().left), right: Math.round(element.getBoundingClientRect().right) }))
+        .filter(item => item.right > innerWidth + 2 || item.left < -2).slice(0, 15)) : [];
+      assert.ok(widthMeasured <= width + 2, `Unexpected horizontal overflow: ${widthMeasured} > ${width}: ${JSON.stringify(overflowElements)}`);
       await page.evaluate(() => localStorage.setItem("primeqe-qa-sentinel", "preserve"));
       await page.goto(origin + "/recipes/%E0%A4%A", { waitUntil: "domcontentloaded" });
       await page.getByText("Page not found", { exact: true }).waitFor({ timeout: 15000 });
