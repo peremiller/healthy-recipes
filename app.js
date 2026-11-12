@@ -8,6 +8,7 @@ import { createNearbyDining } from "./lib/nearby-dining.mjs";
 import { resolveRecipeVisual, recipeVisualSignature } from "./lib/recipe-photos.mjs";
 import { IMPORTED_RECIPE_DEFINITIONS } from "./lib/imported-recipes.mjs";
 import { createCloudSync } from "./lib/cloud-sync.mjs";
+import { decodeRouteSegment } from "./lib/route-segments.mjs";
 import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "./lib/cloud-config.mjs";
 import {
   CALENDAR_MEAL_DEFINITIONS,
@@ -1367,7 +1368,8 @@ function routeState() {
   if (path === "/planner/visualization") return { section: "meal-map" };
   if (path === "/recipes") return { section: "recipes" };
   if (path.startsWith("/recipes/")) {
-    const segment = decodeURIComponent(path.split("/")[2] || "");
+    const segment = decodeRouteSegment(path.split("/")[2] || "");
+    if (segment === null) return { section: "not-found" };
     const item = state.recipes.find((recipeItem) => segment.endsWith(recipeItem.id))
       || state.recipes.find((recipeItem) => slugify(recipeItem.name) === segment);
     return { section: "recipes", detail: "recipe", item };
@@ -1375,14 +1377,16 @@ function routeState() {
   if (path === "/inventory") return { section: "inventory" };
   if (path === "/grocery") return { section: "grocery" };
   if (path.startsWith("/grocery/")) {
-    const slug = decodeURIComponent(path.split("/")[2] || "");
+    const slug = decodeRouteSegment(path.split("/")[2] || "");
+    if (slug === null) return { section: "not-found" };
     const candidates = [...groceryData().toBuy, ...state.extras];
     const item = candidates.find((candidate) => slugify(candidate.name) === slug);
     return { section: "grocery", detail: "grocery-item", item, slug };
   }
   if (path === "/stores") return { section: "stores" };
   if (path.startsWith("/stores/")) {
-    const id = decodeURIComponent(path.split("/")[2] || "");
+    const id = decodeRouteSegment(path.split("/")[2] || "");
+    if (id === null) return { section: "not-found" };
     return { section: "stores", detail: "store", item: STORES.find((store) => store.id === id) };
   }
   return { section: "not-found" };
@@ -1419,6 +1423,7 @@ function shell(route, body) {
       <a class="nav-link" href="https://healthy-recipes-murex.vercel.app/" target="_blank" rel="noreferrer">${icon("ph-question")}<span>Help & support</span></a>
     </div>`;
   return `
+    <a class="skip-to-content" href="#mainContent">Skip to main content</a>
     <div class="app-shell">
       <aside class="sidebar" aria-label="Primary navigation">
         <a class="brand" href="/planner" data-route>
@@ -1426,7 +1431,7 @@ function shell(route, body) {
           <span><span class="brand-title">NourishPlan</span><span class="brand-subtitle">Healthy Recipes & Meal Planner</span></span>
         </a>
         <nav class="primary-nav">
-          ${NAV.map((item) => `<a class="nav-link ${route.section === item.key ? "active" : ""}" href="${item.path}" data-route>${icon(item.icon)}<span>${item.label}</span></a>`).join("")}
+          ${NAV.map((item) => `<a class="nav-link ${route.section === item.key ? "active" : ""}" href="${item.path}"${route.section === item.key ? ' aria-current="page"' : ""} data-route>${icon(item.icon)}<span>${item.label}</span></a>`).join("")}
         </nav>
         ${utility}
         <button class="sidebar-profile" type="button" data-cloud-account aria-label="Open cloud sync settings">
@@ -1440,10 +1445,10 @@ function shell(route, body) {
         <header class="topbar">
           <button class="icon-button mobile-menu-button" type="button" aria-label="Open navigation" data-open-nav>${icon("ph-list")}</button>
           <a class="mobile-brand" href="/planner" data-route><img src="/favicon.svg" alt="" /><span>NourishPlan</span></a>
-          <label class="global-search">${icon("ph-magnifying-glass")}<input id="globalSearch" type="search" placeholder="Search recipes, ingredients, meals…" /><span class="search-key">⌘ K</span></label>
+          <label class="global-search">${icon("ph-magnifying-glass")}<input id="globalSearch" type="search" aria-label="Search recipes, ingredients and meals" placeholder="Search recipes, ingredients, meals…" /><span class="search-key">⌘ K</span></label>
           ${route.section === "planner" || route.section === "meal-map" ? `<div class="topbar-actions"><button class="icon-button" type="button" aria-label="Notifications">${icon("ph-bell")}</button><span class="today-date">${fmtDateWithYear()}</span></div>` : ""}
         </header>
-        <main class="content" id="mainContent">${["planner", "daily-wellness", "meal-map", "recipes"].includes(route.section) || route.detail === "recipe" ? `${nearbyDining.renderControls()}<p class="recipe-visual-note">Food previews are recipe illustrations, matched to the ingredients and preparation. Follow the written quantities for portions. Restaurant dishes may differ.</p>` : ""}${body}</main>
+        <main class="content" id="mainContent" tabindex="-1">${["planner", "daily-wellness", "meal-map", "recipes"].includes(route.section) || route.detail === "recipe" ? `${nearbyDining.renderControls()}<p class="recipe-visual-note">Food previews are recipe illustrations, matched to the ingredients and preparation. Follow the written quantities for portions. Restaurant dishes may differ.</p>` : ""}${body}</main>
       </section>
     </div>`;
 }
@@ -1453,7 +1458,7 @@ function render() {
   keepRollingMealPlanComplete();
   const route = routeState();
   if (route.canonical) {
-    navigate(route.canonical, { replace: true });
+    navigate(route.canonical + window.location.search + window.location.hash, { replace: true });
     return;
   }
   document.title = pageTitle(route);
@@ -2287,9 +2292,20 @@ function renderNotFound() {
   return `<div class="surface empty-state">${icon("ph-compass")}<h1 style="font-family:Fraunces,serif;color:var(--forest-950)">Page not found</h1><p>The page may have moved, but your meal plan is still here.</p><a class="button" href="/planner" data-route>Return to Planner</a></div>`;
 }
 
+let modalReturnFocus = null;
 function openModal(content) {
+  modalReturnFocus = document.activeElement;
   $("#modalRoot").innerHTML = `<div class="modal-backdrop" data-modal-backdrop><section class="modal" role="dialog" aria-modal="true"><button class="icon-button modal-close" type="button" aria-label="Close" data-close-modal>${icon("ph-x")}</button>${content}</section></div>`;
   document.body.style.overflow = "hidden";
+  const dialog = $("#modalRoot .modal");
+  const title = dialog.querySelector("h2");
+  if (title) {
+    title.id = "modalTitle";
+    dialog.setAttribute("aria-labelledby", "modalTitle");
+  } else {
+    dialog.setAttribute("aria-label", "Dialog");
+  }
+  $("[data-close-modal]").focus({ preventScroll: true });
   $("[data-close-modal]").onclick = closeModal;
   $("[data-modal-backdrop]").onclick = (event) => {
     if (event.target.matches("[data-modal-backdrop]")) closeModal();
@@ -2297,8 +2313,13 @@ function openModal(content) {
 }
 
 function closeModal() {
+  const returnFocus = modalReturnFocus;
+  modalReturnFocus = null;
   $("#modalRoot").innerHTML = "";
   document.body.style.overflow = "";
+  if (returnFocus?.isConnected && typeof returnFocus.focus === "function") {
+    returnFocus.focus({ preventScroll: true });
+  }
 }
 
 function recipeModal(existing = null) {
@@ -2917,8 +2938,25 @@ window.addEventListener("storage", (event) => {
   } catch {}
 });
 window.addEventListener("keydown", (event) => {
-  if (event.key === "Escape" && $("#modalRoot").children.length) closeModal();
-  if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+  const dialog = $("#modalRoot .modal");
+  if (dialog && event.key === "Escape") {
+    event.preventDefault();
+    closeModal();
+    return;
+  }
+  if (dialog && event.key === "Tab") {
+    const tabbable = Array.from(dialog.querySelectorAll("a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex=\"-1\"])"))
+      .filter((element) => element.getClientRects().length > 0 && getComputedStyle(element).visibility !== "hidden");
+    if (!tabbable.length) { event.preventDefault(); dialog.focus(); return; }
+    const first = tabbable[0];
+    const last = tabbable[tabbable.length - 1];
+    if (event.shiftKey && (document.activeElement === first || !dialog.contains(document.activeElement))) {
+      event.preventDefault(); last.focus();
+    } else if (!event.shiftKey && (document.activeElement === last || !dialog.contains(document.activeElement))) {
+      event.preventDefault(); first.focus();
+    }
+  }
+  if (!dialog && (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
     event.preventDefault();
     $("#globalSearch")?.focus();
   }
