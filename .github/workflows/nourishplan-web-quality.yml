@@ -1,0 +1,47 @@
+name: NourishPlan Web Quality
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "app.js"
+      - "styles.css"
+      - "lib/**"
+      - "tests/**"
+      - "scripts/offline/**"
+      - "scripts/prepare-offline-static.mjs"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/nourishplan-web-quality.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Check route decoder and existing data regressions
+        run: |
+          node --test tests/route-quality.test.mjs
+          node tests/cloud-sync.mjs
+          npm run test:diabetic-alternatives
+          npm run test:nearby-dining
+          npm run test:offline
+      - name: Build canonical offline production bundle
+        run: npm run build
+      - name: Install isolated Chromium test runner
+        run: |
+          npm install --no-save --ignore-scripts playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Test real keyboard, selection, dialogs, themes, mobile and deep links
+        run: node tests/browser-quality.mjs
