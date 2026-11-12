@@ -3151,3 +3151,12 @@ html :is(.tabs,.toolbar,.filter-bar,.filters,.actions,.button-row,.dialog-action
   text-decoration: none;
 }
 .skip-to-content:focus-visible { top: 12px; }
+
+/* Genuine 320px overflow fix: keep the nearby-area select usable without clipping controls. */
+@media (max-width: 650px) {
+  .dining-controls,
+  .dining-control-actions { min-width: 0; max-width: 100%; }
+  .dining-control-actions label { width: 100%; min-width: 0; flex-wrap: wrap; }
+  .dining-control-actions select { min-width: 0; max-width: 100%; flex: 1 1 150px; }
+  .dining-control-actions .button { max-width: 100%; }
+}
