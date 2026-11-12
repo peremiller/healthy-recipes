@@ -2100,9 +2100,9 @@ function renderRecipes() {
     ${heading("Recipes", "Find balanced meals that make healthy planning feel effortless.", actions)}
     <div class="page-controls">
       <div class="filter-row">
-        ${["all", ...MEALS].map((category) => `<button class="chip ${recipeCat === category ? "active" : ""}" type="button" data-recipe-cat="${category}">${category === "all" ? "All recipes" : MEAL_LABEL[category]}</button>`).join("")}
+        ${["all", ...MEALS].map((category) => `<button class="chip ${recipeCat === category ? "active" : ""}" type="button" aria-pressed="${recipeCat === category}" data-recipe-cat="${category}">${category === "all" ? "All recipes" : MEAL_LABEL[category]}</button>`).join("")}
       </div>
-      <input class="search-input" id="recipeSearch" type="search" placeholder="Search recipes or ingredients" value="${esc(recipeQuery)}" />
+      <input class="search-input" id="recipeSearch" type="search" aria-label="Filter recipes by name or ingredients" placeholder="Search recipes or ingredients" value="${esc(recipeQuery)}" />
     </div>
     ${list.length ? `<div class="recipe-grid">${list.map((item) => `
       <article class="recipe-entry"><a class="recipe-card" href="${recipePath(item)}" data-route>
