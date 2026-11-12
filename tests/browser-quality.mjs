@@ -60,7 +60,7 @@ try {
       const overflowElements = widthMeasured > width + 2 ? await page.evaluate(() => [...document.querySelectorAll("body *")]
         .map(element => ({ element: element.tagName.toLowerCase(), class: String(element.className || "").slice(0, 90),
           left: Math.round(element.getBoundingClientRect().left), right: Math.round(element.getBoundingClientRect().right) }))
-        .filter(item => item.right > innerWidth + 2 || item.left < -2).slice(0, 15)) : [];
+        .filter(item => item.right > innerWidth + 2 && item.left >= -2).slice(0, 25)) : [];
       assert.ok(widthMeasured <= width + 2, `Unexpected horizontal overflow: ${widthMeasured} > ${width}: ${JSON.stringify(overflowElements)}`);
       await page.evaluate(() => localStorage.setItem("primeqe-qa-sentinel", "preserve"));
       await page.goto(origin + "/recipes/%E0%A4%A", { waitUntil: "domcontentloaded" });
