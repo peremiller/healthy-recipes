@@ -1,10 +1,14 @@
 name: NourishPlan Web Quality
 
 on:
+  pull_request:
+    branches: [master]
   push:
     branches: [master]
     paths:
       - "app.js"
+      - "api/**"
+      - "server/**"
       - "styles.css"
       - "lib/**"
       - "tests/**"
@@ -34,6 +38,8 @@ jobs:
         run: |
           node --test tests/route-quality.test.mjs
           node tests/cloud-sync.mjs
+          node tests/official-dining.mjs
+          node tests/google-restaurants.mjs
           npm run test:diabetic-alternatives
           npm run test:nearby-dining
           npm run test:offline
