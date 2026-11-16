@@ -11,7 +11,8 @@ export async function searchConfiguredProvider(input, {
       const live = await google(input, { apiKey });
       if (live.places.length) return { ...live, liveDiscoveryAvailable: true };
       const fallback = await official(input);
-      return fallback.places.length || fallback.nearbyPlaces.length ? { ...fallback, liveDiscoveryAvailable: true } : { ...live, liveDiscoveryAvailable: true };
+      // Saved-directory leads are not live-confirmed results, even after a successful zero-match provider search.
+      return fallback.places.length || fallback.nearbyPlaces.length ? { ...fallback, liveDiscoveryAvailable: false } : { ...live, liveDiscoveryAvailable: true };
     } catch { /* Official directory remains usable during provider outages. */ }
   }
   return { ...await official(input), liveDiscoveryAvailable: false };
