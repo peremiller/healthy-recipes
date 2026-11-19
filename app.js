@@ -1446,7 +1446,7 @@ function shell(route, body) {
           <button class="icon-button mobile-menu-button" type="button" aria-label="Open navigation" data-open-nav>${icon("ph-list")}</button>
           <a class="mobile-brand" href="/planner" data-route><img src="/favicon.svg" alt="" /><span>NourishPlan</span></a>
           <label class="global-search">${icon("ph-magnifying-glass")}<input id="globalSearch" type="search" aria-label="Search recipes, ingredients and meals" placeholder="Search recipes, ingredients, meals…" /><span class="search-key">⌘ K</span></label>
-          ${route.section === "planner" || route.section === "meal-map" ? `<div class="topbar-actions"><button class="icon-button" type="button" aria-label="Notifications">${icon("ph-bell")}</button><span class="today-date">${fmtDateWithYear()}</span></div>` : ""}
+          ${route.section === "planner" || route.section === "meal-map" ? `<div class="topbar-actions"><span class="icon-button notification-decorative" aria-hidden="true">${icon("ph-bell")}</span><span class="today-date">${fmtDateWithYear()}</span></div>` : ""}
         </header>
         <main class="content" id="mainContent" tabindex="-1">${["planner", "daily-wellness", "meal-map", "recipes"].includes(route.section) || route.detail === "recipe" ? `${nearbyDining.renderControls()}<p class="recipe-visual-note">Food previews are recipe illustrations, matched to the ingredients and preparation. Follow the written quantities for portions. Restaurant dishes may differ.</p>` : ""}${body}</main>
       </section>
