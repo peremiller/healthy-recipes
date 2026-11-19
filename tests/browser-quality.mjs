@@ -67,6 +67,13 @@ try {
       await page.getByText("Page not found", { exact: true }).waitFor({ timeout: 15000 });
       await page.goto(origin + "/recipes", { waitUntil: "domcontentloaded" });
       assert.equal(await page.evaluate(() => localStorage.getItem("primeqe-qa-sentinel")), "preserve");
+      // Preserve the visual bell but avoid a nonfunctional keyboard/AT control.
+      await page.goto(origin + "/planner", { waitUntil: "domcontentloaded" });
+      await page.locator("#mainContent").waitFor({ timeout: 15000 });
+      assert.equal(await page.locator('button[aria-label="Notifications"]').count(), 0);
+      assert.equal(await page.locator('.topbar-actions .notification-decorative[aria-hidden="true"]').count(), 1);
+      assert.equal(await page.locator('.topbar-actions .notification-decorative').getAttribute("tabindex"), null);
+      assert.equal(await page.evaluate(() => localStorage.getItem("primeqe-qa-sentinel")), "preserve");
       assert.deepEqual(pageErrors, [], `Uncaught browser errors at ${width}/${scheme}`);
       console.log(`PASS ${width}px ${scheme}: focus, selected, dialog, malformed route, persisted data`);
       await context.close();
