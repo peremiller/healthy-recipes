@@ -31,6 +31,36 @@ assert.equal(fallback.nearbyPlaces.find((place) => place.id === closed.id).openN
 assert.equal(searchOfficialRestaurants({ lat: 0, lng: 0, radius: 5000 }, { now }).places.length, 0);
 assert.equal((await searchConfiguredProvider(location, { apiKey: "", google: () => { throw Error("no external call expected"); } })).source, "Official restaurant directories");
 assert.equal((await searchConfiguredProvider(location, { apiKey: "synthetic-test-key", google: async () => { throw Error("provider down"); } })).source, "Official restaurant directories");
+
+const directoryFixture = { source: "Official restaurant directories", dataMode: "saved-directory", places: [{ id: "synthetic-directory", openNow: true }], nearbyPlaces: [] };
+const emptyLiveFixture = { source: "Google Maps", places: [], cacheable: false };
+let officialCalls = 0;
+const directoryAfterEmptyLive = await searchConfiguredProvider(location, {
+  apiKey: "synthetic-test-key",
+  google: async () => emptyLiveFixture,
+  official: async () => { officialCalls++; return directoryFixture; }
+});
+assert.equal(directoryAfterEmptyLive.source, "Official restaurant directories");
+assert.equal(directoryAfterEmptyLive.dataMode, "saved-directory");
+assert.equal(directoryAfterEmptyLive.liveDiscoveryAvailable, false, "a saved directory cannot be presented as live-confirmed");
+assert.equal(officialCalls, 1);
+const emptyLiveAndDirectory = await searchConfiguredProvider(location, {
+  apiKey: "synthetic-test-key",
+  google: async () => emptyLiveFixture,
+  official: async () => ({ ...directoryFixture, places: [], nearbyPlaces: [] })
+});
+assert.equal(emptyLiveAndDirectory.source, "Google Maps");
+assert.equal(emptyLiveAndDirectory.liveDiscoveryAvailable, true, "a successful no-results provider search is still valid");
+let unexpectedFallback = 0;
+const liveProviderResult = await searchConfiguredProvider(location, {
+  apiKey: "synthetic-test-key",
+  google: async () => ({ ...emptyLiveFixture, places: [{ id: "synthetic-live", openNow: true }] }),
+  official: async () => { unexpectedFallback++; return directoryFixture; }
+});
+assert.equal(liveProviderResult.source, "Google Maps");
+assert.equal(liveProviderResult.liveDiscoveryAvailable, true);
+assert.equal(unexpectedFallback, 0, "provider results must not be replaced by a saved directory");
+
 const response = await handleRestaurantRequest(new Request("https://example.com/api/restaurants", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(location) }));
 assert.equal(response.status, 200, "default API works without a provider key or upstream network");
 assert.ok((await response.json()).places.length > 0);

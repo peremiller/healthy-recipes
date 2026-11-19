@@ -392,6 +392,12 @@ img {
   font-size: 21px;
 }
 
+/* An icon without a notification centre must not appear actionable. */
+.notification-decorative {
+  pointer-events: none;
+  cursor: default;
+}
+
 .today-date {
   margin-left: 4px;
   padding-left: 18px;
